@@ -28,6 +28,11 @@ public class Calculator {
     }
 
     @Override
+    public Double suffix(String name, Double argument) {
+      throw new UnsupportedOperationException(name);
+    }
+
+    @Override
     public Double number(String value) {
       return Double.parseDouble(value);
     }
@@ -47,12 +52,12 @@ public class Calculator {
     }
 
     @Override
-    public Double list(String paren, List<Double> elements) {
-      throw new UnsupportedOperationException();
+    public Double group(String paren, List<Double> elements) {
+      return elements.get(0);
     }
 
     @Override
-    public Double call(String identifier, List<Double> arguments) {
+    public Double call(String identifier, String bracket, List<Double> arguments) {
       Class<?>[] argTypes = new Class<?>[arguments.size()];
       Object[] args = new Object[arguments.size()];
       for (int i = 0; i < argTypes.length; i++) {
@@ -74,11 +79,11 @@ public class Calculator {
 
   public static void main(String[] args) throws IOException {
     ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
-    parser.addInfixOperators(1, "^");
-    parser.addInfixOperators(2, "*", "/");
-    parser.addInfixOperators(3, "+", "-");
-    parser.addPrefixOperators("+", "-");
-    parser.addExpressionBrackets("(", ")");
+    parser.addGroupBrackets(0, "(", null, ")");
+    parser.addInfixRtlOperators(1, "^");
+    parser.addPrefixOperators(2, "+", "-");
+    parser.addInfixOperators(3, "*", "/");
+    parser.addInfixOperators(4, "+", "-");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression? ");
@@ -87,9 +92,10 @@ public class Calculator {
         break;
       }
       try {
-        System.out.println("Result:    " + parser.parse(input));
+        System.out.println("Result:    " + parser.parseOperator(input));
       } catch (Exception e) {
-        System.out.println("Error:     " + e.getMessage());
+        e.printStackTrace();
+//        System.out.println("Error:     " + e.getMessage());
       }
     }
   }

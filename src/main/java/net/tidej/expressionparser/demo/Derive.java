@@ -266,6 +266,11 @@ public class Derive {
     }
 
     @Override
+    public Node suffix(String name, Node argument) {
+      throw new UnsupportedOperationException(name);
+    }
+
+    @Override
     public Node prefix(String name, Node argument) {
       return new PrefixOperation(name, argument);
     }
@@ -286,12 +291,12 @@ public class Derive {
     }
 
     @Override
-    public Node list(String paren, List<Node> elements) {
-      throw new UnsupportedOperationException();
+    public Node group(String paren, List<Node> elements) {
+      return elements.get(0);
     }
 
     @Override
-    public Node call(String identifier, List<Node> arguments) {
+    public Node call(String identifier, String bracket, List<Node> arguments) {
       if (arguments.size() != 1) {
         throw new IllegalArgumentException(identifier + ": " + arguments);
       }
@@ -306,11 +311,11 @@ public class Derive {
 
   public static void main(String[] args) throws IOException {
     ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder());
-    parser.addInfixOperators(1, "^");
-    parser.addInfixOperators(2, "*", "/");
-    parser.addInfixOperators(3, "+", "-");
-    parser.addPrefixOperators("+", "-");
-    parser.addExpressionBrackets("(", ")");
+    parser.addGroupBrackets(0, "(", null, ")");
+    parser.addInfixRtlOperators(1, "^");
+    parser.addPrefixOperators(2, "+", "-");
+    parser.addInfixOperators(3, "*", "/");
+    parser.addInfixOperators(4, "+", "-");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression?   ");
@@ -319,7 +324,7 @@ public class Derive {
         break;
       }
       try {
-        Node parsed = parser.parse(input);
+        Node parsed = parser.parseOperator(input);
         System.out.println("Parsed:       " + parsed);
         Node simplified = parsed.simplify();
         System.out.println("Simplified:   " + simplified);
