@@ -181,11 +181,11 @@ public class ExpressionParser<T> {
    * may be handled by the caller.
    */
   public T parse(Tokenizer tokenizer) throws IOException {
-    return parseOperator(tokenizer, precedenceList.size() - 1);
+    return parseOperator(tokenizer, 0);
   }
 
   private T parseOperator(Tokenizer tokenizer, int precedence) throws IOException {
-    if (precedence < 0) {
+    if (precedence >= precedenceList.size()) {
       return parsePrimary(tokenizer);
     }
 
@@ -205,7 +205,7 @@ public class ExpressionParser<T> {
 
     // Infix
 
-    T result = parseOperator(tokenizer, precedence - 1);
+    T result = parseOperator(tokenizer, precedence + 1);
     operator = currentOperator(tokenizer);
 
     if (operators.infixRtl.contains(operator)) {
@@ -215,7 +215,7 @@ public class ExpressionParser<T> {
 
     while (operators.infix.contains(operator)) {
       tokenizer.nextToken();
-      T right = parseOperator(tokenizer, precedence - 1);
+      T right = parseOperator(tokenizer, precedence + 1);
       result = processor.infix(operator, result, right);
       operator = currentOperator(tokenizer);
     }

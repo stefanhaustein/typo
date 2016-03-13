@@ -1,4 +1,4 @@
-package net.tidej.expressionparser.demo;
+package net.tidej.expressionparser.demo.calculator;
 
 import net.tidej.expressionparser.ExpressionParser;
 
@@ -63,6 +63,9 @@ public class Calculator {
       return elements.get(0);
     }
 
+    /** 
+     * Delegates function calls to Math via reflection.
+     */
     @Override
     public Double call(String identifier, String bracket, List<Double> arguments) {
       Class<?>[] argTypes = new Class<?>[arguments.size()];
@@ -93,11 +96,11 @@ public class Calculator {
     variables.put("e", Math.E);
     ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
     parser.addCallBrackets("(", ",", ")");
-    parser.addGroupBrackets(0, "(", null, ")");
-    parser.addInfixRtlOperators(1, "^");
+    parser.addGroupBrackets(4, "(", null, ")");
+    parser.addInfixRtlOperators(3, "^");
     parser.addPrefixOperators(2, "+", "-");
-    parser.addInfixOperators(3, "*", "/");
-    parser.addInfixOperators(4, "+", "-");
+    parser.addInfixOperators(1, "*", "/");
+    parser.addInfixOperators(0, "+", "-");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression? ");
@@ -106,9 +109,9 @@ public class Calculator {
         break;
       }
       try {
-        System.out.println("Result:    " + parser.parse(input));
+        System.out.println("Result:     " + parser.parse(input));
       } catch (Exception e) {
-        System.out.println("Error:     " + e.getMessage());
+        System.out.println("Error:      " + e.toString());
       }
     }
   }
