@@ -9,6 +9,9 @@ import java.util.List;
 
 public class Calculator {
 
+  /**
+   * Processes the calls from the parser directly to a Double value.
+   */
   static class DoubleProcessor implements ExpressionParser.Processor<Double> {
     @Override
     public Double infix(String name, Double left, Double right) {
@@ -16,6 +19,7 @@ public class Calculator {
         case '+': return left + right;
         case '-': return left - right;
         case '*': return left * right;
+        case '/': return left / right;
         case '^': return Math.pow(left, right);
         default:
           throw new IllegalArgumentException();
@@ -38,7 +42,7 @@ public class Calculator {
     }
 
     @Override
-    public Double string(String s) {
+    public Double string(char quote, String value) {
       throw new UnsupportedOperationException();
     }
 
@@ -77,8 +81,12 @@ public class Calculator {
     }
   }
 
+  /**
+   * Registers operations and precedences.
+   */
   public static void main(String[] args) throws IOException {
     ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
+    parser.addCallBrackets("(", ",", ")");
     parser.addGroupBrackets(0, "(", null, ")");
     parser.addInfixRtlOperators(1, "^");
     parser.addPrefixOperators(2, "+", "-");
@@ -92,7 +100,7 @@ public class Calculator {
         break;
       }
       try {
-        System.out.println("Result:    " + parser.parseOperator(input));
+        System.out.println("Result:    " + parser.parse(input));
       } catch (Exception e) {
         e.printStackTrace();
 //        System.out.println("Error:     " + e.getMessage());

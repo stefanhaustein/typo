@@ -281,7 +281,7 @@ public class Derive {
     }
 
     @Override
-    public Node string(String value) {
+    public Node string(char quote, String value) {
       throw new UnsupportedOperationException();
     }
 
@@ -311,6 +311,7 @@ public class Derive {
 
   public static void main(String[] args) throws IOException {
     ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder());
+    parser.addCallBrackets("(", null, ")");
     parser.addGroupBrackets(0, "(", null, ")");
     parser.addInfixRtlOperators(1, "^");
     parser.addPrefixOperators(2, "+", "-");
@@ -324,7 +325,7 @@ public class Derive {
         break;
       }
       try {
-        Node parsed = parser.parseOperator(input);
+        Node parsed = parser.parse(input);
         System.out.println("Parsed:       " + parsed);
         Node simplified = parsed.simplify();
         System.out.println("Simplified:   " + simplified);

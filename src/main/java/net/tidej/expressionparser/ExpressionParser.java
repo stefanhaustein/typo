@@ -32,7 +32,7 @@ public class ExpressionParser<T> {
     T number(String value);
 
     /** Called when the given (quoted) string literal is parsed. */
-    T string(String value);
+    T string(char quote, String value);
 
     /** Called when the given identifier is parsed. */
     T identifier(String name);
@@ -58,8 +58,17 @@ public class ExpressionParser<T> {
     enum TokenType {
       BOF, IDENTIFIER, SYMBOL, NUMBER, STRING, EOF
     }
+
+    /** The type of the current token. BOF before the first call to nextToken(). */
     TokenType currentType();
+
+    /** The unescaped / unquoted string value of the current token. */
     String currentValue();
+
+    /** The quote char if the current toke is a string; 0 otherwise */
+    char currentQuote();
+
+    /** Advance to the next token. */
     void nextToken() throws IOException;
   }
 
@@ -153,17 +162,25 @@ public class ExpressionParser<T> {
     return precedenceList.get(precedence);
   }
 
-  public T parseOperator(String s) throws IOException {
-    Tokenizer tokenizer = new SimpleTokenizer(new StringReader(s));
+  /**
+   * Parse the given expression using a simple StreamTokenizer-based parser.
+   * Leftover tokens will cause an exception.
+   */
+  public T parse(String expr) throws IOException {
+    Tokenizer tokenizer = new SimpleTokenizer(new StringReader(expr));
     tokenizer.nextToken();
-    T result = parseOperator(tokenizer);
+    T result = parse(tokenizer);
     if (tokenizer.currentType() != Tokenizer.TokenType.EOF) {
       throw new RuntimeException("Leftover token: " + tokenizer);
     }
     return result;
   }
 
-  public T parseOperator(Tokenizer tokenizer) throws IOException {
+  /**
+   * Parse an expression from the given tokenizer. Leftover tokens will be ignored and
+   * may be handled by the caller.
+   */
+  public T parse(Tokenizer tokenizer) throws IOException {
     return parseOperator(tokenizer, precedenceList.size() - 1);
   }
 
@@ -224,7 +241,7 @@ public class ExpressionParser<T> {
     ArrayList<T> elements = new ArrayList<>();
     if (!currentOperator(tokenizer).equals(close)) {
       while (true) {
-        elements.add(parseOperator(tokenizer));
+        elements.add(parse(tokenizer));
         String op = currentOperator(tokenizer);
         if (op.equals(close)) {
           break;
@@ -265,7 +282,7 @@ public class ExpressionParser<T> {
         }
         break;
       case STRING:
-        result = processor.string(tokenizer.currentValue());
+        result = processor.string(tokenizer.currentQuote(), tokenizer.currentValue());
         tokenizer.nextToken();
         break;
       default:
@@ -275,54 +292,129 @@ public class ExpressionParser<T> {
   }
 
   /** 
-   * A simple tokenizer using on the java StreamTokenizer
+   * A simple tokenizer utilizing java.io.StreamTokenizer.
    */
-  private class SimpleTokenizer implements Tokenizer {
-    private StreamTokenizer tokenizer;
+  public static class SimpleTokenizer implements Tokenizer {
+    protected StreamTokenizer tokenizer;
+    protected String currentValue = "";
+    protected TokenType currentType = TokenType.BOF;
+    protected char currentQuote;
 
-    SimpleTokenizer(Reader reader) {
+    public SimpleTokenizer(Reader reader) {
       tokenizer = new StreamTokenizer(reader);
-      tokenizer.ordinaryChar('-');
-      tokenizer.ordinaryChar('/');
+      tokenizer.resetSyntax();
+      tokenizer.whitespaceChars(0, ' ');
+
+      tokenizer.wordChars('0', '9');
+      tokenizer.wordChars('a', 'z');
+      tokenizer.wordChars('A', 'Z');
+      tokenizer.wordChars(0xc0, 0x1fff);
+      // All kinds of (math) symbols
+      tokenizer.wordChars(0x2c00, 0xffff);
+
+      tokenizer.quoteChar('"');
+      tokenizer.quoteChar('\'');
+
+      tokenizer.eolIsSignificant(false);
+      tokenizer.slashStarComments(true);
+    }
+
+    public SimpleTokenizer(StreamTokenizer tokenizer) {
+      this.tokenizer = tokenizer;
     }
 
     @Override
     public TokenType currentType() {
-      switch (tokenizer.ttype) {
-        case StreamTokenizer.TT_WORD:
-          return TokenType.IDENTIFIER;
-        case '"':
-          return TokenType.STRING;
-        case StreamTokenizer.TT_EOF:
-          return TokenType.EOF;
-        case StreamTokenizer.TT_NUMBER:
-          return TokenType.NUMBER;
-        case -4:
-          return TokenType.BOF;
-        default:
-          return TokenType.SYMBOL;
-      }
+      return currentType;
     }
 
     @Override
     public String currentValue() {
-      switch (tokenizer.ttype) {
-        case StreamTokenizer.TT_NUMBER:
-          return String.valueOf(tokenizer.nval);
-        case -4:
-        case StreamTokenizer.TT_EOF:
-          return "";
-        case StreamTokenizer.TT_WORD:
-        case '"':
-          return tokenizer.sval;
-        default:
-          return String.valueOf((char) tokenizer.ttype);
+      return currentValue;
+    }
+
+    @Override
+    public char currentQuote() {
+      return currentQuote;
+    }
+
+    private int peek() throws IOException {
+      int result = tokenizer.nextToken();
+      tokenizer.pushBack();
+      return result;
+    }
+
+    private boolean readNumber() throws IOException {
+      char c0 = tokenizer.sval.charAt(0);
+      if (c0 < '0' || c0 > '9') {
+        return false;
       }
+      currentValue = tokenizer.sval;
+      currentType = TokenType.NUMBER;
+      if (peek() == '.') {
+        tokenizer.nextToken();
+        currentValue += '.';
+        if (peek() == StreamTokenizer.TT_WORD) {
+          tokenizer.nextToken();
+          currentValue += tokenizer.sval;
+        }
+      }
+      if ((currentValue.endsWith("e") || currentValue.endsWith("E")) && peek() == '-') {
+        tokenizer.nextToken();
+        currentValue += '-';
+        tokenizer.nextToken();
+        currentValue += tokenizer.sval;
+      }
+      return true;
     }
 
     @Override
     public void nextToken() throws IOException {
       tokenizer.nextToken();
+      currentQuote = 0;
+      switch (tokenizer.ttype) {
+        case StreamTokenizer.TT_EOF:
+          currentType = TokenType.EOF;
+          currentValue = "";
+          break;
+        case StreamTokenizer.TT_NUMBER:
+          currentType = TokenType.NUMBER;
+          currentValue = String.valueOf(tokenizer.nval);
+          break;
+        case StreamTokenizer.TT_WORD:
+          if (!readNumber()) {
+            currentValue = tokenizer.sval;
+            currentType = TokenType.IDENTIFIER;
+          }
+          break;
+        case '\'':
+        case '"':
+          currentType = TokenType.STRING;
+          currentValue = tokenizer.sval;
+          currentQuote = (char) tokenizer.ttype;
+          break;
+        default: {
+          char c = (char) tokenizer.ttype;
+          if (c == '.' && peek() == StreamTokenizer.TT_WORD) {
+            tokenizer.nextToken();
+            if (readNumber()) {
+              currentValue = '.' + currentValue;
+              break;
+            }
+            tokenizer.pushBack();
+            currentValue = ".";
+          } else if ((c == '<' || c == '>' || c == '!' || c == '=') && peek() == '=') {
+            currentValue = c + "=";
+            tokenizer.nextToken();
+          } else if ((c == '&' || c == '|') && peek() == c) {
+            currentValue = String.valueOf(c) + c;
+            tokenizer.nextToken();
+          } else {
+            currentValue = String.valueOf(c);
+          }
+          currentType = TokenType.SYMBOL;
+        }
+      }
     }
 
     @Override
