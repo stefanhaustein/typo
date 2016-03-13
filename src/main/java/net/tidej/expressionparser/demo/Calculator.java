@@ -5,9 +5,12 @@ import net.tidej.expressionparser.ExpressionParser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.List;
 
 public class Calculator {
+
+  static HashMap<String, Double> variables = new HashMap<>();
 
   /**
    * Processes the calls from the parser directly to a Double value.
@@ -48,11 +51,11 @@ public class Calculator {
 
     @Override
     public Double identifier(String name) {
-      try {
-        return Math.class.getDeclaredField(name).getDouble(null);
-      } catch (Exception e) {
-        throw new IllegalArgumentException(e);
+      Double value = variables.get(name);
+      if (value == null) {
+        throw new RuntimeException("Undeclared variable: " + name);
       }
+      return value;
     }
 
     @Override
@@ -85,6 +88,9 @@ public class Calculator {
    * Registers operations and precedences.
    */
   public static void main(String[] args) throws IOException {
+    variables.put("tau", 2 * Math.PI);
+    variables.put("pi", Math.PI);
+    variables.put("e", Math.E);
     ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
     parser.addCallBrackets("(", ",", ")");
     parser.addGroupBrackets(0, "(", null, ")");
@@ -102,8 +108,7 @@ public class Calculator {
       try {
         System.out.println("Result:    " + parser.parse(input));
       } catch (Exception e) {
-        e.printStackTrace();
-//        System.out.println("Error:     " + e.getMessage());
+        System.out.println("Error:     " + e.getMessage());
       }
     }
   }
