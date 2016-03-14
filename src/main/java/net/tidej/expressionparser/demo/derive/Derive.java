@@ -27,11 +27,11 @@ public class Derive {
         break;
       }
       try {
-        Node parsed = parser.parse(input);
-        System.out.println("Parsed:       " + parsed);
-        Node simplified = parsed.simplify();
-        System.out.println("Simplified:   " + simplified);
-        Node derived = simplified.derive("x");
+        Node expr = parser.parse(input);
+        System.out.println("Parsed:       " + expr);
+        expr = expr.simplify();
+        System.out.println("Simplified:   " + expr);
+        Node derived = expr.derive("x");
         System.out.println("Derived to x: " + derived);
         System.out.println("Simplified:   " + derived.simplify());
       } catch (Exception e) {

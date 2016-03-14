@@ -13,6 +13,7 @@ public class Constant extends Node {
   }
 
   public String toString() {
-    return String.valueOf(value);
+    String s = String.valueOf(value);
+    return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
   }
 }

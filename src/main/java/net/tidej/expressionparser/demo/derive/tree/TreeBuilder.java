@@ -8,17 +8,30 @@ public class TreeBuilder implements ExpressionParser.Processor<Node> {
 
   @Override
   public Node infix(String name, Node left, Node right) {
-    return new InfixOperation(name, left, right);
+    switch (name.charAt(0)) {
+      case '+': return new Sum(left, right);
+      case '-': return new Sum(left, new Negation(right));
+      case '/': return new Quotient(left, right);
+      case '*': return new Product(left, right);
+      case '^': return new Power(left, right);
+    }
+    throw new UnsupportedOperationException("Unsupported infix operator: " + name);
   }
 
   @Override
   public Node suffix(String name, Node argument) {
-    throw new UnsupportedOperationException(name);
+    throw new UnsupportedOperationException("Unsupported suffix operator: " + name);
   }
 
   @Override
   public Node prefix(String name, Node argument) {
-    return new PrefixOperation(name, argument);
+    if (name.equals("-")) {
+      return new Negation(argument);
+    }
+    if (name.equals("+")) {
+      return argument;
+    }
+    throw new UnsupportedOperationException("Unsupported prefix operator: " + name);
   }
 
   @Override

@@ -46,14 +46,14 @@ public class Calculator {
 
     @Override
     public Double string(char quote, String value) {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException("Strings not supported");
     }
 
     @Override
     public Double identifier(String name) {
       Double value = variables.get(name);
       if (value == null) {
-        throw new RuntimeException("Undeclared variable: " + name);
+        throw new IllegalArgumentException("Undeclared variable: " + name);
       }
       return value;
     }
@@ -68,6 +68,9 @@ public class Calculator {
      */
     @Override
     public Double call(String identifier, String bracket, List<Double> arguments) {
+      if (identifier.equals("ln")) {
+        identifier = "log";
+      }
       Class<?>[] argTypes = new Class<?>[arguments.size()];
       Object[] args = new Object[arguments.size()];
       for (int i = 0; i < argTypes.length; i++) {
@@ -77,13 +80,13 @@ public class Calculator {
       try {
         return (Double) Math.class.getMethod(identifier, argTypes).invoke(null, args);
       } catch (Exception e) {
-        throw new UnsupportedOperationException(e);
+        throw new UnsupportedOperationException(identifier, e);
       }
     }
 
     @Override
     public Double apply(Double base, String bracket, List<Double> arguments) {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException("apply");
     }
   }
 

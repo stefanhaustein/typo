@@ -28,10 +28,10 @@ public class Function extends Node {
 
   public Node derive(String to) {
     if (name.equals("log")) {
-      return new InfixOperation("/", param.derive(to), param);
+      return new Quotient(param.derive(to), param);
     }
     if (name.equals("exp")) {
-      return new InfixOperation("*", new Function("exp", param), param.derive(to));
+      return new Product(new Function("exp", param), param.derive(to));
     }
     throw new RuntimeException("Don't know how to derive '" + name + "'");
   }
