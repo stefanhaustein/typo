@@ -113,8 +113,14 @@ public class Calculator {
       }
       try {
         System.out.println("Result:     " + parser.parse(input));
-      } catch (Exception e) {
-        System.out.println("Error:      " + e.toString());
+      } catch (ExpressionParser.ParsingException e) {
+        System.out.print("Error -----");
+        for (int i = 0; i < e.position; i++) {
+          System.out.print("-");
+        }
+        System.out.println("^: " + e.getMessage());
+      } catch (RuntimeException e) {
+        e.printStackTrace();
       }
     }
   }
