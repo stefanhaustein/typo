@@ -56,17 +56,6 @@ public class ExpressionParser<T> {
     INFIX, INFIX_RTL, PREFIX, SUFFIX
   }
 
-  private static class Operators {
-    HashSet<String>[] operators = new HashSet[]{
-            new HashSet<>(), new HashSet<>(),
-            new HashSet<>(), new HashSet<>()};
-    HashMap<String, String[]> group = new HashMap<>();
-    HashMap<String, String[]> apply = new HashMap<>();
-
-    private HashSet<String> get(OperatorType type) {
-      return operators[type.ordinal()];
-    }
-  }
   private final HashSet<String> primarySymbols = new HashSet<>();
   private final HashMap<String, String[]> calls = new HashMap<>();
   private final HashMap<String, Boolean> allSymbols = new HashMap<>();
@@ -288,6 +277,18 @@ public class ExpressionParser<T> {
         throw new ParsingException("Unexpected token type " + tokenizer, tokenizer.currentPosition, null);
     }
     return result;
+  }
+
+  private static class Operators {
+    HashSet<String>[] operators = new HashSet[]{
+        new HashSet<>(), new HashSet<>(),
+        new HashSet<>(), new HashSet<>()};
+    HashMap<String, String[]> group = new HashMap<>();
+    HashMap<String, String[]> apply = new HashMap<>();
+
+    private HashSet<String> get(OperatorType type) {
+      return operators[type.ordinal()];
+    }
   }
 
   public static class ParsingException extends RuntimeException {
