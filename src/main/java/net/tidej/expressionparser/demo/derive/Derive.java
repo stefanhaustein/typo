@@ -14,12 +14,12 @@ public class Derive {
     ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder());
     parser.addCallBrackets("(", null, ")");
     parser.addGroupBrackets(4, "(", null, ")");
-    parser.addInfixRtlOperators(3, "^");
-    parser.addPrefixOperators(2, "+", "-");
-    parser.addInfixOperators(1, "*", "/");
-    parser.addInfixOperators(0, "+", "-");
+      parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 3, "^");
+      parser.addOperators(ExpressionParser.OperatorType.PREFIX, 2, "+", "-");
+      parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "*", "/");
+      parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "+", "-");
 
-    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+      BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression?   ");
       String input = reader.readLine();

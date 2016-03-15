@@ -1,15 +1,10 @@
 package net.tidej.expressionparser;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -22,20 +17,23 @@ public class ExpressionParser<T> {
    * the expressions directly or build a tree.
    */
   public interface Processor<T> {
-    /** Called when an infix operator with the given name is parsed. */
-    T infix(String name, T left, T right);
+    /** Called when an infixOperator operator with the given name is parsed. */
+    T infixOperator(String name, T left, T right);
 
-    /** Called when a prefix operator with the given name is parsed. */
-    T prefix(String name, T argument);
+    /** Called when a prefixOperator operator with the given name is parsed. */
+    T prefixOperator(String name, T argument);
 
-    /** Called when a suffix operator with the given name is parsed. */
-    T suffix(String name, T argument);
+    /** Called when a suffixOperator operator with the given name is parsed. */
+    T suffixOperator(String name, T argument);
 
-    /** Called when the given number literal is parsed. */
-    T number(String value);
+    /** Called when the given numberl literal is parsed. */
+    T numberLiteral(String value);
 
-    /** Called when the given (quoted) string literal is parsed. */
-    T string(char quote, String value);
+    /** Called when the given (quoted) stringLiteral literal is parsed. */
+    T stringLiteral(char quote, String value);
+
+    /** Called when a primary primarySymbol is parsed */
+    T primarySymbol(String value);
 
     /** Called when the given identifier is parsed. */
     T identifier(String name);
@@ -54,14 +52,22 @@ public class ExpressionParser<T> {
     T apply(T base, String bracket, List<T> arguments);
   }
 
-  static class Operators {
-    HashSet<String> prefix = new HashSet<>();
-    HashMap<String, String[]> group = new HashMap<>();
-    HashSet<String> infix = new HashSet<>();
-    HashSet<String> infixRtl = new HashSet<>();
-    HashSet<String> suffix = new HashSet<>();
-    HashMap<String, String[]> apply = new HashMap<>();
+  public enum OperatorType {
+    INFIX, INFIX_RTL, PREFIX, SUFFIX
   }
+
+  private static class Operators {
+    HashSet<String>[] operators = new HashSet[]{
+            new HashSet<>(), new HashSet<>(),
+            new HashSet<>(), new HashSet<>()};
+    HashMap<String, String[]> group = new HashMap<>();
+    HashMap<String, String[]> apply = new HashMap<>();
+
+    private HashSet<String> get(OperatorType type) {
+      return operators[type.ordinal()];
+    }
+  }
+  private final HashSet<String> primarySymbols = new HashSet<>();
   private final HashMap<String, String[]> calls = new HashMap<>();
   private final HashMap<String, Boolean> allSymbols = new HashMap<>();
 
@@ -105,51 +111,31 @@ public class ExpressionParser<T> {
     return this;
   }
 
+  public void addPrimarySymbols(String... names) {
+    for (String name : names) {
+      primarySymbols.add(addSymbol(name, false));
+    }
+  }
+
+    /**
+   * Add prefixOperator, infixOperator or postfix operators with the given precedence.
+   */
+  public void addOperators(OperatorType type, int precedence, String... names) {
+    HashSet<String> set = operators(precedence).get(type);
+    for (String name : names) {
+      set.add(addSymbol(name, type == OperatorType.PREFIX));
+    }
+  }
+
   /**
    * Used to keep track of all registered operators / symbols and whether they may occur in
-   * a non-prefix position.
+   * a non-prefixOperator position.
    */
   private String addSymbol(String symbol, boolean prefix) {
     if (symbol != null && (!allSymbols.containsKey(symbol) || !prefix)) {
       allSymbols.put(symbol, prefix);
     }
     return symbol;
-  }
-
-  /**
-   * Add regular (left-to-right) infix operators with the given precedence.
-   */
-  public void addInfixOperators(int precedence, String... names) {
-    for (String name : names) {
-      operators(precedence).infix.add(addSymbol(name, false));
-    }
-  }
-
-  /**
-   * Add right-binding infix operators with the given precedence.
-   */
-  public void addInfixRtlOperators(int precedence, String... names) {
-    for (String name : names) {
-      operators(precedence).infixRtl.add(addSymbol(name, false));
-    }
-  }
-
-  /**
-   * Add prefix operators with the given precedence.
-   */
-  public void addPrefixOperators(int precedence, String... names) {
-    for (String name: names) {
-      operators(precedence).prefix.add(addSymbol(name, true));
-    }
-  }
-
-  /**
-   * Add suffix operators with the given precedence.
-   */
-  public void addSuffixOperators(int precedence, String... names) {
-    for (String name: names) {
-      operators(precedence).suffix.add(addSymbol(name, false));
-    }
   }
 
   private Operators operators(int precedence) {
@@ -198,9 +184,9 @@ public class ExpressionParser<T> {
 
     Operators operators = operators(precedence);
     String operator = currentOperator(tokenizer);
-    if (operators.prefix.contains(operator)) {
+    if (operators.operators[OperatorType.PREFIX.ordinal()].contains(operator)) {
       tokenizer.nextToken();
-      return processor.prefix(operator, parseOperator(tokenizer, precedence));
+      return processor.prefixOperator(operator, parseOperator(tokenizer, precedence));
     }
     if (operators.group.containsKey(operator)) {
       tokenizer.nextToken();
@@ -213,27 +199,28 @@ public class ExpressionParser<T> {
     T result = parseOperator(tokenizer, precedence + 1);
     operator = currentOperator(tokenizer);
 
-    if (operators.infixRtl.contains(operator)) {
+    if (operators.get(OperatorType.INFIX_RTL).contains(operator)) {
       tokenizer.nextToken();
-      return processor.infix(operator, result, parseOperator(tokenizer, precedence));
+      return processor.infixOperator(operator, result, parseOperator(tokenizer, precedence));
     }
 
-    while (operators.infix.contains(operator)) {
+    while (operators.get(OperatorType.INFIX).contains(operator)) {
       tokenizer.nextToken();
       T right = parseOperator(tokenizer, precedence + 1);
-      result = processor.infix(operator, result, right);
+      result = processor.infixOperator(operator, result, right);
       operator = currentOperator(tokenizer);
     }
 
     // Suffix
 
-    while (operators.suffix.contains(operator) || operators.apply.containsKey(operator)) {
+    while (operators.apply.containsKey(operator) ||
+        operators.get(OperatorType.SUFFIX).contains(operator)) {
       tokenizer.nextToken();
-      if (operators.suffix.contains(operator)) {
-        result = processor.suffix(operator, result);
-      } else {
+      if (operators.apply.containsKey(operator)) {
         String[] apply = operators.apply.get(operator);
         result = processor.apply(result, operator, parseList(tokenizer, apply[0], apply[1]));
+      } else {
+        result = processor.suffixOperator(operator, result);
       }
       operator = currentOperator(tokenizer);
     }
@@ -272,7 +259,7 @@ public class ExpressionParser<T> {
     T result;
     switch (tokenizer.currentType) {
       case NUMBER:
-        result = processor.number(tokenizer.currentValue);
+        result = processor.numberLiteral(tokenizer.currentValue);
         tokenizer.nextToken();
         break;
       case IDENTIFIER:
@@ -288,9 +275,15 @@ public class ExpressionParser<T> {
         }
         break;
       case STRING:
-        result = processor.string(tokenizer.currentQuote, tokenizer.currentValue);
+        result = processor.stringLiteral(tokenizer.currentQuote, tokenizer.currentValue);
         tokenizer.nextToken();
         break;
+      case SYMBOL:
+        if (primarySymbols.contains(tokenizer.currentValue)) {
+          result = processor.primarySymbol(tokenizer.currentValue);
+          tokenizer.nextToken();
+          break;
+        }  // Fall-through intended.
       default:
         throw new ParsingException("Unexpected token type " + tokenizer, tokenizer.currentPosition, null);
     }

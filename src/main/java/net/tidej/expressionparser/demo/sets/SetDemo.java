@@ -24,7 +24,7 @@ public class SetDemo {
     }
 
     @Override
-    public Object infix(String name, Object left, Object right) {
+    public Object infixOperator(String name, Object left, Object right) {
       if (name.equals("\u2229")) {  // intersection
         assertSet(left).retainAll(assertSet(right));
         return left;
@@ -41,26 +41,34 @@ public class SetDemo {
     }
 
     @Override
-    public Object prefix(String name, Object argument) {
-      throw new UnsupportedOperationException("prefix operator: " + name);
+    public Object prefixOperator(String name, Object argument) {
+      throw new UnsupportedOperationException("prefixOperator operator: " + name);
     }
 
     @Override
-    public Object suffix(String name, Object argument) {
-      throw new UnsupportedOperationException("suffix operator: " + name);
+    public Object suffixOperator(String name, Object argument) {
+      throw new UnsupportedOperationException("suffixOperator operator: " + name);
     }
 
     @Override
-    public Object number(String value) {
+    public Object numberLiteral(String value) {
       return Double.parseDouble(value);
     }
 
     @Override
-    public Object string(char quote, String value) {
+    public Object stringLiteral(char quote, String value) {
       return quote + value + quote;
     }
 
     @Override
+    public Object primarySymbol(String name) {
+      if (name.equals("\u2205")){
+        return new LinkedHashSet<Object>();
+      }
+      throw new UnsupportedOperationException("Symbol: " + name);
+    }
+
+      @Override
     public Object identifier(String name) {
       return name;
     }
@@ -100,13 +108,14 @@ public class SetDemo {
   }
 
   public static void main(String[] args) throws IOException {
-    System.out.println("Operators: \u2229 \u222a \u2216");
+    System.out.println("Operators: \u2229 \u222a \u2216 \u2205");
     ExpressionParser<Object> parser = new ExpressionParser<>(new SetProcessor());
     parser.addGroupBrackets(2, "(", null, ")");
     parser.addGroupBrackets(2, "{", ",", "}");
     parser.addGroupBrackets(2, "|", null, "|");
-    parser.addInfixOperators(1, "\u2229");
-    parser.addInfixOperators(0, "\u222a", "\u2216", "\\");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "\u2229");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "\u222a", "\u2216", "\\");
+    parser.addPrimarySymbols("\u2205");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression? ");

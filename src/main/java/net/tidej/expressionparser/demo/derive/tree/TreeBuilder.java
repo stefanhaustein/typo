@@ -7,7 +7,7 @@ import java.util.List;
 public class TreeBuilder implements ExpressionParser.Processor<Node> {
 
   @Override
-  public Node infix(String name, Node left, Node right) {
+  public Node infixOperator(String name, Node left, Node right) {
     switch (name.charAt(0)) {
       case '+': return new Sum(left, right);
       case '-': return new Sum(left, new Negation(right));
@@ -19,28 +19,33 @@ public class TreeBuilder implements ExpressionParser.Processor<Node> {
   }
 
   @Override
-  public Node suffix(String name, Node argument) {
+  public Node suffixOperator(String name, Node argument) {
     throw new UnsupportedOperationException("Unsupported suffix operator: " + name);
   }
 
   @Override
-  public Node prefix(String name, Node argument) {
+  public Node prefixOperator(String name, Node argument) {
     if (name.equals("-")) {
       return new Negation(argument);
     }
     if (name.equals("+")) {
       return argument;
     }
-    throw new UnsupportedOperationException("Unsupported prefix operator: " + name);
+    throw new UnsupportedOperationException("Unsupported prefixOperator operator: " + name);
   }
 
   @Override
-  public Node number(String value) {
+  public Node numberLiteral(String value) {
     return new Constant(Double.parseDouble(value));
   }
 
   @Override
-  public Node string(char quote, String value) {
+  public Node stringLiteral(char quote, String value) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Node primarySymbol(String value) {
     throw new UnsupportedOperationException();
   }
 

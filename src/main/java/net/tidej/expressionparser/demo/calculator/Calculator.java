@@ -17,7 +17,7 @@ public class Calculator {
    */
   static class DoubleProcessor implements ExpressionParser.Processor<Double> {
     @Override
-    public Double infix(String name, Double left, Double right) {
+    public Double infixOperator(String name, Double left, Double right) {
       switch (name.charAt(0)) {
         case '+': return left + right;
         case '-': return left - right;
@@ -30,23 +30,28 @@ public class Calculator {
     }
 
     @Override
-    public Double prefix(String name, Double argument) {
+    public Double prefixOperator(String name, Double argument) {
       return name.equals("-") ? -argument : argument;
     }
 
     @Override
-    public Double suffix(String name, Double argument) {
+    public Double suffixOperator(String name, Double argument) {
       throw new UnsupportedOperationException(name);
     }
 
     @Override
-    public Double number(String value) {
+    public Double numberLiteral(String value) {
       return Double.parseDouble(value);
     }
 
     @Override
-    public Double string(char quote, String value) {
+    public Double stringLiteral(char quote, String value) {
       throw new UnsupportedOperationException("Strings not supported");
+    }
+
+    @Override
+    public Double primarySymbol(String value) {
+      throw new UnsupportedOperationException("symbol " + value);
     }
 
     @Override
@@ -100,11 +105,11 @@ public class Calculator {
     ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
     parser.addCallBrackets("(", ",", ")");
     parser.addGroupBrackets(4, "(", null, ")");
-    parser.addInfixRtlOperators(3, "^");
-    parser.addPrefixOperators(2, "+", "-");
-    parser.addInfixOperators(1, "*", "/");
-    parser.addInfixOperators(0, "+", "-");
-    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+      parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 3, "^");
+      parser.addOperators(ExpressionParser.OperatorType.PREFIX, 2, "+", "-");
+      parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "*", "/");
+      parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "+", "-");
+      BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression? ");
       String input = reader.readLine();
