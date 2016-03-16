@@ -12,13 +12,14 @@ public class Derive {
 
   public static void main(String[] args) throws IOException {
     ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder());
-    parser.addCallBrackets("(", null, ")");
-    parser.addGroupBrackets(5, "(", null, ")");
-    parser.addInfixRtlOperators(4, "^");
-    parser.addPrefixOperators(3, "+", "-");
+    parser.addCallBrackets("(", null, ")" );
+    parser.addGroupBrackets(5, "(", null, ")" );
+    parser.addGroupBrackets(4, "(", null, ")");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 4, "^");
+    parser.addOperators(ExpressionParser.OperatorType.PREFIX, 3, "+", "-");
     parser.setImplicitOperatorPrecedence(2);
-    parser.addInfixOperators(1, "*", "/");
-    parser.addInfixOperators(0, "+", "-");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "*", "/");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "+", "-");
 
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {

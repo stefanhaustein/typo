@@ -1,6 +1,7 @@
 package net.tidej.expressionparser.demo.calculator;
 
 import net.tidej.expressionparser.ExpressionParser;
+import net.tidej.expressionparser.ExpressionParser.OperatorType;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,7 +30,6 @@ public class Calculator {
       }
     }
 
-    @Override
     public Double implicit(Double left, Double right) {
       return left * right;
     }
@@ -99,12 +99,12 @@ public class Calculator {
     variables.put("e", Math.E);
     ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
     parser.addCallBrackets("(", ",", ")");
-    parser.addGroupBrackets(5, "(", null, ")" );
-    parser.addInfixRtlOperators(4, "^" );
-    parser.addPrefixOperators(3, "+", "-" );
+    parser.addGroupBrackets(5, "(", null, ")");
+    parser.addOperators(OperatorType.INFIX_RTL, 4, "^");
+    parser.addOperators(OperatorType.PREFIX, 3, "+", "-");
     parser.setImplicitOperatorPrecedence(2);
-    parser.addInfixOperators(1, "*", "/");
-    parser.addInfixOperators(0, "+", "-");
+    parser.addOperators(OperatorType.INFIX, 1, "*", "/");
+    parser.addOperators(OperatorType.INFIX, 0, "+", "-");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression? ");

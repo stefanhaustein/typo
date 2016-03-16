@@ -51,6 +51,14 @@ public class SetDemo {
     }
 
     @Override
+    public Object primarySymbol(String name) {
+      if (name.equals("\u2205")){
+        return new LinkedHashSet<Object>();
+      }
+      throw new UnsupportedOperationException("Symbol: " + name);
+    }
+
+    @Override
     public Object identifier(String name) {
       return name;
     }
@@ -80,13 +88,14 @@ public class SetDemo {
   }
 
   public static void main(String[] args) throws IOException {
-    System.out.println("Operators: \u2229 \u222a \u2216");
+    System.out.println("Operators: \u2229 \u222a \u2216 \u2205");
     ExpressionParser<Object> parser = new ExpressionParser<>(new SetProcessor());
     parser.addGroupBrackets(2, "(", null, ")");
     parser.addGroupBrackets(2, "{", ",", "}");
     parser.addGroupBrackets(2, "|", null, "|");
-    parser.addInfixOperators(1, "\u2229");
-    parser.addInfixOperators(0, "\u222a", "\u2216", "\\");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "\u2229");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "\u222a", "\u2216", "\\");
+    parser.addPrimarySymbols("\u2205");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression? ");

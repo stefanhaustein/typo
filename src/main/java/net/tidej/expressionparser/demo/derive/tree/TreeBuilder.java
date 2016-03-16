@@ -18,14 +18,8 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
     throw new UnsupportedOperationException("Unsupported infix operator: " + name);
   }
 
-  @Override
   public Node implicit(Node left, Node right) {
     return infix("*", left, right);
-  }
-
-  @Override
-  public Node suffix(String name, Node argument) {
-    throw new UnsupportedOperationException("Unsupported suffix operator: " + name);
   }
 
   @Override
@@ -36,7 +30,7 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
     if (name.equals("+")) {
       return argument;
     }
-    throw new UnsupportedOperationException("Unsupported prefix operator: " + name);
+    throw new UnsupportedOperationException("Unsupported prefixOperator operator: " + name);
   }
 
   @Override

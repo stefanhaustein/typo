@@ -33,6 +33,10 @@ public class ExpressionParser<T> {
       throw new UnsupportedOperationException("prefix(" + name + ", " + argument + ')');
     }
 
+    public T primarySymbol(String name) {
+      throw new UnsupportedOperationException("primarySymbol(" + name + ")");
+    }
+
     /** Called when a suffix operator with the given name is parsed. */
     public T suffix(String name, T argument) {
       throw new UnsupportedOperationException("suffix(" + name + ", " + argument + ')');
@@ -75,14 +79,11 @@ public class ExpressionParser<T> {
     }
   }
 
-  static class Operators {
-    HashSet<String> prefix = new HashSet<>();
-    HashMap<String, String[]> group = new HashMap<>();
-    HashSet<String> infix = new HashSet<>();
-    HashSet<String> infixRtl = new HashSet<>();
-    HashSet<String> suffix = new HashSet<>();
-    HashMap<String, String[]> apply = new HashMap<>();
+  public enum OperatorType {
+    INFIX, INFIX_RTL, PREFIX, SUFFIX
   }
+
+  private final HashSet<String> primarySymbols = new HashSet<>();
   private final HashMap<String, String[]> calls = new HashMap<>();
   private final HashMap<String, Boolean> allSymbols = new HashMap<>();
 
@@ -146,51 +147,31 @@ public class ExpressionParser<T> {
     return this;
   }
 
+  public void addPrimarySymbols(String... names) {
+    for (String name : names) {
+      primarySymbols.add(addSymbol(name, false));
+    }
+  }
+
+    /**
+   * Add prefixOperator, infixOperator or postfix operators with the given precedence.
+   */
+  public void addOperators(OperatorType type, int precedence, String... names) {
+    HashSet<String> set = operators(precedence).get(type);
+    for (String name : names) {
+      set.add(addSymbol(name, type == OperatorType.PREFIX));
+    }
+  }
+
   /**
    * Used to keep track of all registered operators / symbols and whether they may occur in
-   * a non-prefix position.
+   * a non-prefixOperator position.
    */
   private String addSymbol(String symbol, boolean prefix) {
     if (symbol != null && (!allSymbols.containsKey(symbol) || !prefix)) {
       allSymbols.put(symbol, prefix);
     }
     return symbol;
-  }
-
-  /**
-   * Add regular (left-to-right) infix operators with the given precedence.
-   */
-  public void addInfixOperators(int precedence, String... names) {
-    for (String name : names) {
-      operators(precedence).infix.add(addSymbol(name, false));
-    }
-  }
-
-  /**
-   * Add right-binding infix operators with the given precedence.
-   */
-  public void addInfixRtlOperators(int precedence, String... names) {
-    for (String name : names) {
-      operators(precedence).infixRtl.add(addSymbol(name, false));
-    }
-  }
-
-  /**
-   * Add prefix operators with the given precedence.
-   */
-  public void addPrefixOperators(int precedence, String... names) {
-    for (String name: names) {
-      operators(precedence).prefix.add(addSymbol(name, true));
-    }
-  }
-
-  /**
-   * Add suffix operators with the given precedence.
-   */
-  public void addSuffixOperators(int precedence, String... names) {
-    for (String name: names) {
-      operators(precedence).suffix.add(addSymbol(name, false));
-    }
   }
 
   private Operators operators(int precedence) {
@@ -246,7 +227,7 @@ public class ExpressionParser<T> {
     // Prefix
 
     String candidate = tokenizer.currentValue;
-    if (operators.prefix.contains(candidate)) {
+    if (operators.get(OperatorType.PREFIX).contains(candidate)) {
       tokenizer.nextToken();
       return processor.prefix(candidate, parseOperator(tokenizer, precedence));
     }
@@ -263,15 +244,15 @@ public class ExpressionParser<T> {
 
     candidate = tokenizer.currentValue;
 
-    if (operators.infixRtl.contains(candidate)) {
+    if (operators.get(OperatorType.INFIX_RTL).contains(candidate)) {
       tokenizer.nextToken();
       return processor.infix(candidate, result, parseOperator(tokenizer, precedence));
     }
 
-    while (operators.infix.contains(candidate)
+    while (operators.get(OperatorType.INFIX).contains(candidate)
         || (precedence == implicitOperatorPrecedence && !candidate.isEmpty()
           && allSymbols.get(candidate) != Boolean.FALSE)) {
-      if (operators.infix.contains(candidate)) {
+      if (operators.get(OperatorType.INFIX).contains(candidate)) {
         tokenizer.nextToken();
         T right = parseOperator(tokenizer, precedence + 1);
         result = processor.infix(candidate, result, right);
@@ -284,13 +265,14 @@ public class ExpressionParser<T> {
 
     // Suffix
 
-    while (operators.suffix.contains(candidate) || operators.apply.containsKey(candidate)) {
+    while (operators.apply.containsKey(candidate)
+        || operators.get(OperatorType.SUFFIX).contains(candidate)) {
       tokenizer.nextToken();
-      if (operators.suffix.contains(candidate)) {
-        result = processor.suffix(candidate, result);
-      } else {
+      if (operators.apply.containsKey(candidate)) {
         String[] apply = operators.apply.get(candidate);
         result = processor.apply(result, candidate, parseList(tokenizer, apply[0], apply[1]));
+      } else {
+        result = processor.suffix(candidate, result);
       }
       candidate = tokenizer.currentValue;
     }
@@ -348,10 +330,28 @@ public class ExpressionParser<T> {
         result = processor.string(tokenizer.currentValue);
         tokenizer.nextToken();
         break;
+      case SYMBOL:
+        if (primarySymbols.contains(tokenizer.currentValue)) {
+          result = processor.primarySymbol(tokenizer.currentValue);
+          tokenizer.nextToken();
+          break;
+        }  // Fall-through intended.
       default:
         throw new ParsingException("Unexpected token type " + tokenizer, tokenizer.currentPosition, null);
     }
     return result;
+  }
+
+  private static class Operators {
+    HashSet<String>[] operators = new HashSet[]{
+        new HashSet<>(), new HashSet<>(),
+        new HashSet<>(), new HashSet<>()};
+    HashMap<String, String[]> group = new HashMap<>();
+    HashMap<String, String[]> apply = new HashMap<>();
+
+    private HashSet<String> get(OperatorType type) {
+      return operators[type.ordinal()];
+    }
   }
 
   public static class ParsingException extends RuntimeException {
