@@ -28,7 +28,7 @@ public class Function extends Node {
 
   public Node derive(String to) {
     if (name.equals("log")) {
-      return new Quotient(param.derive(to), param);
+      return new Product(param.derive(to), new Reciprocal(param));
     }
     if (name.equals("exp")) {
       return new Product(new Function("exp", param), param.derive(to));

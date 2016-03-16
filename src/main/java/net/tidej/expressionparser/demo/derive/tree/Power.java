@@ -21,7 +21,7 @@ public class Power extends Node {
             new Power(left, new Constant(rightVal - 1)));
       }
     }
-    Node s1 = new Product(left.derive(to), new Quotient(left, right));
+    Node s1 = new Product(left.derive(to), new Product(left, new Reciprocal(right)));
     Node s2 = new Product(right.derive(to), new Function("ln", left));
     Node sum = new Sum(s1, s2);
     return new Product(this, sum);

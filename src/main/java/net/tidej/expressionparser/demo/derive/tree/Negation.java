@@ -15,11 +15,6 @@ class Negation extends Node {
     if (param instanceof Negation) {
       return ((Negation) param).param;
     }
-    // Try to move the negation to a divisor or factor
-    if (param instanceof Quotient && ((Quotient) param).dividend instanceof Constant) {
-      Quotient q = ((Quotient) param);
-      return new Quotient(new Constant(-((Constant) q.dividend).value), q.divisor);
-    }
     if (param instanceof Product && ((Product) param).factors[0] instanceof Constant) {
       Node[] factors = ((Product) param).factors.clone();
       factors[0] = new Constant(-((Constant) factors[0]).value);

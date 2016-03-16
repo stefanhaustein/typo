@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public class SetDemo {
 
-  static class SetProcessor implements ExpressionParser.Processor<Object> {
+  static class SetProcessor extends ExpressionParser.Processor<Object> {
 
     private Set<Object> assertSet(Object o) {
       if (!(o instanceof Set)) {
@@ -41,23 +41,13 @@ public class SetDemo {
     }
 
     @Override
-    public Object prefix(String name, Object argument) {
-      throw new UnsupportedOperationException("prefix operator: " + name);
-    }
-
-    @Override
-    public Object suffix(String name, Object argument) {
-      throw new UnsupportedOperationException("suffix operator: " + name);
-    }
-
-    @Override
     public Object number(String value) {
       return Double.parseDouble(value);
     }
 
     @Override
-    public Object string(char quote, String value) {
-      return quote + value + quote;
+    public Object string(String value) {
+      return value;
     }
 
     @Override
@@ -85,17 +75,7 @@ public class SetDemo {
         }
         throw new RuntimeException("Can't apply || to " + o);
       }
-      throw new UnsupportedOperationException(paren);
-    }
-
-    @Override
-    public Object call(String identifier, String bracket, List<Object> arguments) {
-      throw new UnsupportedOperationException(identifier + "()");
-    }
-
-    @Override
-    public Object apply(Object base, String bracket, List<Object> arguments) {
-      return new UnsupportedOperationException("apply");
+      return super.group(paren, elements);
     }
   }
 

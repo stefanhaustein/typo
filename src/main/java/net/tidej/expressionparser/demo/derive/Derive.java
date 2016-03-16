@@ -13,9 +13,10 @@ public class Derive {
   public static void main(String[] args) throws IOException {
     ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder());
     parser.addCallBrackets("(", null, ")");
-    parser.addGroupBrackets(4, "(", null, ")");
-    parser.addInfixRtlOperators(3, "^");
-    parser.addPrefixOperators(2, "+", "-");
+    parser.addGroupBrackets(5, "(", null, ")");
+    parser.addInfixRtlOperators(4, "^");
+    parser.addPrefixOperators(3, "+", "-");
+    parser.setImplicitOperatorPrecedence(2);
     parser.addInfixOperators(1, "*", "/");
     parser.addInfixOperators(0, "+", "-");
 

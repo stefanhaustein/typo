@@ -29,12 +29,18 @@ public class Product extends Node {
         for (Node grandChild : ((Product) simplified).factors) {
           if (grandChild instanceof Constant) {
             c *= ((Constant) grandChild).value;
+          } else if (grandChild instanceof Negation) {
+            c = -c;
+            simplifiedFactors.add(((Negation) grandChild).param);
           } else {
             simplifiedFactors.add(grandChild);
           }
         }
       } else if (simplified instanceof Constant) {
         c *= ((Constant) simplified).value;
+      } else if (simplified instanceof Negation) {
+        c = -c;
+        simplifiedFactors.add(((Negation) simplified).param);
       } else {
         simplifiedFactors.add(simplified);
       }
@@ -57,10 +63,15 @@ public class Product extends Node {
   public String toString() {
     StringBuilder sb = new StringBuilder("(");
     for (Node factor: factors) {
-      if (sb.length() > 1) {
-        sb.append(" * ");
+      if (factor instanceof Reciprocal) {
+        sb.append(sb.length() == 1 ? "1/" : " / ");
+        sb.append(((Reciprocal) factor).param);
+      } else {
+        if (sb.length() > 1) {
+          sb.append(" * ");
+        }
+        sb.append(factor);
       }
-      sb.append(factor);
     }
     sb.append(")");
     return sb.toString();

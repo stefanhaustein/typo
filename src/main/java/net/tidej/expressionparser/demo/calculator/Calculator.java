@@ -15,7 +15,7 @@ public class Calculator {
   /**
    * Processes the calls from the parser directly to a Double value.
    */
-  static class DoubleProcessor implements ExpressionParser.Processor<Double> {
+  static class DoubleProcessor extends ExpressionParser.Processor<Double> {
     @Override
     public Double infix(String name, Double left, Double right) {
       switch (name.charAt(0)) {
@@ -27,6 +27,11 @@ public class Calculator {
         default:
           throw new IllegalArgumentException();
       }
+    }
+
+    @Override
+    public Double implicit(Double left, Double right) {
+      return left * right;
     }
 
     @Override
@@ -42,11 +47,6 @@ public class Calculator {
     @Override
     public Double number(String value) {
       return Double.parseDouble(value);
-    }
-
-    @Override
-    public Double string(char quote, String value) {
-      throw new UnsupportedOperationException("Strings not supported");
     }
 
     @Override
@@ -99,9 +99,10 @@ public class Calculator {
     variables.put("e", Math.E);
     ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
     parser.addCallBrackets("(", ",", ")");
-    parser.addGroupBrackets(4, "(", null, ")");
-    parser.addInfixRtlOperators(3, "^");
-    parser.addPrefixOperators(2, "+", "-");
+    parser.addGroupBrackets(5, "(", null, ")" );
+    parser.addInfixRtlOperators(4, "^" );
+    parser.addPrefixOperators(3, "+", "-" );
+    parser.setImplicitOperatorPrecedence(2);
     parser.addInfixOperators(1, "*", "/");
     parser.addInfixOperators(0, "+", "-");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

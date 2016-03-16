@@ -4,18 +4,23 @@ import net.tidej.expressionparser.ExpressionParser;
 
 import java.util.List;
 
-public class TreeBuilder implements ExpressionParser.Processor<Node> {
+public class TreeBuilder extends ExpressionParser.Processor<Node> {
 
   @Override
   public Node infix(String name, Node left, Node right) {
     switch (name.charAt(0)) {
       case '+': return new Sum(left, right);
       case '-': return new Sum(left, new Negation(right));
-      case '/': return new Quotient(left, right);
+      case '/': return new Product(left, new Reciprocal(right));
       case '*': return new Product(left, right);
       case '^': return new Power(left, right);
     }
     throw new UnsupportedOperationException("Unsupported infix operator: " + name);
+  }
+
+  @Override
+  public Node implicit(Node left, Node right) {
+    return infix("*", left, right);
   }
 
   @Override
@@ -37,11 +42,6 @@ public class TreeBuilder implements ExpressionParser.Processor<Node> {
   @Override
   public Node number(String value) {
     return new Constant(Double.parseDouble(value));
-  }
-
-  @Override
-  public Node string(char quote, String value) {
-    throw new UnsupportedOperationException();
   }
 
   @Override
