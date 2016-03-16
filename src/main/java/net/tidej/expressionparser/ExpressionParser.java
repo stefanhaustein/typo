@@ -19,37 +19,45 @@ public class ExpressionParser<T> {
    */
   public static class Processor<T> {
     /** Called when an infix operator with the given name is parsed. */
-    public T infix(String name, T left, T right) {
-      throw new UnsupportedOperationException("infix(" + name + ", " + left + ", " + right + ')');
+    public T infixOperator(String name, T left, T right) {
+      throw new UnsupportedOperationException("infixOperator(" + name + ", " + left + ", " + right + ')');
     }
 
     /** Called when an implicit operator is parsed. */
-    public T implicit(T left, T right) {
-      throw new UnsupportedOperationException("implicit(" + left + ", " + right + ')');
+    public T implicitOperator(T left, T right) {
+      throw new UnsupportedOperationException("implicitOperator(" + left + ", " + right + ')');
     }
 
     /** Called when a prefix operator with the given name is parsed. */
-    public T prefix(String name, T argument) {
-      throw new UnsupportedOperationException("prefix(" + name + ", " + argument + ')');
+    public T prefixOperator(String name, T argument) {
+      throw new UnsupportedOperationException("prefixOperator(" + name + ", " + argument + ')');
     }
 
+    /**
+     * Called when a symbol that is neither an operator nor an identifier is parsed
+     * (e.g. the empty set symbol).
+     */
     public T primarySymbol(String name) {
       throw new UnsupportedOperationException("primarySymbol(" + name + ")");
     }
 
     /** Called when a suffix operator with the given name is parsed. */
-    public T suffix(String name, T argument) {
-      throw new UnsupportedOperationException("suffix(" + name + ", " + argument + ')');
+    public T suffixOperator(String name, T argument) {
+      throw new UnsupportedOperationException("suffixOperator(" + name + ", " + argument + ')');
     }
 
     /** Called when the given number literal is parsed. */
-    public T number(String value) {
-      throw new UnsupportedOperationException("number(" + value + ")");
+    public T numberLiteral(String value) {
+      throw new UnsupportedOperationException("numberLiteral(" + value + ")");
     }
 
-    /** Called when the given (quoted) string literal is parsed. */
-    public T string(String value) {
-      throw new UnsupportedOperationException("string(" + value + ')');
+    /** 
+     * Called when the given (quoted) string literal is parsed.
+     * The string is handed in in its original quoted form; use ExpressionParser.unquote()
+     * to unquote and unescape the string.
+     */
+    public T stringLiteral(String value) {
+      throw new UnsupportedOperationException("stringLiteral(" + value + ')');
     }
 
     /** Called when the given identifier is parsed. */
@@ -229,7 +237,7 @@ public class ExpressionParser<T> {
     String candidate = tokenizer.currentValue;
     if (operators.get(OperatorType.PREFIX).contains(candidate)) {
       tokenizer.nextToken();
-      return processor.prefix(candidate, parseOperator(tokenizer, precedence));
+      return processor.prefixOperator(candidate, parseOperator(tokenizer, precedence));
     }
     if (operators.group.containsKey(candidate)) {
       tokenizer.nextToken();
@@ -246,7 +254,7 @@ public class ExpressionParser<T> {
 
     if (operators.get(OperatorType.INFIX_RTL).contains(candidate)) {
       tokenizer.nextToken();
-      return processor.infix(candidate, result, parseOperator(tokenizer, precedence));
+      return processor.infixOperator(candidate, result, parseOperator(tokenizer, precedence));
     }
 
     while (operators.get(OperatorType.INFIX).contains(candidate)
@@ -255,10 +263,10 @@ public class ExpressionParser<T> {
       if (operators.get(OperatorType.INFIX).contains(candidate)) {
         tokenizer.nextToken();
         T right = parseOperator(tokenizer, precedence + 1);
-        result = processor.infix(candidate, result, right);
+        result = processor.infixOperator(candidate, result, right);
       } else {
         T right = parseOperator(tokenizer, precedence + 1);
-        result = processor.implicit(result, right);
+        result = processor.implicitOperator(result, right);
       }
       candidate = tokenizer.currentValue;
     }
@@ -272,7 +280,7 @@ public class ExpressionParser<T> {
         String[] apply = operators.apply.get(candidate);
         result = processor.apply(result, candidate, parseList(tokenizer, apply[0], apply[1]));
       } else {
-        result = processor.suffix(candidate, result);
+        result = processor.suffixOperator(candidate, result);
       }
       candidate = tokenizer.currentValue;
     }
@@ -311,7 +319,7 @@ public class ExpressionParser<T> {
     T result;
     switch (tokenizer.currentType) {
       case NUMBER:
-        result = processor.number(tokenizer.currentValue);
+        result = processor.numberLiteral(tokenizer.currentValue);
         tokenizer.nextToken();
         break;
       case IDENTIFIER:
@@ -327,7 +335,7 @@ public class ExpressionParser<T> {
         }
         break;
       case STRING:
-        result = processor.string(tokenizer.currentValue);
+        result = processor.stringLiteral(tokenizer.currentValue);
         tokenizer.nextToken();
         break;
       case SYMBOL:

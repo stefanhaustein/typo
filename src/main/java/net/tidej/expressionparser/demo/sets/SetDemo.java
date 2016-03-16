@@ -24,7 +24,7 @@ public class SetDemo {
     }
 
     @Override
-    public Object infix(String name, Object left, Object right) {
+    public Object infixOperator(String name, Object left, Object right) {
       if (name.equals("\u2229")) {  // intersection
         assertSet(left).retainAll(assertSet(right));
         return left;
@@ -41,12 +41,12 @@ public class SetDemo {
     }
 
     @Override
-    public Object number(String value) {
+    public Object numberLiteral(String value) {
       return Double.parseDouble(value);
     }
 
     @Override
-    public Object string(String value) {
+    public Object stringLiteral(String value) {
       return value;
     }
 

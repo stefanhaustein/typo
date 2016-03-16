@@ -18,7 +18,7 @@ public class Calculator {
    */
   static class DoubleProcessor extends ExpressionParser.Processor<Double> {
     @Override
-    public Double infix(String name, Double left, Double right) {
+    public Double infixOperator(String name, Double left, Double right) {
       switch (name.charAt(0)) {
         case '+': return left + right;
         case '-': return left - right;
@@ -30,22 +30,22 @@ public class Calculator {
       }
     }
 
-    public Double implicit(Double left, Double right) {
+    public Double implicitOperator(Double left, Double right) {
       return left * right;
     }
 
     @Override
-    public Double prefix(String name, Double argument) {
+    public Double prefixOperator(String name, Double argument) {
       return name.equals("-") ? -argument : argument;
     }
 
     @Override
-    public Double suffix(String name, Double argument) {
+    public Double suffixOperator(String name, Double argument) {
       throw new UnsupportedOperationException(name);
     }
 
     @Override
-    public Double number(String value) {
+    public Double numberLiteral(String value) {
       return Double.parseDouble(value);
     }
 
