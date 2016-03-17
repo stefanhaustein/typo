@@ -29,6 +29,19 @@ class Negation extends Node {
 
   @Override
   public String toString() {
-    return "(-" + param + ")";
+    return "-" + param.toString(getPrecedence());
+  }
+
+  public int getChildCount() {
+    return 1;
+  }
+
+  @Override
+  public int getPrecedence() {
+    return 3;
+  }
+
+  public Node getChild() {
+    return param;
   }
 }

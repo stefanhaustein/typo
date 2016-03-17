@@ -12,6 +12,11 @@ public class Variable extends Node {
     return new Constant(to.equals(name) ? 1 : 0);
   }
 
+  @Override
+  public int getPrecedence() {
+    return 10;
+  }
+
   public String toString() {
     return name;
   }

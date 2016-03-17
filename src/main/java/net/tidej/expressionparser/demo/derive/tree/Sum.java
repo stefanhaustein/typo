@@ -57,15 +57,30 @@ public class Sum extends Node {
     for (Node summand: summands) {
       if (summand instanceof Negation) {
         sb.append(sb.length() == 1 ? "-" : " - ");
-        sb.append(((Negation) summand).param);
+        sb.append(((Negation) summand).param.toString(getPrecedence()));
       } else {
-        if (sb.length() > 1) {
+        if (sb.length() > 0) {
           sb.append(" + ");
         }
-        sb.append(summand);
+        sb.append(summand.toString(getPrecedence()));
       }
     }
     sb.append(")");
     return sb.toString();
+  }
+
+  @Override
+  public int getChildCount() {
+    return summands.length;
+  }
+
+  @Override
+  public Node getChild(int index) {
+    return summands[index];
+  }
+
+  @Override
+  public int getPrecedence() {
+    return 0;
   }
 }

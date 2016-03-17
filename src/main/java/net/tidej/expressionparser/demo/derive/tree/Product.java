@@ -61,19 +61,33 @@ public class Product extends Node {
   }
 
   public String toString() {
-    StringBuilder sb = new StringBuilder("(");
+    StringBuilder sb = new StringBuilder();
     for (Node factor: factors) {
       if (factor instanceof Reciprocal) {
-        sb.append(sb.length() == 1 ? "1/" : " / ");
-        sb.append(((Reciprocal) factor).param);
+        sb.append(sb.length() == 1 ? "1/" : "/");
+        sb.append(((Reciprocal) factor).param.toString(getPrecedence()));
       } else {
-        if (sb.length() > 1) {
-          sb.append(" * ");
+        if (sb.length() > 0) {
+          sb.append('*');
         }
-        sb.append(factor);
+        sb.append(factor.toString(getPrecedence()));
       }
     }
-    sb.append(")");
     return sb.toString();
+  }
+
+  @Override
+  public int getChildCount() {
+    return factors.length;
+  }
+
+  @Override
+  public Node getChild(int index) {
+    return factors[index];
+  }
+
+  @Override
+  public int getPrecedence() {
+    return 1;
   }
 }

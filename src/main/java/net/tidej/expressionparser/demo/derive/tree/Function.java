@@ -37,6 +37,21 @@ public class Function extends Node {
   }
 
   public String toString() {
-    return name + "(" + param + ")";
+    return name + param.toString(getPrecedence());
+  }
+
+  @Override
+  public int getChildCount() {
+    return 1;
+  }
+
+  @Override
+  public Node getChild(int index) {
+    return param;
+  }
+
+  @Override
+  public int getPrecedence() {
+    return 10;
   }
 }

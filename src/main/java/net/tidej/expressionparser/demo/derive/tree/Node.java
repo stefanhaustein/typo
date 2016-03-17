@@ -6,4 +6,18 @@ public abstract class Node {
   public Node simplify() {
     return this;
   }
+
+  public int getChildCount() {
+    return 0;
+  }
+
+  public Node getChild(int index) {
+    return null;
+  }
+
+  public abstract int getPrecedence();
+
+  public String toString(int callerPrecedence) {
+    return callerPrecedence >= getPrecedence() ? "(" + toString() + ")" : toString();
+  }
 }

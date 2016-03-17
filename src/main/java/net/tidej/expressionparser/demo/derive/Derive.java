@@ -14,7 +14,6 @@ public class Derive {
     ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder());
     parser.addCallBrackets("(", null, ")" );
     parser.addGroupBrackets(5, "(", null, ")" );
-    parser.addGroupBrackets(4, "(", null, ")");
     parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 4, "^");
     parser.addOperators(ExpressionParser.OperatorType.PREFIX, 3, "+", "-");
     parser.setImplicitOperatorPrecedence(2);

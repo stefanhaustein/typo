@@ -12,8 +12,15 @@ public class Constant extends Node {
     return new Constant(0);
   }
 
+  @Override
+  public int getPrecedence() {
+    return 10;
+  }
+
   public String toString() {
     String s = String.valueOf(value);
     return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
   }
+
+
 }

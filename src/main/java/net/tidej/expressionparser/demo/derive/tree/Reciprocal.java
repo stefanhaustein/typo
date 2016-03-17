@@ -25,6 +25,20 @@ public class Reciprocal extends Node {
 
   @Override
   public String toString() {
-    return "(1/" + param + ")";
+    return "1/" + param.toString(getPrecedence());
+  }
+
+  @Override
+  public int getChildCount() {
+    return 1;
+  }
+
+  public Node getChild(int index) {
+    return param;
+  }
+
+  @Override
+  public int getPrecedence() {
+    return 1;
   }
 }

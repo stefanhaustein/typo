@@ -52,6 +52,19 @@ public class Power extends Node {
   }
 
   public String toString() {
-    return "(" + left + " ^ " + right + ")";
+    return left.toString(getPrecedence()) + "^" + right.toString(getPrecedence());
+  }
+
+  public int getChildCount() {
+    return 1;
+  }
+
+  public Node getChild(int index) {
+    return index == 0 ? left : right;
+  }
+
+  @Override
+  public int getPrecedence() {
+    return 4;
   }
 }
