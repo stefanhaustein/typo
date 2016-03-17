@@ -11,15 +11,7 @@ import java.io.InputStreamReader;
 public class Derive {
 
   public static void main(String[] args) throws IOException {
-    ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder());
-    parser.addCallBrackets("(", null, ")" );
-    parser.addGroupBrackets(5, "(", null, ")" );
-    parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 4, "^");
-    parser.addOperators(ExpressionParser.OperatorType.PREFIX, 3, "+", "-");
-    parser.setImplicitOperatorPrecedence(2);
-    parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "*", "/");
-    parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "+", "-");
-
+    ExpressionParser<Node> parser = TreeBuilder.createParser();
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression?   ");

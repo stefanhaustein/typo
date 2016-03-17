@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Calculator {
+  static final Class[] DOUBLE_TYPE_ARRAY_1 = {Double.TYPE};
 
   static HashMap<String, Double> variables = new HashMap<>();
 
@@ -30,18 +31,14 @@ public class Calculator {
       }
     }
 
-    public Double implicitOperator(Double left, Double right) {
+    @Override
+    public Double implicitOperator(boolean strong, Double left, Double right) {
       return left * right;
     }
 
     @Override
     public Double prefixOperator(String name, Double argument) {
       return name.equals("-") ? -argument : argument;
-    }
-
-    @Override
-    public Double suffixOperator(String name, Double argument) {
-      throw new UnsupportedOperationException(name);
     }
 
     @Override
@@ -68,44 +65,39 @@ public class Calculator {
      */
     @Override
     public Double call(String identifier, String bracket, List<Double> arguments) {
-      if (identifier.equals("ln")) {
-        identifier = "log";
+      if (arguments.size() == 1) {
+        try {
+          return (Double) Math.class.getMethod(identifier, DOUBLE_TYPE_ARRAY_1).invoke(null, arguments.get(0));
+        } catch (Exception e) {
+          // Fall through
+        }
       }
-      Class<?>[] argTypes = new Class<?>[arguments.size()];
-      Object[] args = new Object[arguments.size()];
-      for (int i = 0; i < argTypes.length; i++) {
-        argTypes[i] = Double.TYPE;
-        args[i] = arguments.get(i);
-      }
-      try {
-        return (Double) Math.class.getMethod(identifier, argTypes).invoke(null, args);
-      } catch (Exception e) {
-        throw new UnsupportedOperationException(identifier, e);
-      }
+      return super.call(identifier, bracket, arguments);
     }
 
-    @Override
-    public Double apply(Double base, String bracket, List<Double> arguments) {
-      throw new UnsupportedOperationException("apply");
+    /**
+     * Creates a parser for this processor with matching operations and precedences set up.
+     */
+    static ExpressionParser<Double> createParser() {
+      ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
+      parser.addCallBrackets("(", ",", ")");
+      parser.addGroupBrackets(5, "(", null, ")");
+      parser.addOperators(OperatorType.INFIX_RTL, 4, "^");
+      parser.addOperators(OperatorType.PREFIX, 3, "+", "-");
+      parser.setImplicitOperatorPrecedence(true, 2);
+      parser.addOperators(OperatorType.INFIX, 1, "*", "/");
+      parser.addOperators(OperatorType.INFIX, 0, "+", "-");
+      return parser;
     }
   }
 
-  /**
-   * Registers operations and precedences.
-   */
   public static void main(String[] args) throws IOException {
     variables.put("tau", 2 * Math.PI);
     variables.put("pi", Math.PI);
     variables.put("e", Math.E);
-    ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
-    parser.addCallBrackets("(", ",", ")");
-    parser.addGroupBrackets(5, "(", null, ")");
-    parser.addOperators(OperatorType.INFIX_RTL, 4, "^");
-    parser.addOperators(OperatorType.PREFIX, 3, "+", "-");
-    parser.setImplicitOperatorPrecedence(2);
-    parser.addOperators(OperatorType.INFIX, 1, "*", "/");
-    parser.addOperators(OperatorType.INFIX, 0, "+", "-");
+
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    ExpressionParser<Double> parser = DoubleProcessor.createParser();
     while (true) {
       System.out.print("Expression? ");
       String input = reader.readLine();

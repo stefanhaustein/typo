@@ -24,7 +24,7 @@ public class ExpressionParser<T> {
     }
 
     /** Called when an implicit operator is parsed. */
-    public T implicitOperator(T left, T right) {
+    public T implicitOperator(boolean strong, T left, T right) {
       throw new UnsupportedOperationException("implicitOperator(" + left + ", " + right + ')');
     }
 
@@ -97,7 +97,8 @@ public class ExpressionParser<T> {
 
   private final ArrayList<Operators> precedenceList = new ArrayList<>();
   private final Processor<T> processor;
-  private int implicitOperatorPrecedence = -1;
+  private int strongImplicitOperatorPrecedence = -1;
+  private int weakImplicitOperatorPrecedence = -1;
 
   public static String unquote(String s) {
     StringBuilder sb = new StringBuilder();
@@ -189,8 +190,12 @@ public class ExpressionParser<T> {
     return precedenceList.get(precedence);
   }
 
-  public void setImplicitOperatorPrecedence(int precedence) {
-    implicitOperatorPrecedence = precedence;
+  public void setImplicitOperatorPrecedence(boolean strong, int precedence) {
+    if (strong) {
+      strongImplicitOperatorPrecedence = precedence;
+    } else {
+      weakImplicitOperatorPrecedence = precedence;
+    }
     if (precedence > 0) {
       operators(precedence);
     }
@@ -262,7 +267,9 @@ public class ExpressionParser<T> {
     // - unhandled, infix or suffix symbols (e.g. ';')
     // - identifiers registered as non-prefix symbols
     while (operators.get(OperatorType.INFIX).contains(candidate)
-        || (precedence == implicitOperatorPrecedence && !candidate.isEmpty()
+        || (precedence == (tokenizer.leadingWhitespace
+            ? weakImplicitOperatorPrecedence : strongImplicitOperatorPrecedence)
+          && !candidate.isEmpty()
           && (tokenizer.currentType != Tokenizer.TokenType.SYMBOL ||
             allSymbols.get(candidate) == Boolean.TRUE)
           && (tokenizer.currentType != Tokenizer.TokenType.IDENTIFIER ||
@@ -272,8 +279,9 @@ public class ExpressionParser<T> {
         T right = parseOperator(tokenizer, precedence + 1);
         result = processor.infixOperator(candidate, result, right);
       } else {
+        boolean strong = !tokenizer.leadingWhitespace;
         T right = parseOperator(tokenizer, precedence + 1);
-        result = processor.implicitOperator(result, right);
+        result = processor.implicitOperator(strong, result, right);
       }
       candidate = tokenizer.currentValue;
     }
@@ -405,6 +413,7 @@ public class ExpressionParser<T> {
     public int currentPosition = 0;
     public String currentValue = "";
     public TokenType currentType = TokenType.BOF;
+    public boolean leadingWhitespace;
 
     protected final Scanner scanner;
 
@@ -419,9 +428,6 @@ public class ExpressionParser<T> {
     }
 
     public void nextToken() {
-      if (currentType == TokenType.EOF) {
-        return;
-      }
       String value;
       if ((value = scanner.findWithinHorizon(identifierPattern, 0)) != null) {
         currentType = TokenType.IDENTIFIER;
@@ -441,7 +447,8 @@ public class ExpressionParser<T> {
             currentPosition, null);
       }
       currentPosition += value.length();
-      currentValue = value.trim();
+      leadingWhitespace = (value.length() > 0 && value.charAt(0) <= ' ');
+      currentValue = leadingWhitespace ? value.trim() : value;
     }
 
     @Override

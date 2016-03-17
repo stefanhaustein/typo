@@ -9,23 +9,23 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
   @Override
   public Node infixOperator(String name, Node left, Node right) {
     switch (name.charAt(0)) {
-      case '+': return new Sum(left, right);
-      case '-': return new Sum(left, new Negation(right));
-      case '/': return new Product(left, new Reciprocal(right));
-      case '*': return new Product(left, right);
-      case '^': return new Power(left, right);
+      case '+': return Factory.add(left, right);
+      case '-': return Factory.sub(left, right);
+      case '/': return Factory.div(left, right);
+      case '*': return Factory.mul(left, right);
+      case '^': return Factory.pow(left, right);
     }
     throw new UnsupportedOperationException("Unsupported infix operator: " + name);
   }
 
-  public Node implicitOperator(Node left, Node right) {
+  public Node implicitOperator(boolean strong, Node left, Node right) {
     return infixOperator("*", left, right);
   }
 
   @Override
   public Node prefixOperator(String name, Node argument) {
     if (name.equals("-")) {
-      return new Negation(argument);
+      return Factory.neg(argument);
     }
     if (name.equals("+")) {
       return argument;
@@ -59,5 +59,17 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
   @Override
   public Node apply(Node base, String bracket, List<Node> arguments) {
     throw new UnsupportedOperationException();
+  }
+
+  public static ExpressionParser<Node> createParser() {
+    ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder());
+    parser.addCallBrackets("(", null, ")");
+    parser.addGroupBrackets(5, "(", null, ")");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 4, "^");
+    parser.addOperators(ExpressionParser.OperatorType.PREFIX, 3, "+", "-");
+    parser.setImplicitOperatorPrecedence(true, 2);
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "*", "/");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "+", "-");
+    return parser;
   }
 }

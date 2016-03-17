@@ -1,5 +1,10 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+import static net.tidej.expressionparser.demo.derive.tree.Factory.div;
+import static net.tidej.expressionparser.demo.derive.tree.Factory.neg;
+import static net.tidej.expressionparser.demo.derive.tree.Factory.pow;
+import static net.tidej.expressionparser.demo.derive.tree.Factory.rez;
+
 public class Reciprocal extends Node {
   final Node param;
 
@@ -9,9 +14,7 @@ public class Reciprocal extends Node {
 
   @Override
   public Node derive(String to) {
-    return new Negation(new Product(
-        param.derive(to),
-        new Reciprocal(new Power(param, new Constant(2)))));
+    return neg(div(param.derive(to), pow(param, new Constant(2))));
   }
 
   @Override
@@ -20,7 +23,7 @@ public class Reciprocal extends Node {
     if (param instanceof Constant) {
       return new Constant(1/((Constant) param).value);
     }
-    return new Reciprocal(param.simplify());
+    return rez(param.simplify());
   }
 
   @Override
