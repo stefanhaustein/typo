@@ -259,7 +259,8 @@ public class ExpressionParser<T> {
 
     while (operators.get(OperatorType.INFIX).contains(candidate)
         || (precedence == implicitOperatorPrecedence && !candidate.isEmpty()
-          && allSymbols.get(candidate) != Boolean.FALSE)) {
+          && (tokenizer.currentType != Tokenizer.TokenType.SYMBOL ||
+            allSymbols.get(candidate) == Boolean.TRUE))) {
       if (operators.get(OperatorType.INFIX).contains(candidate)) {
         tokenizer.nextToken();
         T right = parseOperator(tokenizer, precedence + 1);
