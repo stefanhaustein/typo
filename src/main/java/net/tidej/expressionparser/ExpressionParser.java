@@ -257,10 +257,16 @@ public class ExpressionParser<T> {
       return processor.infixOperator(candidate, result, parseOperator(tokenizer, precedence));
     }
 
+    // The complex implicit operator check is intended to prevent it from consuming
+    // - EOF,
+    // - unhandled, infix or suffix symbols (e.g. ';')
+    // - identifiers registered as non-prefix symbols
     while (operators.get(OperatorType.INFIX).contains(candidate)
         || (precedence == implicitOperatorPrecedence && !candidate.isEmpty()
           && (tokenizer.currentType != Tokenizer.TokenType.SYMBOL ||
-            allSymbols.get(candidate) == Boolean.TRUE))) {
+            allSymbols.get(candidate) == Boolean.TRUE)
+          && (tokenizer.currentType != Tokenizer.TokenType.IDENTIFIER ||
+            allSymbols.get(candidate) != Boolean.FALSE))) {
       if (operators.get(OperatorType.INFIX).contains(candidate)) {
         tokenizer.nextToken();
         T right = parseOperator(tokenizer, precedence + 1);
