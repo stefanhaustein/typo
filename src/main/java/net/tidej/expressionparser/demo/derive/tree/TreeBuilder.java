@@ -9,11 +9,11 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
   @Override
   public Node infixOperator(String name, Node left, Node right) {
     switch (name.charAt(0)) {
-      case '+': return Factory.add(left, right);
-      case '-': return Factory.sub(left, right);
-      case '/': return Factory.div(left, right);
-      case '*': return Factory.mul(left, right);
-      case '^': return Factory.pow(left, right);
+      case '+': return NodeFactory.add(left, right);
+      case '-': return NodeFactory.sub(left, right);
+      case '/': return NodeFactory.div(left, right);
+      case '*': return NodeFactory.mul(left, right);
+      case '^': return NodeFactory.pow(left, right);
     }
     throw new UnsupportedOperationException("Unsupported infix operator: " + name);
   }
@@ -25,7 +25,7 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
   @Override
   public Node prefixOperator(String name, Node argument) {
     if (name.equals("-")) {
-      return Factory.neg(argument);
+      return NodeFactory.neg(argument);
     }
     if (name.equals("+")) {
       return argument;

@@ -1,5 +1,7 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.*;
+
 public class Power extends Node {
   final Node left;
   final Node right;
@@ -15,16 +17,14 @@ public class Power extends Node {
       double rightVal = ((Constant) right).value;
       if (left.toString().equals(to)) {
         if (rightVal == 0) {
-          return new Constant(0);
+          return c(0);
         }
-        return new Product(new Constant(rightVal),
-            new Power(left, new Constant(rightVal - 1)));
+        return mul(c(rightVal), pow(left, c(rightVal - 1)));
       }
     }
-    Node s1 = new Product(left.derive(to), new Product(left, new Reciprocal(right)));
-    Node s2 = new Product(right.derive(to), new Function("ln", left));
-    Node sum = new Sum(s1, s2);
-    return new Product(this, sum);
+    Node s1 = mul(left.derive(to), div(left, right));
+    Node s2 = mul(right.derive(to), new Function("ln", left));
+    return mul(this, add(s1, s2));
   }
 
   @Override
@@ -34,19 +34,19 @@ public class Power extends Node {
     double leftValue = (left instanceof Constant) ? ((Constant) left).value : Double.NaN;
     double rightValue = (right instanceof Constant) ? ((Constant) right).value : Double.NaN;
     if (!Double.isNaN(leftValue) && !Double.isNaN(rightValue)) {
-      return new Constant(Math.pow(leftValue, rightValue));
+      return c(Math.pow(leftValue, rightValue));
     }
     if (leftValue == 0) {
-      return new Constant(0);
+      return c(0);
     }
     if (leftValue == 1) {
-      return new Constant(1);
+      return c(1);
     }
     if (rightValue == 1) {
       return left;
     }
     if (rightValue == 0) {
-      return new Constant(1);
+      return c(1);
     }
     return new Power(left, right);
   }

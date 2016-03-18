@@ -25,4 +25,8 @@ public abstract class Node implements Comparable<Node> {
   public String toString(int callerPrecedence) {
     return callerPrecedence >= getPrecedence() ? "(" + toString() + ")" : toString();
   }
+
+  public boolean equals(Object o) {
+    return (o instanceof Node) && o.toString().equals(this.toString());
+  }
 }

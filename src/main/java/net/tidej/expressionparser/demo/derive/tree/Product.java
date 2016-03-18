@@ -14,9 +14,9 @@ public class Product extends Node {
   public Node derive(String to) {
     Node left = factors[0];
     Node right = factors.length == 2 ? factors[1] : new Product(Arrays.copyOfRange(factors, 1, factors.length));
-    return Factory.add(
-        Factory.mul(left, right.derive(to)),
-        Factory.mul(left.derive(to), right));
+    return NodeFactory.add(
+        NodeFactory.mul(left, right.derive(to)),
+        NodeFactory.mul(left.derive(to), right));
   }
 
   @Override

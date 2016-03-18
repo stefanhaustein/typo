@@ -1,6 +1,6 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
-public class Factory {
+public class NodeFactory {
 
   public static Node add(Node... nodes) {
     QuantifiedNodeSet set = new QuantifiedNodeSet(false);
@@ -8,6 +8,10 @@ public class Factory {
       set.add(1, node);
     }
     return new Sum(0, set);
+  }
+
+  public static Node c(double c) {
+    return new Constant(c);
   }
 
   public static Node sub(Node left, Node right) {

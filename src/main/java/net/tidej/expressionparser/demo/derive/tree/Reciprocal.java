@@ -1,9 +1,9 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
-import static net.tidej.expressionparser.demo.derive.tree.Factory.div;
-import static net.tidej.expressionparser.demo.derive.tree.Factory.neg;
-import static net.tidej.expressionparser.demo.derive.tree.Factory.pow;
-import static net.tidej.expressionparser.demo.derive.tree.Factory.rez;
+import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.div;
+import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.neg;
+import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.pow;
+import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.rez;
 
 public class Reciprocal extends Node {
   final Node param;

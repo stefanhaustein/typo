@@ -38,7 +38,7 @@ public class Sum extends Node {
           simplifiedSummands.add(subEntry.getValue(), subEntry.getKey());
         }
       } else if (simplified instanceof Constant) {
-        cc += ((Constant) simplified).value;
+        cc += count * ((Constant) simplified).value;
       } else {
         simplifiedSummands.add(entry.getValue(), entry.getKey());
       }
