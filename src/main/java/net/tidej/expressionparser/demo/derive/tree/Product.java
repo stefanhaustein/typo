@@ -1,10 +1,30 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+import net.tidej.expressionparser.demo.derive.string2d.String2d;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 class Product extends Node {
+
+  public static String2d toString2d(Stringify type, double c, Node factor) {
+    String2d f2d = factor.embrace2d(type, 0);
+    if ((c == 1 || c == -1) && type != Stringify.VERBOSE) {
+      return f2d;
+    }
+    String2d.Builder sb = new String2d.Builder();
+    sb.append(Constant.toString(c));
+
+    String fss = f2d.toString() + "  ";
+    if (type == Stringify.VERBOSE || f2d.height() != 1
+        || !Character.isLetter(fss.charAt(0)) || Character.isLetter(fss.charAt(1))) {
+      sb.append("⋅");
+    }
+    sb.append(f2d);
+    return sb.build();
+  }
+
   final double c;
   final QuantifiedSet<Node> factors;
 
@@ -98,58 +118,64 @@ class Product extends Node {
         } else if (node instanceof Constant) {
           cc *= Math.pow(((Constant) node).value, exponent);
         } else if ((node instanceof Sum) && ((Sum) node).c == 0 && ((Sum) node).summands.size() == 1) {
-          Map.Entry<Node,Double> summand = ((Sum) node).summands.entries().iterator().next();
+          Map.Entry<Node, Double> summand = ((Sum) node).summands.entries().iterator().next();
           cc *= summand.getValue();
-          simplified.add(1, summand.getKey());
+          simplified.add(exponent, summand.getKey());
         } else {
           simplified.add(exponent, node);
         }
-      }
-
-      // Just a constant
-      if (cc == 0 || simplified.size() == 0) {
-        return new Constant(cc);
       }
 
       // Constant factor only?
       if (simplified.size() == 1) {
         Map.Entry<Node, Double> entry = simplified.entries().iterator().next();
         if (entry.getValue() == 1.0) {
-          if (cc == 1.0) {
-            return entry.getKey();
-          }
-          QuantifiedSet.Mutable<Node> builder = new QuantifiedSet.Mutable<>(false);
-          builder.add(cc, entry.getKey());
+          return NodeFactory.cMul(cc, entry.getKey());
         }
       }
     }
+
+    // Just a constant
+    if (cc == 0 || simplified.size() == 0) {
+      return new Constant(cc);
+    }
+
     return new Product(cc, simplified);
   }
 
-  public void toString(StringBuilder sb, boolean verbose) {
-    int l0 = sb.length();
-    if (c != 1 || factors.size() == 0 || verbose) {
-      sb.append(Constant.toString(c));
+  @Override
+  public String2d toString2d(Stringify type) {
+    String2d.Builder top = new String2d.Builder();
+    String2d.Builder bottom = new String2d.Builder();
+
+    if (c != 1 || type == Stringify.VERBOSE) {
+      top.append(Constant.toString(c));
     }
-    if (factors.size() == 0 && verbose) {
-      sb.append("⋅1");
-    } else {
-      for (Map.Entry<Node,Double> entry: factors.entries()) {
-        double power = entry.getValue();
-        Node node = entry.getKey();
-        sb.append(power >= 0
-            ? (sb.length() > l0 ? "⋅" : "")
-            : (sb.length() > l0 ? "/" : "1/"));
-        double abs = Math.abs(power);
-        if (abs == 1 && !verbose) {
-          node.embrace(sb, verbose, getPrecedence());
-        } else {
-          node.embrace(sb, verbose, 5);
-          sb.append('^');
-          sb.append(Constant.toString(abs));
-        }
+
+    for (Map.Entry<Node,Double> entry: factors.entries()) {
+      Node node = entry.getKey();
+      double exponent = entry.getValue();
+      String2d.Builder target = exponent >= 0 ? top : bottom;
+      if (!target.isEmpty()) {
+        target.append("⋅");
       }
+      target.append(Power.toString2d(type, node, Math.abs(exponent)));
     }
+
+    if (top.isEmpty()) {
+      top.append("1");
+    }
+
+    if (bottom.isEmpty()) {
+      return top.build();
+    }
+    if (type == Stringify.BLOCK){
+      return String2d.stack(1,
+          top.build(),
+          String2d.hline(Math.max(top.length(), bottom.length())),
+          bottom.build());
+    }
+    return String2d.concat(top, "/(", bottom, ")");
   }
 
   @Override

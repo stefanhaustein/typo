@@ -1,5 +1,7 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+import net.tidej.expressionparser.demo.derive.string2d.String2d;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -45,7 +47,6 @@ class Sum extends Node {
     return new Sum(0, derived);
   }
 
-
   @Override
   public Node simplify(Set<String> explanation) {
     QuantifiedSet.Mutable<Node> simplified = new QuantifiedSet.Mutable<>(false);
@@ -57,6 +58,7 @@ class Sum extends Node {
       changed = changed || !node.equals(entry.getKey());
       simplified.add(entry.getValue(), node);
     }
+
     if (!changed) {
       // Aggregate constants and flatten
       simplified = new QuantifiedSet.Mutable<>(true);
@@ -73,9 +75,6 @@ class Sum extends Node {
           simplified.add(count, node);
         }
       }
-      if (simplified.size() == 0) {
-        return new Constant(cc);
-      }
       if (simplified.size() == 1 && cc == 0) {
         Map.Entry<Node, Double> entry = simplified.entries().iterator().next();
         if (entry.getValue() == 1.0) {
@@ -83,31 +82,28 @@ class Sum extends Node {
         }
       }
     }
+
+    if (simplified.size() == 0) {
+      return new Constant(cc);
+    }
+
     return new Sum(cc, simplified);
   }
 
-  public void toString(StringBuilder sb, boolean verbose) {
-    int l0 = sb.length();
-    if (c != 0 || summands.size() == 0 || verbose) {
+  public String2d toString2d(Stringify type) {
+    String2d.Builder sb = new String2d.Builder();
+    if (c != 0 || summands.size() == 0) {
       sb.append(Constant.toString(c));
-    }
-    if (summands.size() == 0 && verbose) {
-      sb.append(" + 0");
     }
     for (Map.Entry<Node,Double> entry: summands.entries()) {
       double count = entry.getValue();
       Node node = entry.getKey();
       sb.append(count >= 0
-          ? (sb.length() > l0 ? " + " : "")
-          : (sb.length() > l0 ? " − " : "-"));
-      if ((count == 1 || count == -1) && !verbose) {
-        node.embrace(sb, verbose, getPrecedence());
-      } else {
-        sb.append(Constant.toString(Math.abs(count)));
-        sb.append("⋅");
-        node.embrace(sb, verbose, getPrecedence());  // No extra braces for products
-      }
+          ? (sb.isEmpty() ? "" : " + ")
+          : (sb.isEmpty() ? "-" : " − "));
+      sb.append(Product.toString2d(type, Math.abs(count), node));
     }
+    return sb.build();
   }
 
   @Override

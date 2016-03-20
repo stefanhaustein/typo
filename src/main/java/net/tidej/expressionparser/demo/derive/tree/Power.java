@@ -1,10 +1,24 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+import net.tidej.expressionparser.demo.derive.string2d.String2d;
+
 import java.util.Set;
 
 import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.*;
 
 class Power extends Node {
+
+  public static String2d toString2d(Stringify type, Node base, double exponent) {
+    String2d base2d = base.embrace2d(type, 4);
+    if (exponent == 1 && type != Stringify.VERBOSE) {
+      return base2d;
+    }
+    return String2d.concat(
+        base2d,
+        "^",
+        Constant.toString(exponent));
+  }
+
   final Node base;
   final Node exponent;
 
@@ -54,10 +68,11 @@ class Power extends Node {
   }
 
   @Override
-  public void toString(StringBuilder sb, boolean verbose) {
-    base.embrace(sb, verbose, getPrecedence());
-    sb.append('^');
-    exponent.embrace(sb, verbose, getPrecedence());
+  public String2d toString2d(Stringify type) {
+    return String2d.concat(
+        base.embrace2d(type, getPrecedence()),
+        "^",
+        exponent.embrace2d(type, getPrecedence()));
   }
 
   @Override

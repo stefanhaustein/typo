@@ -139,7 +139,7 @@ public class ExpressionParser<T> {
    * Adds "call" brackets, parsed eagerly after identifiers.
    */
   public void addCallBrackets(String open, String separator, String close) {
-    calls.put(addSymbol(open, false),
+    calls.put(addSymbol(open, true),  // Doesn't need protection b/c parsed eagerly
         new String[]{addSymbol(separator, false), addSymbol(close, false)});
   }
 

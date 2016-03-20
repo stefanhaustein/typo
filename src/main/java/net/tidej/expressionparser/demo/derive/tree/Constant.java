@@ -25,10 +25,7 @@ public class Constant extends Node {
   }
 
   @Override
-  public void toString(StringBuilder sb, boolean readable) {
-    sb.append(value);
-    if (sb.length() > 2 && sb.charAt(sb.length() - 2) == '.' && sb.charAt(sb.length() - 1) == '0') {
-      sb.setLength(sb.length() - 2);
-    }
+  public String toString() {
+    return toString(value);
   }
 }

@@ -1,8 +1,12 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+import net.tidej.expressionparser.demo.derive.string2d.String2d;
+
 import java.util.Set;
 
 public abstract class Node implements Comparable<Node> {
+  public enum Stringify {FLAT, VERBOSE, BLOCK}
+
   public abstract Node derive(String to, Set<String> explanation);
 
   public Node simplify(Set<String> explanation) {
@@ -16,29 +20,23 @@ public abstract class Node implements Comparable<Node> {
     return toString().compareTo(another.toString());
   }
 
-  public void embrace(StringBuilder sb, boolean verbose, int callerPrecedence) {
-    if (callerPrecedence >= getPrecedence() || verbose) {
-      sb.append('(');
-      toString(sb, verbose);
-      sb.append(')');
-    } else {
-      toString(sb, verbose);
-    }
-  }
-
   public boolean equals(Object o) {
-    return (o instanceof Node) && ((Node) o).toString(true).equals(this.toString(true));
+    return (o instanceof Node) && ((Node) o).toString2d(Stringify.VERBOSE).toString().equals(
+        this.toString2d(Stringify.VERBOSE).toString());
   }
 
   public String toString() {
-    return toString(false);
+    return toString2d(Stringify.FLAT).toString();
   }
 
-  public String toString(boolean verbose) {
-    StringBuilder sb = new StringBuilder();
-    toString(sb, verbose);
-    return sb.toString();
+  public String2d toString2d(Stringify type) {
+    return String2d.valueOf(toString());
   }
 
-  public abstract void toString(StringBuilder sb, boolean verbose);
+  public String2d embrace2d(Stringify type, int callerPrecedence) {
+    if (callerPrecedence < getPrecedence()) {
+      return toString2d(type);
+    }
+    return String2d.embrace('(', toString2d(type), ')');
+  }
 }

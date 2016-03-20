@@ -1,5 +1,7 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+import net.tidej.expressionparser.demo.derive.string2d.String2d;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -71,16 +73,17 @@ public class Function extends Node {
     throw new RuntimeException("Don't know how to derive '" + name + "'");
   }
 
-  public void toString(StringBuilder sb, boolean readable) {
-    sb.append(name);
-    sb.append('(');
+  @Override
+  public String2d toString2d(Stringify type) {
+    String2d.Builder sb = new String2d.Builder();
     for (int i = 0; i < param.length; i++) {
       if (i > 0) {
         sb.append(", ");
       }
-      param[i].toString(sb, readable);
+      sb.append(param[i].toString2d(type));
     }
-    sb.append(")");
+    String2d content = sb.build();
+    return String2d.concat(name + ' ', String2d.embrace('(', content, ')'));
   }
 
   @Override

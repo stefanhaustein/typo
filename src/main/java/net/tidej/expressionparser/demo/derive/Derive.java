@@ -2,8 +2,8 @@ package net.tidej.expressionparser.demo.derive;
 
 import net.tidej.expressionparser.ExpressionParser;
 import net.tidej.expressionparser.ExpressionParser.ParsingException;
+import net.tidej.expressionparser.demo.derive.string2d.String2d;
 import net.tidej.expressionparser.demo.derive.tree.Node;
-import net.tidej.expressionparser.demo.derive.tree.TreeBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,18 +26,20 @@ public class Derive {
       try {
         Node expr = parser.parse(input);
         String s = expr.toString();
-        System.out.println("Parsed:       " + expr);
+        System.out.println("\nParsed: " + s + '\n');
+        s = "Equals: " + s;
         Set<String> explanation = new LinkedHashSet<String>();
-        Node simplified = expr.simplify(explanation);
-        while(!expr.equals(simplified)) {
-          expr = simplified;
-          String t = simplified.toString();
+        while (true) {
+          String t = String2d.concat("Equals: ", expr.toString2d(Node.Stringify.BLOCK)).toString();
           if (!s.equals(t)) {
-            System.out.println("Simplified:   " + t + (explanation.size() == 0 ? "" : ("     " + explanation)));
             s = t;
+            System.out.println(s + "\n");
           }
-          explanation.clear();
-          simplified = expr.simplify(explanation);
+          Node simplified = expr.simplify(explanation);
+          if (simplified.equals(expr)) {
+            break;
+          }
+          expr = simplified;
         }
       } catch (ParsingException e) {
         char[] fill = new char[e.position + 8];

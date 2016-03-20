@@ -1,8 +1,14 @@
-package net.tidej.expressionparser.demo.derive.tree;
+package net.tidej.expressionparser.demo.derive;
 
 import net.tidej.expressionparser.ExpressionParser;
+import net.tidej.expressionparser.demo.derive.tree.Constant;
+import net.tidej.expressionparser.demo.derive.tree.Node;
+import net.tidej.expressionparser.demo.derive.tree.NodeFactory;
+import net.tidej.expressionparser.demo.derive.tree.Variable;
 
 import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class TreeBuilder extends ExpressionParser.Processor<Node> {
 
@@ -40,12 +46,12 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
 
   @Override
   public Node numberLiteral(String value) {
-    return new Constant(Double.parseDouble(value));
+    return NodeFactory.c(Double.parseDouble(value));
   }
 
   @Override
   public Node identifier(String name) {
-    return new Variable(name);
+    return NodeFactory.var(name);
   }
 
   @Override
@@ -64,7 +70,18 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
   }
 
   public static ExpressionParser<Node> createParser() {
-    ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder());
+    ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder()) {
+      @Override
+      public Node parse(String expression) {
+        Tokenizer tokenizer = new ExpressionTokenizer(new Scanner(expression), this.getSymbols());
+        tokenizer.nextToken();
+        Node result = parse(tokenizer);
+        if (tokenizer.currentType != Tokenizer.TokenType.EOF) {
+          throw tokenizer.exception("EOF expected.", null);
+        }
+        return result;
+      }
+    };
     parser.addCallBrackets("(", ",", ")");
     parser.addGroupBrackets(5, "(", null, ")");
     parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 4, "^");
@@ -74,4 +91,41 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
     parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "+", "-", "−");
     return parser;
   }
+
+  static class ExpressionTokenizer extends ExpressionParser.Tokenizer {
+    static final Pattern EXPONENT_PATTERN = Pattern.compile("\\G\\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]+");
+
+    String pendingExponent;
+
+    public ExpressionTokenizer(Scanner scanner, Iterable<String> symbols) {
+      super(scanner, symbols);
+    }
+
+    @Override
+    public void nextToken() {
+      if (pendingExponent != null) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < pendingExponent.length(); i++) {
+          sb.append("⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(pendingExponent.charAt(i)));
+        }
+        leadingWhitespace = false;
+        currentType = TokenType.NUMBER;
+        currentValue = sb.toString();
+        pendingExponent = null;
+        return;
+      }
+      pendingExponent = scanner.findWithinHorizon(EXPONENT_PATTERN, 0);
+      if (pendingExponent != null) {
+        leadingWhitespace = pendingExponent.charAt(0) <= ' ';
+        if (leadingWhitespace) {
+          pendingExponent = pendingExponent.trim();
+        }
+        currentType = TokenType.SYMBOL;
+        currentValue = "^";
+        return;
+      }
+      super.nextToken();
+    }
+  }
+
 }

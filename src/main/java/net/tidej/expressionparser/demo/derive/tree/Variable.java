@@ -20,7 +20,7 @@ public class Variable extends Node {
   }
 
   @Override
-  public void toString(StringBuilder sb, boolean verbose) {
-    sb.append(name);
+  public String toString() {
+    return name;
   }
 }

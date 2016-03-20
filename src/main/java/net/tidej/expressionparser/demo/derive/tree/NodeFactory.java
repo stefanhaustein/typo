@@ -1,5 +1,8 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+/**
+ * Builds nodes for the given operators. Does not perform any optimizations.
+ */
 public class NodeFactory {
 
   public static Node add(Node... nodes) {
@@ -31,9 +34,6 @@ public class NodeFactory {
   }
 
   public static Node mul(Node... factors) {
-    if (factors.length == 2 && factors[0] instanceof Constant) {
-      return cMul(((Constant) factors[0]).value, factors[1]);
-    }
     return new Product(1, QuantifiedSet.of(factors));
   }
 
@@ -64,13 +64,14 @@ public class NodeFactory {
   }
 
   public static Node pow(Node base, Node exponent) {
-    if (exponent instanceof Constant) {
-      return powC(base, ((Constant) exponent).value);
-    }
     return new Power(base, exponent);
   }
 
   public static Node derive(Node node, String to) {
     return new Function("derive", node, new Variable(to));
+  }
+
+  public static Node var(String name) {
+    return new Variable(name);
   }
 }
