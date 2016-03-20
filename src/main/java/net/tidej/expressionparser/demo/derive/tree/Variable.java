@@ -1,14 +1,16 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+import java.util.Set;
+
 public class Variable extends Node {
   private final String name;
 
-  public Variable(String name) {
+  Variable(String name) {
     this.name = name;
   }
 
   @Override
-  public Node derive(String to) {
+  public Node derive(String to, Set<String> explanations) {
     return new Constant(to.equals(name) ? 1 : 0);
   }
 
@@ -17,7 +19,8 @@ public class Variable extends Node {
     return 10;
   }
 
-  public String toString() {
-    return name;
+  @Override
+  public void toString(StringBuilder sb, boolean verbose) {
+    sb.append(name);
   }
 }

@@ -6,6 +6,7 @@ import net.tidej.expressionparser.ExpressionParser.OperatorType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -107,11 +108,9 @@ public class Calculator {
       try {
         System.out.println("Result:     " + parser.parse(input));
       } catch (ExpressionParser.ParsingException e) {
-        System.out.print("Error -----");
-        for (int i = 0; i < e.position; i++) {
-          System.out.print("-");
-        }
-        System.out.println("^: " + e.getMessage());
+        char[] fill = new char[e.position + 5];
+        Arrays.fill(fill, '-');
+        System.out.println("Error " + new String(fill) + "^: " + e.getMessage());
       } catch (RuntimeException e) {
         e.printStackTrace();
       }

@@ -1,14 +1,21 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
+import java.util.Set;
+
 public class Constant extends Node {
-  final double value;
+  public final double value;
 
   Constant(double value) {
     this.value = value;
   }
 
+  public static String toString(double d) {
+    String s = String.valueOf(d);
+    return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
+  }
+
   @Override
-  public Node derive(String to) {
+  public Node derive(String to, Set<String> explanation) {
     return new Constant(0);
   }
 
@@ -17,10 +24,11 @@ public class Constant extends Node {
     return 10;
   }
 
-  public String toString() {
-    String s = String.valueOf(value);
-    return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
+  @Override
+  public void toString(StringBuilder sb, boolean readable) {
+    sb.append(value);
+    if (sb.length() > 2 && sb.charAt(sb.length() - 2) == '.' && sb.charAt(sb.length() - 1) == '0') {
+      sb.setLength(sb.length() - 2);
+    }
   }
-
-
 }

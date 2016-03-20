@@ -1,83 +1,155 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-public class Product extends Node {
-  final Node[] factors;
+class Product extends Node {
+  final double c;
+  final QuantifiedSet<Node> factors;
 
-  public Product(Node... factors) {
-    this.factors = factors;
+  /**
+   * Flatten on construction so this "trivial" operation doesn't show up in simplification.
+   */
+  Product(double c, QuantifiedSet<Node> factors) {
+    QuantifiedSet.Mutable<Node> builder = new QuantifiedSet.Mutable<>(false);
+    for (Map.Entry<Node,Double> entry : factors.entries()) {
+      if (entry.getKey() instanceof Product) {
+        Product subProduct = (Product) entry.getKey();
+        double exponent = entry.getValue();
+        if (subProduct.c != 1) {
+          builder.add(exponent, new Constant(subProduct.c));
+        }
+        for (Map.Entry<Node,Double> subEntry : subProduct.factors.entries()) {
+          builder.add(subEntry.getValue() * exponent, subEntry.getKey());
+        }
+      } else {
+        builder.add(entry);
+      }
+    }
+    this.c = c;
+    this.factors = builder;
+  }
+
+  public static Node factorNode(Map.Entry<Node, Double> entry) {
+    return NodeFactory.powC(entry.getKey(), entry.getValue());
   }
 
   @Override
-  public Node derive(String to) {
-    Node left = factors[0];
-    Node right = factors.length == 2 ? factors[1] : new Product(Arrays.copyOfRange(factors, 1, factors.length));
+  public Node derive(String to, Set<String> explanation) {
+    if (factors.size() == 0) {
+      return NodeFactory.c(0);
+    }
+
+    Iterator<Map.Entry<Node, Double>> i = factors.entries().iterator();
+    if (c != 1) {
+      explanation.add("constant factor rule");
+      return NodeFactory.cMul(c, NodeFactory.derive(new Product(1, QuantifiedSet.of(i)), to));
+    }
+    if (factors.size() == 1) {
+      Map.Entry<Node, Double> entry = i.next();
+      double exponent = entry.getValue();
+      Node base = entry.getKey();
+      if (exponent == 1) {
+        return base.derive(to, explanation);
+      }
+      if (exponent == -1) {
+        explanation.add("reciprocal rule");
+        return NodeFactory.div(
+            NodeFactory.cMul(-1, NodeFactory.derive(base, to)),
+            NodeFactory.powC(base, 2));
+      }
+      if (base.toString().equals(to)) {
+        explanation.add("power rule");
+        return NodeFactory.cMul(exponent, NodeFactory.powC(base, exponent - 1));
+      }
+      return new Power(entry.getKey(), new Constant(entry.getValue())).derive(to, explanation);
+    }
+
+    explanation.add("product rule");
+    Node left = factorNode(i.next());
+    Node right = factors.size() == 2 ? factorNode(i.next())
+        : new Product(1, QuantifiedSet.of(i));
+
     return NodeFactory.add(
-        NodeFactory.mul(left, right.derive(to)),
-        NodeFactory.mul(left.derive(to), right));
+        NodeFactory.mul(left, NodeFactory.derive(right, to)),
+        NodeFactory.mul(NodeFactory.derive(left, to), right));
   }
 
   @Override
-  public Node simplify() {
-    ArrayList<Node> simplifiedFactors = new ArrayList<Node>();
-    double c = 1;
-    for (Node factor: factors) {
-      Node simplified = factor.simplify();
-      if (simplified instanceof Product) {
-        for (Node grandChild : ((Product) simplified).factors) {
-          if (grandChild instanceof Constant) {
-            c *= ((Constant) grandChild).value;
-          }else {
-            simplifiedFactors.add(grandChild);
+  public Node simplify(Set<String> explanation) {
+    QuantifiedSet.Mutable<Node> simplified = new QuantifiedSet.Mutable<>(false);
+
+    double cc = c;
+    boolean changed = false;
+    for (Map.Entry<Node, Double> entry: factors.entries()) {
+      Node node = entry.getKey().simplify(explanation);
+      changed = changed || !node.equals(entry.getKey());
+      simplified.add(entry.getValue(), node);
+    }
+    if (!changed) {
+      // See what we can inline / de-duplicate
+      simplified = new QuantifiedSet.Mutable<>(true);
+      for (Map.Entry<Node, Double> entry : factors.entries()) {
+        Node node = entry.getKey();
+        double exponent = entry.getValue();
+        if (node instanceof Power && ((Power) node).exponent instanceof Constant) {
+          simplified.add(exponent * ((Constant) ((Power) node).exponent).value, ((Power) node).base);
+        } else if (node instanceof Constant) {
+          cc *= Math.pow(((Constant) node).value, exponent);
+        } else if ((node instanceof Sum) && ((Sum) node).c == 0 && ((Sum) node).summands.size() == 1) {
+          Map.Entry<Node,Double> summand = ((Sum) node).summands.entries().iterator().next();
+          cc *= summand.getValue();
+          simplified.add(1, summand.getKey());
+        } else {
+          simplified.add(exponent, node);
+        }
+      }
+
+      // Just a constant
+      if (cc == 0 || simplified.size() == 0) {
+        return new Constant(cc);
+      }
+
+      // Constant factor only?
+      if (simplified.size() == 1) {
+        Map.Entry<Node, Double> entry = simplified.entries().iterator().next();
+        if (entry.getValue() == 1.0) {
+          if (cc == 1.0) {
+            return entry.getKey();
           }
+          QuantifiedSet.Mutable<Node> builder = new QuantifiedSet.Mutable<>(false);
+          builder.add(cc, entry.getKey());
         }
-      } else if (simplified instanceof Constant) {
-        c *= ((Constant) simplified).value;
-      } else {
-        simplifiedFactors.add(simplified);
       }
     }
-
-    if (c == 0) {
-      return new Constant(0);
-    }
-    if (c != 1 || simplifiedFactors.size() == 0) {
-      simplifiedFactors.add(0, new Constant(c));
-    }
-    if (simplifiedFactors.size() == 1) {
-      return simplifiedFactors.get(0);
-    }
-    Node[] array = new Node[simplifiedFactors.size()];
-    simplifiedFactors.toArray(array);
-    return new Product(array);
+    return new Product(cc, simplified);
   }
 
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    for (Node factor: factors) {
-      if (factor instanceof Reciprocal) {
-        sb.append(sb.length() == 1 ? "1/" : "/");
-        sb.append(((Reciprocal) factor).param.toString(getPrecedence()));
-      } else {
-        if (sb.length() > 0) {
-          sb.append('*');
+  public void toString(StringBuilder sb, boolean verbose) {
+    int l0 = sb.length();
+    if (c != 1 || factors.size() == 0 || verbose) {
+      sb.append(Constant.toString(c));
+    }
+    if (factors.size() == 0 && verbose) {
+      sb.append("⋅1");
+    } else {
+      for (Map.Entry<Node,Double> entry: factors.entries()) {
+        double power = entry.getValue();
+        Node node = entry.getKey();
+        sb.append(power >= 0
+            ? (sb.length() > l0 ? "⋅" : "")
+            : (sb.length() > l0 ? "/" : "1/"));
+        double abs = Math.abs(power);
+        if (abs == 1 && !verbose) {
+          node.embrace(sb, verbose, getPrecedence());
+        } else {
+          node.embrace(sb, verbose, 5);
+          sb.append('^');
+          sb.append(Constant.toString(abs));
         }
-        sb.append(factor.toString(getPrecedence()));
       }
     }
-    return sb.toString();
-  }
-
-  @Override
-  public int getChildCount() {
-    return factors.length;
-  }
-
-  @Override
-  public Node getChild(int index) {
-    return factors[index];
   }
 
   @Override

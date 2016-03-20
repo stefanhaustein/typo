@@ -1,57 +1,99 @@
 package net.tidej.expressionparser.demo.derive.tree;
 
-public class Function extends Node {
-  final String name;
-  final Node param;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-  public Function(String name, Node param) {
+public class Function extends Node {
+  static final Map<String,FunctionDefinition> DEFINITIONS = new HashMap<>();
+
+  static {
+    def("ln", 1);
+    def("exp", 1);
+    def("derive", 2);
+  }
+
+  static void def(String name, int parameterCount) {
+    DEFINITIONS.put(name, new FunctionDefinition(name, parameterCount));
+  }
+
+  final String name;
+  final Node[] param;
+  final FunctionDefinition definition;
+
+  Function(String name, Node... param) {
     this.name = name;
     this.param = param;
+    this.definition = DEFINITIONS.get(name);
+    if (definition != null && definition.parmeterCount != param.length) {
+      throw new IllegalArgumentException("Expected " + definition.parmeterCount
+          + " parameters, but got " + param.length);
+    }
   }
 
-  public Node simplify() {
-    Node param = this.param.simplify();
-    boolean isConst = param instanceof Constant;
-    double paramVal = isConst ? ((Constant) param).value : Double.NaN;
-    if (name.equals("log")) {
-      if (isConst) {
-        return new Constant(Math.log(paramVal));
+  public Node simplify(Set<String> explanations) {
+    Node[] simplified = new Node[param.length];
+    boolean changed = false;
+    for (int i = 0; i < param.length; i++) {
+      simplified[i] = param[i].simplify(explanations);
+      changed = changed || !param[i].equals(simplified[i]);
+    }
+    if (!changed) {
+      if (simplified.length == 1) {
+        boolean isConst = simplified[0] instanceof Constant;
+        double paramVal = isConst ? ((Constant) simplified[0]).value : Double.NaN;
+        if (name.equals("ln")) {
+          if (isConst) {
+            return new Constant(Math.log(paramVal));
+          }
+        }
+        if (name.equals("exp")) {
+          if (isConst) {
+            return new Constant(Math.exp(paramVal));
+          }
+        }
+      }
+      if (name.equals("derive")) {
+        return simplified[0].derive(simplified[1].toString(), explanations);
       }
     }
-    if (name.equals("exp")) {
-      if (isConst) {
-        return new Constant(Math.exp(paramVal));
-      }
-    }
-    return new Function(name, param);
+    return new Function(name, simplified);
   }
 
-  public Node derive(String to) {
-    if (name.equals("log")) {
-      return new Product(param.derive(to), new Reciprocal(param));
+  @Override
+  public Node derive(String to, Set<String> explanations) {
+    if (name.equals("ln")) {
+      return NodeFactory.mul(NodeFactory.derive(param[0], to), NodeFactory.rez(param[0]));
     }
     if (name.equals("exp")) {
-      return new Product(new Function("exp", param), param.derive(to));
+      return NodeFactory.mul(NodeFactory.f("exp", param[0]), NodeFactory.derive(param[0], to));
     }
     throw new RuntimeException("Don't know how to derive '" + name + "'");
   }
 
-  public String toString() {
-    return name + param.toString(getPrecedence());
-  }
-
-  @Override
-  public int getChildCount() {
-    return 1;
-  }
-
-  @Override
-  public Node getChild(int index) {
-    return param;
+  public void toString(StringBuilder sb, boolean readable) {
+    sb.append(name);
+    sb.append('(');
+    for (int i = 0; i < param.length; i++) {
+      if (i > 0) {
+        sb.append(", ");
+      }
+      param[i].toString(sb, readable);
+    }
+    sb.append(")");
   }
 
   @Override
   public int getPrecedence() {
     return 10;
+  }
+
+  static class FunctionDefinition {
+    final String name;
+    final int parmeterCount;
+    FunctionDefinition(String name, int parmeterCount) {
+      this.name = name;
+      this.parmeterCount = parmeterCount;
+    }
   }
 }

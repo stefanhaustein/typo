@@ -218,7 +218,7 @@ public class ExpressionParser<T> {
     tokenizer.nextToken();
     T result = parse(tokenizer);
     if (tokenizer.currentType != Tokenizer.TokenType.EOF) {
-      throw new RuntimeException("Leftover token: " + tokenizer);
+      throw tokenizer.exception("Leftover input.", null);
     }
     return result;
   }
@@ -314,13 +314,12 @@ public class ExpressionParser<T> {
           break;
         }
         if (separator == null) {
-          throw new ParsingException("Closing bracket " + close + " expected at " + tokenizer,
-              tokenizer.currentPosition, null);
+          throw tokenizer.exception("Closing bracket expected: '" + close + "'.", null);
         }
         if (!separator.isEmpty()) {
           if (!op.equals(separator)) {
-            throw new ParsingException("List separator " + separator + " or closing paren " + close
-                + " expected at " + tokenizer, tokenizer.currentPosition, null);
+            throw tokenizer.exception("List separator '" + separator + "' or closing paren '"
+                + close + " expected.", null);
           }
           tokenizer.nextToken();  // separator
         }
@@ -360,7 +359,7 @@ public class ExpressionParser<T> {
           break;
         }  // Fall-through intended.
       default:
-        throw new ParsingException("Unexpected token type " + tokenizer, tokenizer.currentPosition, null);
+        throw tokenizer.exception("Unexpected token type.", null);
     }
     return result;
   }
@@ -401,7 +400,7 @@ public class ExpressionParser<T> {
     public static final Pattern DEFAULT_END_PATTERN = Pattern.compile("\\G\\s*\\Z");
 
     public enum TokenType {
-      BOF, IDENTIFIER, SYMBOL, NUMBER, STRING, EOF
+      UNRECOGNIZED, BOF, IDENTIFIER, SYMBOL, NUMBER, STRING, EOF
     }
 
     public Pattern numberPattern = DEFAULT_NUMBER_PATTERN;
@@ -440,11 +439,12 @@ public class ExpressionParser<T> {
       } else if ((value = scanner.findWithinHorizon(endPattern, 0)) != null) {
         currentType = TokenType.EOF;
       } else if (scanner.ioException() != null) {
-        throw new RuntimeException(scanner.ioException());
+        throw exception("IO Exception: " + scanner.ioException().getMessage(),
+            scanner.ioException());
       } else {
-        throw new ParsingException("Unrecognized Token at position " + currentPosition + ": " +
-          scanner.findWithinHorizon("\\s*.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?", 0),
-            currentPosition, null);
+        currentType = TokenType.UNRECOGNIZED;
+        currentValue = scanner.findWithinHorizon("\\s*.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?", 0);
+        throw exception("Unrecognized Token.", null);
       }
       currentPosition += value.length();
       leadingWhitespace = (value.length() > 0 && value.charAt(0) <= ' ');
@@ -454,6 +454,12 @@ public class ExpressionParser<T> {
     @Override
     public String toString() {
       return currentType + " " + currentValue + " position: " + currentPosition;
+    }
+
+    public ParsingException exception(String message, Exception cause) {
+      return new ParsingException(message
+          + " Position: " + currentPosition + " Token: '" + currentValue + "' Type: " + currentType,
+          currentPosition, cause);
     }
   }
 }
