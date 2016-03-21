@@ -26,4 +26,4 @@ Result:     2
 
 ## Tree building
 
-[Cas.java](src/main/java/org/kobjects/expressionparser/demo/cas/Cas.java) builds a tree from the input and is able to do basic simplifications. It's also able to compute the symbolic derivative.
+[CasDemo.java](src/main/java/org/kobjects/expressionparser/demo/cas/CasDemo.java) builds a tree from the input and is able to do basic simplifications. It's also able to compute the symbolic derivative.
