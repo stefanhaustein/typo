@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.c;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.C0;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.C1;
 import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.f;
 import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.neg;
 import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.rez;
@@ -17,14 +18,14 @@ public class UnaryFunction extends Node {
 
   static {
     def("ln", rez(var("x")),
-        var("e"), c(1),
-        c(1), c(0)
+        var("e"), C1,
+        C1, C0
     );
     def("sin", f("cos", var("x")),
-        c(0), c(0)
+        C0, C0
     );
     def("cos", neg(f("sin", var("x"))),
-        c(0), c(1)
+        C0, C1
     );
   }
 

@@ -8,12 +8,15 @@ public class NodeFactory {
     return new Sum(0, QuantifiedSet.of(nodes));
   }
 
+  public static final Constant C0 = new Constant(0);
+  public static final Constant C1 = new Constant(1);
+
   public static Node f(String name, Node param) {
     return new UnaryFunction(name, param);
   }
 
-  public static Node c(double c) {
-    return new Constant(c);
+  public static Constant c(double c) {
+    return c == 0 ? C0 : c == 1 ? C1 : new Constant(c);
   }
 
   public static Node sub(Node left, Node right) {

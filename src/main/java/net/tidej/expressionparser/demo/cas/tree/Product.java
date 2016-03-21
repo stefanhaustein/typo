@@ -89,6 +89,10 @@ class Product extends QuantifiedComponents {
       top.append(Constant.toString(c));
     }
 
+    if (type == Stringify.VERBOSE && components.size() == 0) {
+      top.append("⋅1");
+    }
+
     for (Map.Entry<Node,Double> entry: components.entries()) {
       Node node = entry.getKey();
       double exponent = entry.getValue();
@@ -107,7 +111,7 @@ class Product extends QuantifiedComponents {
       return top.build();
     }
     if (type == Stringify.BLOCK){
-      return String2d.stack(1,
+      return String2d.stack(String2d.HorizontalAlign.CENTER, 1,
           top.build(),
           String2d.hline(Math.max(top.length(), bottom.length())),
           bottom.build());

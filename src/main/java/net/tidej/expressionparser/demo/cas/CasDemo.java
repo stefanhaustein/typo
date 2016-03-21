@@ -12,13 +12,13 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class Cas {
+public class CasDemo {
 
   public static void main(String[] args) throws IOException {
     ExpressionParser<Node> parser = TreeBuilder.createParser();
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
-      System.out.print("Expression?   ");
+      System.out.print("Input?  ");
       String input = reader.readLine();
       if (input == null || input.isEmpty()) {
         break;
@@ -30,7 +30,15 @@ public class Cas {
         s = "Equals: " + s;
         Set<String> explanation = new LinkedHashSet<String>();
         while (true) {
-          String t = String2d.concat("Equals: ", expr.toString2d(Node.Stringify.BLOCK)).toString();
+          String2d s2d = String2d.concat("Equals: ", expr.toString2d(Node.Stringify.BLOCK));
+          if (!explanation.isEmpty()) {
+            s2d = s2d.vBar(String2d.concat(s2d, "     "), String2d.concat(" ", String2d.stack(
+                String2d.HorizontalAlign.LEFT,
+                explanation.size()/2,
+                explanation.toArray(new Object[explanation.size()]))));
+            explanation.clear();
+          }
+          String t = s2d.toString();
           if (!s.equals(t)) {
             s = t;
             System.out.println(s + "\n");
@@ -41,6 +49,10 @@ public class Cas {
           }
           expr = simplified;
         }
+        if (s.indexOf('\n') != -1) {
+          System.out.println("Flat:   " + expr.toString() + "\n");
+        }
+
       } catch (ParsingException e) {
         char[] fill = new char[e.position + 8];
         Arrays.fill(fill, '-');

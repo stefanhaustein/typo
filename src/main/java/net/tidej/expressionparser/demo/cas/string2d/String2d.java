@@ -1,10 +1,13 @@
 package net.tidej.expressionparser.demo.cas.string2d;
 
+import java.security.AlgorithmParameterGenerator;
 import java.util.ArrayList;
 
 public class String2d {
   private int baseline;
   private String[] lines;
+
+  public enum HorizontalAlign{LEFT, CENTER, RIGHT};
 
   public static String2d embrace(char open, String2d content, char close) {
     return concat(
@@ -12,7 +15,6 @@ public class String2d {
         content,
         vline(content.height(), content.baseline(), close));
   }
-
 
   public static String2d vline(int height, int base, char single) {
     if (height == 1) {
@@ -50,11 +52,12 @@ public class String2d {
     return sb.toString();
   }
 
-  private static String center(String s, int length) {
+  private static String align(String s, int length, HorizontalAlign align) {
     if (s.length() >= length) {
       return s;
     }
-    int front = (length - s.length()) / 2;
+    int front = align == HorizontalAlign.LEFT ? 0 : (length - s.length())
+        / (align == HorizontalAlign.CENTER ? 2 : 1);
     StringBuilder sb = new StringBuilder(length);
     while (sb.length() < front) {
       sb.append(' ');
@@ -128,7 +131,7 @@ public class String2d {
     return new String2d(baseline, lines);
   }
 
-  public static String2d stack(int centerIndex, Object... list) {
+  public static String2d stack(HorizontalAlign align, int centerIndex, Object... list) {
     int baseline = 0;
     int width = 0;
     for (int i = 0; i < list.length; i++) {
@@ -151,10 +154,10 @@ public class String2d {
     for (Object current: list) {
       if (current instanceof String2d) {
         for (String s : ((String2d) current).lines) {
-          lines.add(center(s, width));
+          lines.add(align(s, width, align));
         }
       } else {
-        lines.add(center(String.valueOf(current), width));
+        lines.add(align(String.valueOf(current), width, align));
       }
     }
     return new String2d(baseline, lines.toArray(new String[lines.size()]));
@@ -188,6 +191,17 @@ public class String2d {
       sb.append(lines[i]);
     }
     return sb.toString();
+  }
+
+  public String2d vBar(String2d left, String2d right) {
+    int top = Math.max(left.baseline, right.baseline);
+    int leftBottom = left.height() - left.baseline;
+    int rightBottom = right.height() - right.baseline;
+    int bottom = Math.max(leftBottom, rightBottom);
+    int height = top + bottom;
+
+    return concat(left, vline(height, top, '\u23aa'), right);
+
   }
 
   public static class Builder {

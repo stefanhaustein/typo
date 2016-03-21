@@ -51,11 +51,13 @@ class Sum extends QuantifiedComponents {
     return new Sum(cc, simplified);
   }
 
-
   public String2d toString2d(Stringify type) {
     String2d.Builder sb = new String2d.Builder();
-    if (c != 0 || components.size() == 0) {
+    if (c != 0 || components.size() == 0 || type == Stringify.VERBOSE) {
       sb.append(Constant.toString(c));
+    }
+    if (type == Stringify.VERBOSE && components.size() == 0) {
+      sb.append(" + 0");
     }
     for (Map.Entry<Node,Double> entry: components.entries()) {
       double count = entry.getValue();

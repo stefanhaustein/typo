@@ -93,6 +93,7 @@ public class ExpressionParser<T> {
 
   private final HashSet<String> primarySymbols = new HashSet<>();
   private final HashMap<String, String[]> calls = new HashMap<>();
+  private final HashMap<String, String[]> groups = new HashMap<>();
   private final HashMap<String, Boolean> allSymbols = new HashMap<>();
 
   private final ArrayList<Operators> precedenceList = new ArrayList<>();
@@ -144,14 +145,13 @@ public class ExpressionParser<T> {
   }
 
   /**
-   * Adds grouping with the given precedence. If the separator is null, only a single element
-   * will be permitted. If the separator is empty, whitespace will be sufficient for element
+   * Adds grouping. If the separator is null, only a single element will be permitted.
+   * If the separator is empty, whitespace will be sufficient for element
    * separation. Used for parsing lists or overriding the operator precedence (typically with
    * parens and a null separator).
    */
-  public ExpressionParser<T> addGroupBrackets(
-      int precedence, String open, String separator, String close) {
-    operators(precedence).group.put(addSymbol(open, true),
+  public ExpressionParser<T> addGroupBrackets(String open, String separator, String close) {
+    groups.put(addSymbol(open, true),
         new String[] {addSymbol(separator, false), addSymbol(close, false)});
     return this;
   }
@@ -244,11 +244,6 @@ public class ExpressionParser<T> {
       tokenizer.nextToken();
       return processor.prefixOperator(candidate, parseOperator(tokenizer, precedence));
     }
-    if (operators.group.containsKey(candidate)) {
-      tokenizer.nextToken();
-      String[] grouping = operators.group.get(candidate);
-      return processor.group(candidate, parseList(tokenizer, grouping[0], grouping[1]));
-    }
 
     // Recursion
     T result = parseOperator(tokenizer, precedence + 1);
@@ -268,8 +263,8 @@ public class ExpressionParser<T> {
     // - unhandled, infix or suffix symbols (e.g. ';')
     // - identifiers registered as non-prefix symbols
     while (operators.get(OperatorType.INFIX).contains(candidate)
-        || (precedence == (tokenizer.leadingWhitespace
-            ? weakImplicitOperatorPrecedence : strongImplicitOperatorPrecedence)
+        || (precedence == (tokenizer.leadingWhitespace.isEmpty()
+            ? strongImplicitOperatorPrecedence: weakImplicitOperatorPrecedence)
           && !candidate.isEmpty()
           && (tokenizer.currentType != Tokenizer.TokenType.SYMBOL ||
             allSymbols.get(candidate) == Boolean.TRUE)
@@ -280,7 +275,7 @@ public class ExpressionParser<T> {
         T right = parseOperator(tokenizer, precedence + 1);
         result = processor.infixOperator(candidate, result, right);
       } else {
-        boolean strong = !tokenizer.leadingWhitespace;
+        boolean strong = tokenizer.leadingWhitespace.isEmpty();
         T right = parseOperator(tokenizer, precedence + 1);
         result = processor.implicitOperator(strong, result, right);
       }
@@ -331,20 +326,25 @@ public class ExpressionParser<T> {
   }
 
   T parsePrimary(Tokenizer tokenizer) {
+    String candidate = tokenizer.currentValue;
+    if (groups.containsKey(candidate)) {
+      tokenizer.nextToken();
+      String[] grouping = groups.get(candidate);
+      return processor.group(candidate, parseList(tokenizer, grouping[0], grouping[1]));
+    }
     // Parsing higher precedence infix operator.
-    String value = tokenizer.currentValue;
-    if (allSymbols.containsKey(value)) {
+    if (allSymbols.containsKey(candidate)) {
       for (Operators operators : precedenceList) {
-        if (operators.get(OperatorType.PREFIX).contains(value)) {
+        if (operators.get(OperatorType.PREFIX).contains(candidate)) {
           tokenizer.nextToken();
-          return processor.prefixOperator(value, parsePrimary(tokenizer));
+          return processor.prefixOperator(candidate, parsePrimary(tokenizer));
         }
       }
     }
     T result;
     switch (tokenizer.currentType) {
       case NUMBER:
-        result = processor.numberLiteral(value);
+        result = processor.numberLiteral(candidate);
         tokenizer.nextToken();
         break;
       case IDENTIFIER:
@@ -353,18 +353,18 @@ public class ExpressionParser<T> {
           String openingBracket = tokenizer.currentValue;
           String[] call = calls.get(openingBracket);
           tokenizer.nextToken();
-          result = processor.call(value, openingBracket, parseList(tokenizer, call[0], call[1]));
+          result = processor.call(candidate, openingBracket, parseList(tokenizer, call[0], call[1]));
         } else {
-          result = processor.identifier(value);
+          result = processor.identifier(candidate);
         }
         break;
       case STRING:
-        result = processor.stringLiteral(value);
+        result = processor.stringLiteral(candidate);
         tokenizer.nextToken();
         break;
       case SYMBOL:
-        if (primarySymbols.contains(value)) {
-          result = processor.primarySymbol(value);
+        if (primarySymbols.contains(candidate)) {
+          result = processor.primarySymbol(candidate);
           tokenizer.nextToken();
           break;
         } // Fall-through intended.
@@ -378,7 +378,6 @@ public class ExpressionParser<T> {
     HashSet<String>[] operators = new HashSet[]{
         new HashSet<>(), new HashSet<>(),
         new HashSet<>(), new HashSet<>()};
-    HashMap<String, String[]> group = new HashMap<>();
     HashMap<String, String[]> apply = new HashMap<>();
 
     private HashSet<String> get(OperatorType type) {
@@ -422,7 +421,7 @@ public class ExpressionParser<T> {
     public int currentPosition = 0;
     public String currentValue = "";
     public TokenType currentType = TokenType.BOF;
-    public boolean leadingWhitespace;
+    public String leadingWhitespace = "";
 
     protected final Scanner scanner;
 
@@ -437,6 +436,7 @@ public class ExpressionParser<T> {
     }
 
     public void nextToken() {
+      currentPosition += currentValue.length();
       String value;
       if ((value = scanner.findWithinHorizon(identifierPattern, 0)) != null) {
         currentType = TokenType.IDENTIFIER;
@@ -456,9 +456,14 @@ public class ExpressionParser<T> {
         currentValue = scanner.findWithinHorizon("\\s*.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?", 0);
         throw exception("Unrecognized Token.", null);
       }
-      currentPosition += value.length();
-      leadingWhitespace = (value.length() > 0 && value.charAt(0) <= ' ');
-      currentValue = leadingWhitespace ? value.trim() : value;
+      if (value.length() > 0 && value.charAt(0) <= ' ') {
+        currentValue = value.trim();
+        leadingWhitespace = value.substring(0, value.length() - currentValue.length());
+        currentPosition += leadingWhitespace.length();
+      } else {
+        leadingWhitespace = "";
+        currentValue = value;
+      }
     }
 
     @Override

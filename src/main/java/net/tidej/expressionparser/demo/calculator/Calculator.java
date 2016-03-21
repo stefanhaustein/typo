@@ -82,10 +82,11 @@ public class Calculator {
     static ExpressionParser<Double> createParser() {
       ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
       parser.addCallBrackets("(", ",", ")");
-      parser.addGroupBrackets(5, "(", null, ")");
+      parser.addGroupBrackets("(", null, ")");
       parser.addOperators(OperatorType.INFIX_RTL, 4, "^");
       parser.addOperators(OperatorType.PREFIX, 3, "+", "-");
       parser.setImplicitOperatorPrecedence(true, 2);
+      parser.setImplicitOperatorPrecedence(false, 2);
       parser.addOperators(OperatorType.INFIX, 1, "*", "/");
       parser.addOperators(OperatorType.INFIX, 0, "+", "-");
       return parser;

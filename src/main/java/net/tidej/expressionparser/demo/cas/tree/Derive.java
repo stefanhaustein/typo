@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.C0;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.C1;
 import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.add;
 import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.c;
 import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.cMul;
@@ -35,10 +37,10 @@ public class Derive extends Node {
 
   public Node derive(Node node, Set<String> explanation) {
     if (node instanceof Constant) {
-      return c(0);
+      return C0;
     }
     if (node instanceof Variable) {
-      return node.toString().equals(to) ? c(1) : c(0);
+      return node.toString().equals(to) ? C1 : C0;
     }
     if (node instanceof Product) {
       return deriveProduct((Product) node, explanation);
@@ -57,6 +59,7 @@ public class Derive extends Node {
   }
 
   private Node deriveUnarayFunction(UnaryFunction node, Set<String> explanation) {
+    explanation.add("Chain rule");
     Node derivative = node.definition.derivative;
     return mul(derivative.substitute("x", node.param), NodeFactory.derive(node.param, to));
   }
@@ -91,7 +94,7 @@ public class Derive extends Node {
     QuantifiedSet<Node> factors = product.components;
     double c = product.c;
     if (factors.size() == 0) {
-      return c(0);
+      return C0;
     }
 
     Iterator<Map.Entry<Node, Double>> i = factors.entries().iterator();
@@ -135,7 +138,7 @@ public class Derive extends Node {
   }
 
   public String2d toString2d(Stringify type) {
-    return String2d.concat("cas", String2d.embrace(
+    return String2d.concat("derive", String2d.embrace(
         '(',
         String2d.concat(expression.toString2d(type), ", ", to),
         ')'));

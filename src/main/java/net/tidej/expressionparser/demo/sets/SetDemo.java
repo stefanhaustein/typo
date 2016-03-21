@@ -5,6 +5,7 @@ import net.tidej.expressionparser.ExpressionParser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -90,9 +91,9 @@ public class SetDemo {
   public static void main(String[] args) throws IOException {
     System.out.println("Operators: \u2229 \u222a \u2216 \u2205");
     ExpressionParser<Object> parser = new ExpressionParser<>(new SetProcessor());
-    parser.addGroupBrackets(2, "(", null, ")");
-    parser.addGroupBrackets(2, "{", ",", "}");
-    parser.addGroupBrackets(2, "|", null, "|");
+    parser.addGroupBrackets("(", null, ")");
+    parser.addGroupBrackets("{", ",", "}");
+    parser.addGroupBrackets("|", null, "|");
     parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "\u2229");
     parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "\u222a", "\u2216", "\\");
     parser.addPrimarySymbols("\u2205");
@@ -106,11 +107,9 @@ public class SetDemo {
       try {
         System.out.println("Result:     " + parser.parse(input).toString().replace('[', '{').replace(']', '}'));
       } catch (ExpressionParser.ParsingException e) {
-        System.out.print("Error -----");
-        for (int i = 0; i < e.position; i++) {
-          System.out.print("-");
-        }
-        System.out.println("^: " + e.getMessage());
+        char[] fill = new char[e.position + 6];
+        Arrays.fill(fill, '-');
+        System.out.println("Error " + new String(fill) + "^: " + e.getMessage());
       } catch (RuntimeException e) {
         System.out.println("Error: " + e.toString());
       }

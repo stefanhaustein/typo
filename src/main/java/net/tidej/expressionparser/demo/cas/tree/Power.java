@@ -17,10 +17,13 @@ class Power extends Node {
         return String2d.concat(base2d, "⁰¹²³⁴⁵⁶⁷⁸⁹".charAt((int) exponent));
       }
     }
-    return String2d.concat(
-        base2d,
-        "^",
-        Constant.toString(exponent));
+    return exponent2d(type, base2d, String2d.valueOf(Constant.toString(exponent)));
+  }
+
+  public static String2d exponent2d(Stringify type, String2d base, String2d exponent) {
+    return type == Stringify.BLOCK
+       ? String2d.concat(base, String2d.stack(String2d.HorizontalAlign.LEFT, 1, exponent, ""))
+        : String2d.concat(base, "^", exponent);
   }
 
   final Node base;
@@ -45,11 +48,11 @@ class Power extends Node {
         double leftValue = ((Constant) base).value;
         if (leftValue == 0) {
           explanation.add("base 0");
-          return c(0);
+          return C0;
         }
         if (leftValue == 1) {
           explanation.add("base 1");
-          return c(1);
+          return C1;
         }
       }
       if (base instanceof Power) {
@@ -62,9 +65,8 @@ class Power extends Node {
 
   @Override
   public String2d toString2d(Stringify type) {
-    return String2d.concat(
+    return exponent2d(type,
         base.embrace(type, PRECEDENCE_POWER),
-        "^",
         exponent.embrace(type, PRECEDENCE_POWER));
   }
 

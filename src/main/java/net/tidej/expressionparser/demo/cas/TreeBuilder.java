@@ -61,12 +61,12 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
 
   @Override
   public Node call(String identifier, String bracket, List<Node> arguments) {
-    if (identifier.equals("cas")) {
+    if (identifier.equals("derive")) {
       if (arguments.size() != 2) {
-        throw new IllegalArgumentException("Two parameters expected for cas.");
+        throw new IllegalArgumentException("Two parameters expected for derive.");
       }
       if (!(arguments.get(1) instanceof Variable)) {
-        throw new IllegalArgumentException("Second cas parameter must be a variable.");
+        throw new IllegalArgumentException("Second derive parameter must be a variable.");
       }
       return NodeFactory.derive(arguments.get(0), arguments.get(1).toString());
     }
@@ -92,7 +92,7 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
       }
     };
     parser.addCallBrackets("(", ",", ")");
-    parser.addGroupBrackets(6, "(", null, ")");
+    parser.addGroupBrackets("(", null, ")");
     parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, Node.PRECEDENCE_POWER, "^");
     parser.addOperators(ExpressionParser.OperatorType.PREFIX, Node.PRECEDENCE_SIGNUM, "+", "-", "−");
     parser.setImplicitOperatorPrecedence(true, Node.PRECEDENCE_IMPLICIT_MULTIPLICATION);
@@ -123,17 +123,22 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
         for (int i = 0; i < pendingExponent.length(); i++) {
           sb.append("⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(pendingExponent.charAt(i)));
         }
-        leadingWhitespace = false;
+        leadingWhitespace = "";
         currentType = TokenType.NUMBER;
         currentValue = sb.toString();
         pendingExponent = null;
         return;
       }
-      pendingExponent = scanner.findWithinHorizon(EXPONENT_PATTERN, 0);
-      if (pendingExponent != null) {
-        leadingWhitespace = pendingExponent.charAt(0) <= ' ';
-        if (leadingWhitespace) {
-          pendingExponent = pendingExponent.trim();
+      String value = scanner.findWithinHorizon(EXPONENT_PATTERN, 0);
+      if (value != null) {
+        currentPosition += currentValue.length();
+        if (value.charAt(0) <= ' ') {
+          pendingExponent = value.trim();
+          leadingWhitespace = value.substring(0, value.length() - pendingExponent.length());
+          currentPosition += leadingWhitespace.length();
+        } else {
+          pendingExponent = value;
+          leadingWhitespace = "";
         }
         currentType = TokenType.SYMBOL;
         currentValue = "^";
