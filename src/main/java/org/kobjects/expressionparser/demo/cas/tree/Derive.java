@@ -1,23 +1,14 @@
-package net.tidej.expressionparser.demo.cas.tree;
+package org.kobjects.expressionparser.demo.cas.tree;
 
-import net.tidej.expressionparser.demo.cas.string2d.String2d;
+import org.kobjects.expressionparser.demo.cas.string2d.String2d;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.C0;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.C1;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.add;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.c;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.cMul;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.div;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.mul;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.powC;
-
 public class Derive extends Node {
   public static Node factorNode(Map.Entry<Node, Double> entry) {
-    return powC(entry.getKey(), entry.getValue());
+    return NodeFactory.powC(entry.getKey(), entry.getValue());
   }
 
   private final Node expression;
@@ -37,10 +28,10 @@ public class Derive extends Node {
 
   public Node derive(Node node, Set<String> explanation) {
     if (node instanceof Constant) {
-      return C0;
+      return NodeFactory.C0;
     }
     if (node instanceof Variable) {
-      return node.toString().equals(to) ? C1 : C0;
+      return node.toString().equals(to) ? NodeFactory.C1 : NodeFactory.C0;
     }
     if (node instanceof Product) {
       return deriveProduct((Product) node, explanation);
@@ -61,7 +52,7 @@ public class Derive extends Node {
   private Node deriveUnarayFunction(UnaryFunction node, Set<String> explanation) {
     explanation.add("Chain rule");
     Node derivative = node.definition.derivative;
-    return mul(derivative.substitute("x", node.param), NodeFactory.derive(node.param, to));
+    return NodeFactory.mul(derivative.substitute("x", node.param), NodeFactory.derive(node.param, to));
   }
 
   private Node deriveSum(Sum sum, Set<String> explanation) {
@@ -86,21 +77,21 @@ public class Derive extends Node {
     Node g = power.exponent;
     Node f_ = NodeFactory.derive(f, to);
     Node g_ = NodeFactory.derive(g, to);
-    return mul(power, add(
-        mul(f_, div(g, f)), mul(g_, NodeFactory.f("ln", f))));
+    return NodeFactory.mul(power, NodeFactory.add(
+        NodeFactory.mul(f_, NodeFactory.div(g, f)), NodeFactory.mul(g_, NodeFactory.f("ln", f))));
   }
 
   private Node deriveProduct(Product product, Set<String> explanation) {
     QuantifiedSet<Node> factors = product.components;
     double c = product.c;
     if (factors.size() == 0) {
-      return C0;
+      return NodeFactory.C0;
     }
 
     Iterator<Map.Entry<Node, Double>> i = factors.entries().iterator();
     if (c != 1) {
       explanation.add("Constant factor rule");
-      return cMul(c, NodeFactory.derive(new Product(1, QuantifiedSet.of(i)), to));
+      return NodeFactory.cMul(c, NodeFactory.derive(new Product(1, QuantifiedSet.of(i)), to));
     }
     if (factors.size() == 1) {
       Map.Entry<Node, Double> entry = i.next();
@@ -112,14 +103,14 @@ public class Derive extends Node {
       if (exponent == -1) {
         explanation.add("Reciprocal rule");
         return NodeFactory.div(
-            cMul(-1, NodeFactory.derive(base, to)),
-            powC(base, 2));
+            NodeFactory.cMul(-1, NodeFactory.derive(base, to)),
+            NodeFactory.powC(base, 2));
       }
       if (base.toString().equals(to)) {
         explanation.add("power rule");
-        return cMul(exponent, powC(base, exponent - 1));
+        return NodeFactory.cMul(exponent, NodeFactory.powC(base, exponent - 1));
       }
-      return derivePower(new Power(entry.getKey(), c(entry.getValue())), explanation);
+      return derivePower(new Power(entry.getKey(), NodeFactory.c(entry.getValue())), explanation);
     }
 
     explanation.add("Product rule");

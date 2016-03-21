@@ -1,31 +1,24 @@
-package net.tidej.expressionparser.demo.cas.tree;
+package org.kobjects.expressionparser.demo.cas.tree;
 
-import net.tidej.expressionparser.demo.cas.string2d.String2d;
+import org.kobjects.expressionparser.demo.cas.string2d.String2d;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.C0;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.C1;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.f;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.neg;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.rez;
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.var;
-
 public class UnaryFunction extends Node {
   public static final Map<String,FunctionDefinition> DEFINITIONS = new HashMap<>();
 
   static {
-    def("ln", rez(var("x")),
-        var("e"), C1,
-        C1, C0
+    def("ln", NodeFactory.rez(NodeFactory.var("x")),
+        NodeFactory.var("e"), NodeFactory.C1,
+        NodeFactory.C1, NodeFactory.C0
     );
-    def("sin", f("cos", var("x")),
-        C0, C0
+    def("sin", NodeFactory.f("cos", NodeFactory.var("x")),
+        NodeFactory.C0, NodeFactory.C0
     );
-    def("cos", neg(f("sin", var("x"))),
-        C0, C1
+    def("cos", NodeFactory.neg(NodeFactory.f("sin", NodeFactory.var("x"))),
+        NodeFactory.C0, NodeFactory.C1
     );
   }
 
@@ -58,7 +51,7 @@ public class UnaryFunction extends Node {
 
   @Override
   public Node substitute(String variable, Node replacement) {
-    return f(name, param.substitute(variable, replacement));
+    return NodeFactory.f(name, param.substitute(variable, replacement));
   }
 
   @Override

@@ -1,4 +1,4 @@
-package net.tidej.expressionparser.demo.cas.tree;
+package org.kobjects.expressionparser.demo.cas.tree;
 
 public class Constant extends Node {
   public final double value;

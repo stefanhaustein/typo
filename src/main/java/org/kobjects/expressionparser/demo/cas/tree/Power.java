@@ -1,10 +1,8 @@
-package net.tidej.expressionparser.demo.cas.tree;
+package org.kobjects.expressionparser.demo.cas.tree;
 
-import net.tidej.expressionparser.demo.cas.string2d.String2d;
+import org.kobjects.expressionparser.demo.cas.string2d.String2d;
 
 import java.util.Set;
-
-import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.*;
 
 class Power extends Node {
   public static String2d toString2d(Stringify type, Node base, double exponent) {
@@ -48,11 +46,11 @@ class Power extends Node {
         double leftValue = ((Constant) base).value;
         if (leftValue == 0) {
           explanation.add("base 0");
-          return C0;
+          return NodeFactory.C0;
         }
         if (leftValue == 1) {
           explanation.add("base 1");
-          return C1;
+          return NodeFactory.C1;
         }
       }
       if (base instanceof Power) {

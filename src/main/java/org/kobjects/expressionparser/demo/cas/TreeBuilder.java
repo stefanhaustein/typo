@@ -1,10 +1,10 @@
-package net.tidej.expressionparser.demo.cas;
+package org.kobjects.expressionparser.demo.cas;
 
-import net.tidej.expressionparser.ExpressionParser;
-import net.tidej.expressionparser.demo.cas.tree.Node;
-import net.tidej.expressionparser.demo.cas.tree.NodeFactory;
-import net.tidej.expressionparser.demo.cas.tree.UnaryFunction;
-import net.tidej.expressionparser.demo.cas.tree.Variable;
+import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.demo.cas.tree.Node;
+import org.kobjects.expressionparser.demo.cas.tree.NodeFactory;
+import org.kobjects.expressionparser.demo.cas.tree.UnaryFunction;
+import org.kobjects.expressionparser.demo.cas.tree.Variable;
 
 import java.util.List;
 import java.util.Scanner;

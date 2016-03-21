@@ -1,6 +1,6 @@
-package net.tidej.expressionparser.demo.sets;
+package org.kobjects.expressionparser.demo.sets;
 
-import net.tidej.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.ExpressionParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;

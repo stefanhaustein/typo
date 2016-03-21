@@ -1,6 +1,6 @@
-package net.tidej.expressionparser.demo.cas.tree;
+package org.kobjects.expressionparser.demo.cas.tree;
 
-import net.tidej.expressionparser.demo.cas.string2d.String2d;
+import org.kobjects.expressionparser.demo.cas.string2d.String2d;
 
 import java.util.Set;
 

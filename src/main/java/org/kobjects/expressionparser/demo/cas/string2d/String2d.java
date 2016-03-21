@@ -1,6 +1,5 @@
-package net.tidej.expressionparser.demo.cas.string2d;
+package org.kobjects.expressionparser.demo.cas.string2d;
 
-import java.security.AlgorithmParameterGenerator;
 import java.util.ArrayList;
 
 public class String2d {

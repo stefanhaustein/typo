@@ -1,9 +1,9 @@
-package net.tidej.expressionparser.demo.cas;
+package org.kobjects.expressionparser.demo.cas;
 
-import net.tidej.expressionparser.ExpressionParser;
-import net.tidej.expressionparser.ExpressionParser.ParsingException;
-import net.tidej.expressionparser.demo.cas.string2d.String2d;
-import net.tidej.expressionparser.demo.cas.tree.Node;
+import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.ExpressionParser.ParsingException;
+import org.kobjects.expressionparser.demo.cas.string2d.String2d;
+import org.kobjects.expressionparser.demo.cas.tree.Node;
 
 import java.io.BufferedReader;
 import java.io.IOException;

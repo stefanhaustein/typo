@@ -1,4 +1,4 @@
-package net.tidej.expressionparser;
+package org.kobjects.expressionparser;
 
 import java.util.ArrayList;
 import java.util.HashMap;

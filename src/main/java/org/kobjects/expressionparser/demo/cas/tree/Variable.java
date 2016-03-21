@@ -1,4 +1,4 @@
-package net.tidej.expressionparser.demo.cas.tree;
+package org.kobjects.expressionparser.demo.cas.tree;
 
 public class Variable extends Node {
   private final String name;

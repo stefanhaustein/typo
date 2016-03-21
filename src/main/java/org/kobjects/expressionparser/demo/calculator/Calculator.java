@@ -1,7 +1,6 @@
-package net.tidej.expressionparser.demo.calculator;
+package org.kobjects.expressionparser.demo.calculator;
 
-import net.tidej.expressionparser.ExpressionParser;
-import net.tidej.expressionparser.ExpressionParser.OperatorType;
+import org.kobjects.expressionparser.ExpressionParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -83,12 +82,12 @@ public class Calculator {
       ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
       parser.addCallBrackets("(", ",", ")");
       parser.addGroupBrackets("(", null, ")");
-      parser.addOperators(OperatorType.INFIX_RTL, 4, "^");
-      parser.addOperators(OperatorType.PREFIX, 3, "+", "-");
+      parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 4, "^");
+      parser.addOperators(ExpressionParser.OperatorType.PREFIX, 3, "+", "-");
       parser.setImplicitOperatorPrecedence(true, 2);
       parser.setImplicitOperatorPrecedence(false, 2);
-      parser.addOperators(OperatorType.INFIX, 1, "*", "/");
-      parser.addOperators(OperatorType.INFIX, 0, "+", "-");
+      parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "*", "/");
+      parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "+", "-");
       return parser;
     }
   }
