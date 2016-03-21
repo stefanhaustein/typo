@@ -1,13 +1,13 @@
 
-A simple [single-file](src/main/java/net/tidej/expressionparser/ExpressionParser.java) configurable Java parser for mathematical expressions.
+A simple [single-file](src/main/java/org/kobjects/expressionparser/ExpressionParser.java) configurable Java parser for mathematical expressions.
 
 # Examples
 
 ## Immediate evaluation
 
-[Calculator.java](src/main/java/net/tidej/expressionparser/demo/calculator/Calculator.java) in the demo package contains a simple self-contained use case directly interpreting the input.
+[Calculator.java](src/main/java/org/kobjects/expressionparser/demo/calculator/Calculator.java) in the demo package contains a simple self-contained use case directly interpreting the input.
 
-[SetDemo.java](src/main/java/net/tidej/expressionparser/demo/sets/SetDemo.java) is similar to the calculator demo,
+[SetDemo.java](src/main/java/org/kobjects/expressionparser/demo/sets/SetDemo.java) is similar to the calculator demo,
 but illustrates the parser flexibility with a slightly more "atypical" expression language.
 
 Example output from [SetDemo.java]:
@@ -26,4 +26,4 @@ Result:     2
 
 ## Tree building
 
-[Cas.java](src/main/java/net/tidej/expressionparser/demo/cas/Cas.java) builds a tree from the input and is able to do basic simplifications. It's also able to compute the symbolic derivative.
+[Cas.java](src/main/java/org/kobjects/expressionparser/demo/cas/Cas.java) builds a tree from the input and is able to do basic simplifications. It's also able to compute the symbolic derivative.
