@@ -67,7 +67,8 @@ public class Calculator {
     public Double call(String identifier, String bracket, List<Double> arguments) {
       if (arguments.size() == 1) {
         try {
-          return (Double) Math.class.getMethod(identifier, DOUBLE_TYPE_ARRAY_1).invoke(null, arguments.get(0));
+          return (Double) Math.class.getMethod(
+              identifier, DOUBLE_TYPE_ARRAY_1).invoke(null, arguments.get(0));
         } catch (Exception e) {
           // Fall through
         }

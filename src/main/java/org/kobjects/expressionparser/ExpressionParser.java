@@ -401,11 +401,11 @@ public class ExpressionParser<T> {
         "\\G\\s*\\d+(\\.\\d*)?([eE][+-]?\\d+)?");
 
     public static final Pattern DEFAULT_IDENTIFIER_PATTERN = Pattern.compile(
-        "\\G\\s*\\p{IsAlphabetic}[\\p{IsAlphabetic}\\d]*");
+        "\\G\\s*[\\p{IsAlphabetic}_\\$][\\p{IsAlphabetic}_\\$\\d]*");
 
     public static final Pattern DEFAULT_STRING_PATTERN = Pattern.compile(
         // "([^"\\]*(\\.[^"\\]*)*)"|\'([^\'\\]*(\\.[^\'\\]*)*)\'
-        "\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"|\\'([^\\'\\\\]*(\\\\.[^\\'\\\\]*)*)\\'");
+        "\\G\\s*(\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"|\\'([^\\'\\\\]*(\\\\.[^\\'\\\\]*)*)\\')");
     public static final Pattern DEFAULT_END_PATTERN = Pattern.compile("\\G\\s*\\Z");
 
     public enum TokenType {
@@ -435,9 +435,18 @@ public class ExpressionParser<T> {
       symbolPattern = Pattern.compile(sb.toString());
     }
 
+    public ParsingException exception(String message, Exception cause) {
+      return new ParsingException(message
+          + " Position: " + currentPosition + " Token: '" + currentValue + "' Type: " + currentType,
+          currentPosition, cause);
+    }
+
     public void nextToken() {
       currentPosition += currentValue.length();
       String value;
+      if (scanner.ioException() != null) {
+        throw exception("IO Exception: " + scanner.ioException().getMessage(), scanner.ioException());
+      }
       if ((value = scanner.findWithinHorizon(identifierPattern, 0)) != null) {
         currentType = TokenType.IDENTIFIER;
       } else if ((value = scanner.findWithinHorizon(numberPattern, 0)) != null) {
@@ -448,13 +457,10 @@ public class ExpressionParser<T> {
         currentType = TokenType.SYMBOL;
       } else if ((value = scanner.findWithinHorizon(endPattern, 0)) != null) {
         currentType = TokenType.EOF;
-      } else if (scanner.ioException() != null) {
-        throw exception("IO Exception: " + scanner.ioException().getMessage(),
-            scanner.ioException());
-      } else {
+      } else if ((value = scanner.findWithinHorizon("\\G\\s*\\S*", 0)) != null) {
         currentType = TokenType.UNRECOGNIZED;
-        currentValue = scanner.findWithinHorizon("\\s*.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?", 0);
-        throw exception("Unrecognized Token.", null);
+      } else {
+        throw exception("EOF not reached, but catchall not matched.", null);
       }
       if (value.length() > 0 && value.charAt(0) <= ' ') {
         currentValue = value.trim();
@@ -471,10 +477,12 @@ public class ExpressionParser<T> {
       return currentType + " " + currentValue + " position: " + currentPosition;
     }
 
-    public ParsingException exception(String message, Exception cause) {
-      return new ParsingException(message
-          + " Position: " + currentPosition + " Token: '" + currentValue + "' Type: " + currentType,
-          currentPosition, cause);
+    public boolean tryConsume(String value) {
+      if (!currentValue.equals(value)) {
+        return false;
+      }
+      nextToken();
+      return true;
     }
   }
 }
