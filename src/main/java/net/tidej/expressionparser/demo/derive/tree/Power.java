@@ -7,11 +7,15 @@ import java.util.Set;
 import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.*;
 
 class Power extends Node {
-
   public static String2d toString2d(Stringify type, Node base, double exponent) {
-    String2d base2d = base.embrace2d(type, 4);
-    if (exponent == 1 && type != Stringify.VERBOSE) {
-      return base2d;
+    String2d base2d = base.embrace(type, PRECEDENCE_POWER);
+    if (type != Stringify.VERBOSE) {
+      if (exponent == 1 && type != Stringify.VERBOSE) {
+        return base2d;
+      }
+      if (exponent > 0 && exponent < 10 && exponent == (int) exponent && base2d.height() == 1) {
+        return String2d.concat(base2d, "⁰¹²³⁴⁵⁶⁷⁸⁹".charAt((int) exponent));
+      }
     }
     return String2d.concat(
         base2d,
@@ -25,17 +29,6 @@ class Power extends Node {
   public Power(Node left, Node right) {
     this.base = left;
     this.exponent = right;
-  }
-
-  @Override
-  public Node derive(String to, Set<String> explanation) {
-    explanation.add("generalized power rule");
-    Node f = base;
-    Node g = exponent;
-    Node f_ = NodeFactory.derive(f, to);
-    Node g_ = NodeFactory.derive(g, to);
-    return mul(this,
-        add(mul(f_,div(g, f)), mul(g_, new Function("ln", f))));
   }
 
   @Override
@@ -70,13 +63,13 @@ class Power extends Node {
   @Override
   public String2d toString2d(Stringify type) {
     return String2d.concat(
-        base.embrace2d(type, getPrecedence()),
+        base.embrace(type, PRECEDENCE_POWER),
         "^",
-        exponent.embrace2d(type, getPrecedence()));
+        exponent.embrace(type, PRECEDENCE_POWER));
   }
 
   @Override
   public int getPrecedence() {
-    return 4;
+    return PRECEDENCE_POWER;
   }
 }

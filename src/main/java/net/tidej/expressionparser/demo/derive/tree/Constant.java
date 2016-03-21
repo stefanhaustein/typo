@@ -15,13 +15,8 @@ public class Constant extends Node {
   }
 
   @Override
-  public Node derive(String to, Set<String> explanation) {
-    return new Constant(0);
-  }
-
-  @Override
   public int getPrecedence() {
-    return 10;
+    return PRECEDENCE_PRIMARY;
   }
 
   @Override

@@ -4,6 +4,7 @@ import net.tidej.expressionparser.ExpressionParser;
 import net.tidej.expressionparser.demo.derive.tree.Constant;
 import net.tidej.expressionparser.demo.derive.tree.Node;
 import net.tidej.expressionparser.demo.derive.tree.NodeFactory;
+import net.tidej.expressionparser.demo.derive.tree.UnaryFunction;
 import net.tidej.expressionparser.demo.derive.tree.Variable;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
     if (name.equals("+")) {
       return argument;
     }
-    throw new UnsupportedOperationException("Unsupported prefixOperator operator: " + name);
+    return NodeFactory.f(name, argument);
   }
 
   @Override
@@ -61,7 +62,16 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
 
   @Override
   public Node call(String identifier, String bracket, List<Node> arguments) {
-    return NodeFactory.f(identifier, arguments.toArray(new Node[arguments.size()]));
+    if (identifier.equals("derive")) {
+      if (arguments.size() != 2) {
+        throw new IllegalArgumentException("Two parameters expected for derive.");
+      }
+      if (!(arguments.get(1) instanceof Variable)) {
+        throw new IllegalArgumentException("Second derive parameter must be a variable.");
+      }
+      return NodeFactory.derive(arguments.get(0), arguments.get(1).toString());
+    }
+    return super.call(identifier, bracket, arguments);
   }
 
   @Override
@@ -83,12 +93,18 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
       }
     };
     parser.addCallBrackets("(", ",", ")");
-    parser.addGroupBrackets(5, "(", null, ")");
-    parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 4, "^");
-    parser.addOperators(ExpressionParser.OperatorType.PREFIX, 3, "+", "-", "−");
-    parser.setImplicitOperatorPrecedence(true, 2);
-    parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "*", "×", "⋅", "/", ":", "÷");
-    parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "+", "-", "−");
+    parser.addGroupBrackets(6, "(", null, ")");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, Node.PRECEDENCE_POWER, "^");
+    parser.addOperators(ExpressionParser.OperatorType.PREFIX, Node.PRECEDENCE_SIGNUM, "+", "-", "−");
+    parser.setImplicitOperatorPrecedence(true, Node.PRECEDENCE_IMPLICIT_MULTIPLICATION);
+    for (String name : UnaryFunction.DEFINITIONS.keySet()) {
+      parser.addOperators(
+          ExpressionParser.OperatorType.PREFIX, Node.PRECEDENCE_UNARY_FUNCTION, name);
+    }
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, Node.PRECEDENCE_MULTIPLICATIVE,
+        "*", "×", "⋅", "/", ":", "÷");
+    parser.addOperators(ExpressionParser.OperatorType.INFIX, Node.PRECEDENCE_ADDITIVE,
+        "+", "-", "−");
     return parser;
   }
 

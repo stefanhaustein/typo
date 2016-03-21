@@ -10,17 +10,17 @@ public class Variable extends Node {
   }
 
   @Override
-  public Node derive(String to, Set<String> explanations) {
-    return new Constant(to.equals(name) ? 1 : 0);
-  }
-
-  @Override
   public int getPrecedence() {
-    return 10;
+    return PRECEDENCE_PRIMARY;
   }
 
   @Override
   public String toString() {
     return name;
+  }
+
+  @Override
+  public Node substitute(String name, Node replacement) {
+    return this.name.equals(name) ? replacement : this;
   }
 }

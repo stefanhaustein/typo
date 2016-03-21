@@ -259,7 +259,8 @@ public class ExpressionParser<T> {
 
     if (operators.get(OperatorType.INFIX_RTL).contains(candidate)) {
       tokenizer.nextToken();
-      return processor.infixOperator(candidate, result, parseOperator(tokenizer, precedence));
+      return processor.infixOperator(candidate, result,
+          parseOperator(tokenizer, precedence));
     }
 
     // The complex implicit operator check is intended to prevent it from consuming
@@ -330,34 +331,43 @@ public class ExpressionParser<T> {
   }
 
   T parsePrimary(Tokenizer tokenizer) {
+    // Parsing higher precedence infix operator.
+    String value = tokenizer.currentValue;
+    if (allSymbols.containsKey(value)) {
+      for (Operators operators : precedenceList) {
+        if (operators.get(OperatorType.PREFIX).contains(value)) {
+          tokenizer.nextToken();
+          return processor.prefixOperator(value, parsePrimary(tokenizer));
+        }
+      }
+    }
     T result;
     switch (tokenizer.currentType) {
       case NUMBER:
-        result = processor.numberLiteral(tokenizer.currentValue);
+        result = processor.numberLiteral(value);
         tokenizer.nextToken();
         break;
       case IDENTIFIER:
-        String identifier = tokenizer.currentValue;
         tokenizer.nextToken();
         if (calls.containsKey(tokenizer.currentValue)) {
           String openingBracket = tokenizer.currentValue;
           String[] call = calls.get(openingBracket);
           tokenizer.nextToken();
-          result = processor.call(identifier, openingBracket, parseList(tokenizer, call[0], call[1]));
+          result = processor.call(value, openingBracket, parseList(tokenizer, call[0], call[1]));
         } else {
-          result = processor.identifier(identifier);
+          result = processor.identifier(value);
         }
         break;
       case STRING:
-        result = processor.stringLiteral(tokenizer.currentValue);
+        result = processor.stringLiteral(value);
         tokenizer.nextToken();
         break;
       case SYMBOL:
-        if (primarySymbols.contains(tokenizer.currentValue)) {
-          result = processor.primarySymbol(tokenizer.currentValue);
+        if (primarySymbols.contains(value)) {
+          result = processor.primarySymbol(value);
           tokenizer.nextToken();
           break;
-        }  // Fall-through intended.
+        } // Fall-through intended.
       default:
         throw tokenizer.exception("Unexpected token type.", null);
     }

@@ -4,13 +4,12 @@ package net.tidej.expressionparser.demo.derive.tree;
  * Builds nodes for the given operators. Does not perform any optimizations.
  */
 public class NodeFactory {
-
   public static Node add(Node... nodes) {
     return new Sum(0, QuantifiedSet.of(nodes));
   }
 
-  public static Node f(String name, Node... param) {
-    return new Function(name, param);
+  public static Node f(String name, Node param) {
+    return new UnaryFunction(name, param);
   }
 
   public static Node c(double c) {
@@ -68,7 +67,7 @@ public class NodeFactory {
   }
 
   public static Node derive(Node node, String to) {
-    return new Function("derive", node, new Variable(to));
+    return new Derive(node, to);
   }
 
   public static Node var(String name) {

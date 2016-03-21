@@ -2,14 +2,21 @@ package net.tidej.expressionparser.demo.derive.tree;
 
 import net.tidej.expressionparser.demo.derive.string2d.String2d;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-class Product extends Node {
+class Product extends QuantifiedComponents {
+
+  /**
+   * Used by base class for simplifications and substitutions.
+   */
+  @Override
+  Node create(double c, QuantifiedSet<Node> components) {
+    return new Product(c, components);
+  }
 
   public static String2d toString2d(Stringify type, double c, Node factor) {
-    String2d f2d = factor.embrace2d(type, 0);
+    String2d f2d = factor.embrace(type, PRECEDENCE_ADDITIVE);
     if ((c == 1 || c == -1) && type != Stringify.VERBOSE) {
       return f2d;
     }
@@ -25,123 +32,53 @@ class Product extends Node {
     return sb.build();
   }
 
-  final double c;
-  final QuantifiedSet<Node> factors;
-
-  /**
-   * Flatten on construction so this "trivial" operation doesn't show up in simplification.
-   */
   Product(double c, QuantifiedSet<Node> factors) {
-    QuantifiedSet.Mutable<Node> builder = new QuantifiedSet.Mutable<>(false);
-    for (Map.Entry<Node,Double> entry : factors.entries()) {
-      if (entry.getKey() instanceof Product) {
-        Product subProduct = (Product) entry.getKey();
-        double exponent = entry.getValue();
-        if (subProduct.c != 1) {
-          builder.add(exponent, new Constant(subProduct.c));
-        }
-        for (Map.Entry<Node,Double> subEntry : subProduct.factors.entries()) {
-          builder.add(subEntry.getValue() * exponent, subEntry.getKey());
-        }
-      } else {
-        builder.add(entry);
-      }
-    }
-    this.c = c;
-    this.factors = builder;
-  }
-
-  public static Node factorNode(Map.Entry<Node, Double> entry) {
-    return NodeFactory.powC(entry.getKey(), entry.getValue());
-  }
-
-  @Override
-  public Node derive(String to, Set<String> explanation) {
-    if (factors.size() == 0) {
-      return NodeFactory.c(0);
-    }
-
-    Iterator<Map.Entry<Node, Double>> i = factors.entries().iterator();
-    if (c != 1) {
-      explanation.add("constant factor rule");
-      return NodeFactory.cMul(c, NodeFactory.derive(new Product(1, QuantifiedSet.of(i)), to));
-    }
-    if (factors.size() == 1) {
-      Map.Entry<Node, Double> entry = i.next();
-      double exponent = entry.getValue();
-      Node base = entry.getKey();
-      if (exponent == 1) {
-        return base.derive(to, explanation);
-      }
-      if (exponent == -1) {
-        explanation.add("reciprocal rule");
-        return NodeFactory.div(
-            NodeFactory.cMul(-1, NodeFactory.derive(base, to)),
-            NodeFactory.powC(base, 2));
-      }
-      if (base.toString().equals(to)) {
-        explanation.add("power rule");
-        return NodeFactory.cMul(exponent, NodeFactory.powC(base, exponent - 1));
-      }
-      return new Power(entry.getKey(), new Constant(entry.getValue())).derive(to, explanation);
-    }
-
-    explanation.add("product rule");
-    Node left = factorNode(i.next());
-    Node right = factors.size() == 2 ? factorNode(i.next())
-        : new Product(1, QuantifiedSet.of(i));
-
-    return NodeFactory.add(
-        NodeFactory.mul(left, NodeFactory.derive(right, to)),
-        NodeFactory.mul(NodeFactory.derive(left, to), right));
+    super(c, factors, 1);
   }
 
   @Override
   public Node simplify(Set<String> explanation) {
-    QuantifiedSet.Mutable<Node> simplified = new QuantifiedSet.Mutable<>(false);
+    Node s = super.simplify(explanation);
+    if (s != this) {
+      return s;
+    }
 
     double cc = c;
-    boolean changed = false;
-    for (Map.Entry<Node, Double> entry: factors.entries()) {
-      Node node = entry.getKey().simplify(explanation);
-      changed = changed || !node.equals(entry.getKey());
-      simplified.add(entry.getValue(), node);
-    }
-    if (!changed) {
-      // See what we can inline / de-duplicate
-      simplified = new QuantifiedSet.Mutable<>(true);
-      for (Map.Entry<Node, Double> entry : factors.entries()) {
-        Node node = entry.getKey();
-        double exponent = entry.getValue();
-        if (node instanceof Power && ((Power) node).exponent instanceof Constant) {
-          simplified.add(exponent * ((Constant) ((Power) node).exponent).value, ((Power) node).base);
-        } else if (node instanceof Constant) {
-          cc *= Math.pow(((Constant) node).value, exponent);
-        } else if ((node instanceof Sum) && ((Sum) node).c == 0 && ((Sum) node).summands.size() == 1) {
-          Map.Entry<Node, Double> summand = ((Sum) node).summands.entries().iterator().next();
-          cc *= summand.getValue();
-          simplified.add(exponent, summand.getKey());
-        } else {
-          simplified.add(exponent, node);
-        }
-      }
+    QuantifiedSet.Mutable<Node> simplified = new QuantifiedSet.Mutable<>(true);
 
-      // Constant factor only?
-      if (simplified.size() == 1) {
-        Map.Entry<Node, Double> entry = simplified.entries().iterator().next();
-        if (entry.getValue() == 1.0) {
-          return NodeFactory.cMul(cc, entry.getKey());
-        }
+    // See what we can inline / de-duplicate
+    for (Map.Entry<Node, Double> entry : components.entries()) {
+      Node node = entry.getKey();
+      double exponent = entry.getValue();
+      if (node instanceof Power && ((Power) node).exponent instanceof Constant) {
+        simplified.add(exponent * ((Constant) ((Power) node).exponent).value, ((Power) node).base);
+      } else if (node instanceof Constant) {
+        cc *= Math.pow(((Constant) node).value, exponent);
+      } else if ((node instanceof Sum) && ((Sum) node).c == 0 && ((Sum) node).components.size() == 1) {
+        Map.Entry<Node, Double> summand = ((Sum) node).components.entries().iterator().next();
+        cc *= summand.getValue();
+        simplified.add(exponent, summand.getKey());
+      } else {
+        simplified.add(exponent, node);
       }
     }
 
-    // Just a constant
-    if (cc == 0 || simplified.size() == 0) {
+    // Just 0
+    if (cc == 0) {
       return new Constant(cc);
+    }
+
+    // Constant factor only?
+    if (simplified.size() == 1) {
+      Map.Entry<Node, Double> entry = simplified.entries().iterator().next();
+      if (entry.getValue() == 1.0) {
+        return NodeFactory.cMul(cc, entry.getKey());
+      }
     }
 
     return new Product(cc, simplified);
   }
+
 
   @Override
   public String2d toString2d(Stringify type) {
@@ -152,7 +89,7 @@ class Product extends Node {
       top.append(Constant.toString(c));
     }
 
-    for (Map.Entry<Node,Double> entry: factors.entries()) {
+    for (Map.Entry<Node,Double> entry: components.entries()) {
       Node node = entry.getKey();
       double exponent = entry.getValue();
       String2d.Builder target = exponent >= 0 ? top : bottom;
@@ -175,11 +112,13 @@ class Product extends Node {
           String2d.hline(Math.max(top.length(), bottom.length())),
           bottom.build());
     }
-    return String2d.concat(top, "/(", bottom, ")");
+    return bottom.size() == 1
+        ? String2d.concat(top, "/", bottom)
+        : String2d.concat(top, "/(", bottom, ")");
   }
 
   @Override
   public int getPrecedence() {
-    return 1;
+    return PRECEDENCE_MULTIPLICATIVE;
   }
 }
