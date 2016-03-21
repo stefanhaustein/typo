@@ -1,4 +1,4 @@
-package net.tidej.expressionparser.demo.derive.string2d;
+package net.tidej.expressionparser.demo.cas.string2d;
 
 import java.util.ArrayList;
 

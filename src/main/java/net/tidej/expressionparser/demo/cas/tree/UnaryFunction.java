@@ -1,16 +1,16 @@
-package net.tidej.expressionparser.demo.derive.tree;
+package net.tidej.expressionparser.demo.cas.tree;
 
-import net.tidej.expressionparser.demo.derive.string2d.String2d;
+import net.tidej.expressionparser.demo.cas.string2d.String2d;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.c;
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.f;
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.neg;
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.rez;
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.var;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.c;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.f;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.neg;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.rez;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.var;
 
 public class UnaryFunction extends Node {
   public static final Map<String,FunctionDefinition> DEFINITIONS = new HashMap<>();

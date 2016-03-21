@@ -1,9 +1,9 @@
-package net.tidej.expressionparser.demo.derive;
+package net.tidej.expressionparser.demo.cas;
 
 import net.tidej.expressionparser.ExpressionParser;
 import net.tidej.expressionparser.ExpressionParser.ParsingException;
-import net.tidej.expressionparser.demo.derive.string2d.String2d;
-import net.tidej.expressionparser.demo.derive.tree.Node;
+import net.tidej.expressionparser.demo.cas.string2d.String2d;
+import net.tidej.expressionparser.demo.cas.tree.Node;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class Derive {
+public class Cas {
 
   public static void main(String[] args) throws IOException {
     ExpressionParser<Node> parser = TreeBuilder.createParser();

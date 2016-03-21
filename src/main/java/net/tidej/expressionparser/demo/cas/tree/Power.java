@@ -1,10 +1,10 @@
-package net.tidej.expressionparser.demo.derive.tree;
+package net.tidej.expressionparser.demo.cas.tree;
 
-import net.tidej.expressionparser.demo.derive.string2d.String2d;
+import net.tidej.expressionparser.demo.cas.string2d.String2d;
 
 import java.util.Set;
 
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.*;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.*;
 
 class Power extends Node {
   public static String2d toString2d(Stringify type, Node base, double exponent) {

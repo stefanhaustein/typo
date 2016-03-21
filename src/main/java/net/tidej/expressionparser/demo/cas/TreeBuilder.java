@@ -1,11 +1,10 @@
-package net.tidej.expressionparser.demo.derive;
+package net.tidej.expressionparser.demo.cas;
 
 import net.tidej.expressionparser.ExpressionParser;
-import net.tidej.expressionparser.demo.derive.tree.Constant;
-import net.tidej.expressionparser.demo.derive.tree.Node;
-import net.tidej.expressionparser.demo.derive.tree.NodeFactory;
-import net.tidej.expressionparser.demo.derive.tree.UnaryFunction;
-import net.tidej.expressionparser.demo.derive.tree.Variable;
+import net.tidej.expressionparser.demo.cas.tree.Node;
+import net.tidej.expressionparser.demo.cas.tree.NodeFactory;
+import net.tidej.expressionparser.demo.cas.tree.UnaryFunction;
+import net.tidej.expressionparser.demo.cas.tree.Variable;
 
 import java.util.List;
 import java.util.Scanner;
@@ -62,12 +61,12 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
 
   @Override
   public Node call(String identifier, String bracket, List<Node> arguments) {
-    if (identifier.equals("derive")) {
+    if (identifier.equals("cas")) {
       if (arguments.size() != 2) {
-        throw new IllegalArgumentException("Two parameters expected for derive.");
+        throw new IllegalArgumentException("Two parameters expected for cas.");
       }
       if (!(arguments.get(1) instanceof Variable)) {
-        throw new IllegalArgumentException("Second derive parameter must be a variable.");
+        throw new IllegalArgumentException("Second cas parameter must be a variable.");
       }
       return NodeFactory.derive(arguments.get(0), arguments.get(1).toString());
     }

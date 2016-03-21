@@ -1,17 +1,17 @@
-package net.tidej.expressionparser.demo.derive.tree;
+package net.tidej.expressionparser.demo.cas.tree;
 
-import net.tidej.expressionparser.demo.derive.string2d.String2d;
+import net.tidej.expressionparser.demo.cas.string2d.String2d;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.add;
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.c;
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.cMul;
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.div;
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.mul;
-import static net.tidej.expressionparser.demo.derive.tree.NodeFactory.powC;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.add;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.c;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.cMul;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.div;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.mul;
+import static net.tidej.expressionparser.demo.cas.tree.NodeFactory.powC;
 
 public class Derive extends Node {
   public static Node factorNode(Map.Entry<Node, Double> entry) {
@@ -135,7 +135,7 @@ public class Derive extends Node {
   }
 
   public String2d toString2d(Stringify type) {
-    return String2d.concat("derive", String2d.embrace(
+    return String2d.concat("cas", String2d.embrace(
         '(',
         String2d.concat(expression.toString2d(type), ", ", to),
         ')'));

@@ -1,6 +1,6 @@
-package net.tidej.expressionparser.demo.derive.tree;
+package net.tidej.expressionparser.demo.cas.tree;
 
-import net.tidej.expressionparser.demo.derive.string2d.String2d;
+import net.tidej.expressionparser.demo.cas.string2d.String2d;
 
 import java.util.Map;
 import java.util.Set;

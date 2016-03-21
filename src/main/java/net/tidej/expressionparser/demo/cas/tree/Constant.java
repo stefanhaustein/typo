@@ -1,6 +1,4 @@
-package net.tidej.expressionparser.demo.derive.tree;
-
-import java.util.Set;
+package net.tidej.expressionparser.demo.cas.tree;
 
 public class Constant extends Node {
   public final double value;

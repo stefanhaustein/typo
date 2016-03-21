@@ -1,4 +1,4 @@
-package net.tidej.expressionparser.demo.derive.tree;
+package net.tidej.expressionparser.demo.cas.tree;
 
 /**
  * Builds nodes for the given operators. Does not perform any optimizations.
