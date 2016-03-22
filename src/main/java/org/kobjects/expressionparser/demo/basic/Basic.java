@@ -26,7 +26,13 @@ import java.util.TreeMap;
 // - END
 // - STOP
 //
-// Stop supporting multiple statements per line?
+// TODO (Simplify):
+//
+// - Use an enum for builtins, too?
+// - Use evalDouble(x), evalString(n) (evalInt(), evalBool)
+//     case SIN: return Math.sin(evalDouble(0));
+// - Add children to variables for index access / def fn evaluation
+
 
 public class Basic {
   public static void main(String[] args) throws IOException {
