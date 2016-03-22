@@ -6,22 +6,47 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
+
+// Missing compared to minimal basic
+// http://www.ecma-international.org/publications/files/ECMA-ST-WITHDRAWN/ECMA-55,%201st%20Edition,%20January%201978.pdf:
+//
+// - Arrays
+// - DEF FN
+// - FOR ... NEXT
+// - READ / DATA / RESTORE
+// - ON ... GOSUB
+// - GOSUB / RETURN
+// - END
+// - STOP
+//
+// Stop supporting multiple statements per line?
 
 public class Basic {
   public static void main(String[] args) throws IOException {
     new Basic().runShell();
   }
 
+  enum StatementType {
+    CLEAR, CONTINUE, DATA, DIM, DEF, DUMP, END, FOR, GOTO, GOSUB, IF, INPUT, LET, LIST, NEXT,
+    ON, PRINT, READ, REM, RETURN, RUN, STOP}
+
   TreeMap<String, Object> variables = new TreeMap<>();
   TreeMap<Integer, List<Statement>> program = new TreeMap<>();
   ExpressionParser<Node> expressionParser = new ExpressionBuilder().parser;
   Exception lastException;
   BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+  Map<String, Method> builtins = new LinkedHashMap<>();
+
+  Basic() {
+    registerBuiltins(Math.class, "atan", "atn", "floor", "int", "signum", "sgn", "sqrt", "sqr");
+  }
 
   void clear() {
     variables.clear();
@@ -29,27 +54,49 @@ public class Basic {
     variables.put("tau", 2 * Math.PI);
   }
 
-  List<Statement> parseStatements(ExpressionParser.Tokenizer tokenizer) {
-    ArrayList<Statement> result = new ArrayList<>();
-    do {
-      while (tokenizer.tryConsume(":")) {
-        result.add(new Statement(""));
-      }
-      String name = tokenizer.currentValue.toLowerCase();
+  Statement parseStatement(ExpressionParser.Tokenizer tokenizer) {
+    String name = tokenizer.currentValue;
+    if (name.equalsIgnoreCase("go")) {
       tokenizer.nextToken();
-      if (name.equals("goto")) {
-        result.add(new Statement("goto", expressionParser.parse(tokenizer)));
-      } else if (name.equals("clear") || name.equals("dump") || name.equals("list")
-          || name.equals("run")) {
-        result.add(new Statement(name));
-      } else if (name.equals("if")) {
+      name += tokenizer.currentValue;
+    } else if (name.equals("?")) {
+      name = "PRINT";
+    }
+    StatementType type = null;
+    for (StatementType st : StatementType.values()) {
+      if (name.equalsIgnoreCase(st.name())) {
+        type = st;
+        break;
+      }
+    }
+    if (type == null) {
+      type = StatementType.LET;
+    } else {
+      tokenizer.nextToken();
+      name = tokenizer.currentValue;
+    }
+    switch (type) {
+      case GOTO:
+      case GOSUB:
+        return new Statement(type, expressionParser.parse(tokenizer));
+
+      case IF:
         Node condition = expressionParser.parse(tokenizer);
         if (!tokenizer.currentValue.equalsIgnoreCase("then")) {
           throw tokenizer.exception("'then expected after if-condition.'", null);
         }
-        result.add(new Statement("if", condition));
         tokenizer.currentValue = ":";  // Hack
-      } else if (name.equals("print") || name.equals("?") || name.equals("input")) {
+        return new Statement(type, condition);
+
+      case LET:
+        tokenizer.nextToken();
+        if (!tokenizer.tryConsume("=")) {
+          throw tokenizer.exception("Unrecognized statement: " + name, null);
+        }
+        return new Statement(type, " = ", "", new VariableNode(name), expressionParser.parse(tokenizer));
+
+      case INPUT:
+      case PRINT:
         List<Node> args = new ArrayList<Node>();
         String suffix = "";
         while (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF
@@ -60,9 +107,9 @@ public class Basic {
             suffix = ";";
           }
         }
-        result.add(new Statement(name.equals("?") ? "print" : name, "; ", suffix,
-            args.toArray(new Node[args.size()])));
-      } else if (name.equals("rem")) {
+        return new Statement(type, "; ", suffix, args.toArray(new Node[args.size()]));
+
+      case REM: {
         StringBuilder sb = new StringBuilder();
         while (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF) {
           sb.append(tokenizer.leadingWhitespace).append(tokenizer.currentValue);
@@ -71,22 +118,59 @@ public class Basic {
         if (sb.length() > 0 && sb.charAt(0) == ' ') {
           sb.deleteCharAt(0);
         }
-        result.add(new Statement("rem", new VariableNode(sb.toString())));
-      } else {
-        if (name.equals("let")) {
-          tokenizer.nextToken();
-          name = tokenizer.currentValue;
-        }
-        if (!tokenizer.tryConsume("=")) {
-          throw tokenizer.exception("Unrecognized statement: " + name, null);
-        }
-        result.add(new Statement("let", " = ", "", new VariableNode(name), expressionParser.parse(tokenizer)));
+        return new Statement(type, new VariableNode(sb.toString()));
       }
+      default:
+        return new Statement(type);
+    }
+  }
+
+  // Should this just be a statement or Node, too? With ':' as child separator and no name?
+  List<Statement> parseStatementList(ExpressionParser.Tokenizer tokenizer) {
+    ArrayList<Statement> result = new ArrayList<>();
+    do {
+      while (tokenizer.tryConsume(":")) {
+        result.add(new Statement(null));
+      }
+      if (tokenizer.currentType == ExpressionParser.Tokenizer.TokenType.EOF) {
+        break;
+      }
+      result.add(parseStatement(tokenizer));
     } while (tokenizer.tryConsume(":"));
     if (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF) {
       throw tokenizer.exception("Leftover input.", null);
     }
     return result;
+  }
+
+  void registerBuiltins(Class clazz, String... rename) {
+    methods:
+    for (Method method : clazz.getMethods()) {
+      if (!Modifier.isStatic(method.getModifiers())
+          || !Modifier.isPublic(method.getModifiers())) {
+        continue;
+      }
+      String name = method.getName();
+      if (method.getReturnType() == String.class) {
+        name += '$';
+      } else if (method.getReturnType() != Double.TYPE) {
+        continue;
+      }
+      for (Class<?> parameterType : method.getParameterTypes()) {
+        if (parameterType != Double.TYPE && parameterType != String.class) {
+          continue methods;
+        }
+      }
+      for (int i = 0; i < rename.length; i+= 2) {
+        if (name.equals(rename[i])) {
+          name = rename[i + 1];
+          break;
+        }
+      }
+      if (name != null) {
+        builtins.put(name, method);
+      }
+    }
   }
 
   void runProgram(int currentLine) {
@@ -146,11 +230,11 @@ public class Basic {
           if (tokenizer.currentType == ExpressionParser.Tokenizer.TokenType.EOF) {
             program.remove(lineNumber);
           } else {
-            program.put(lineNumber, parseStatements(tokenizer));
+            program.put(lineNumber, parseStatementList(tokenizer));
           }
           continue;
         } else {
-          List<Statement> statements = parseStatements(tokenizer);
+          List<Statement> statements = parseStatementList(tokenizer);
           Object go = runStatements(statements);
           if (go instanceof Number) {
             runProgram(((Number) go).intValue());
@@ -173,99 +257,118 @@ public class Basic {
 
   class Statement implements Node {
     Node[] children;
-    String name;
+    StatementType type;
     String separator;
     String suffix;
 
-    Statement(String name, String separator, String suffix, Node... children) {
-      this.name = name;
+    Statement(StatementType type, String separator, String suffix, Node... children) {
+      this.type = type;
       this.separator = separator;
       this.suffix = suffix;
       this.children = children;
     }
 
-    Statement(String name, Node... children) {
-      this(name, "", "", children);
+    Statement(StatementType type, Node... children) {
+      this(type, "", "", children);
     }
 
     /**
      * Here, the return value is used to indicate where to go.
      */
     public Object eval() {
-      if (name.equals("clear")) {
-        clear();
-      } else if (name.equals("dump")) {
-        if (lastException != null) {
-          lastException.printStackTrace();
-          lastException = null;
-        } else {
-          System.out.println("\n" + variables);
-        }
-      } else if (name.equals("goto")) {
-        return children[0].eval();
-      } else if (name.equals("if")) {
-        if (children[0].eval().equals(0.0)) {
-          return Boolean.FALSE;
-        }
-      } else if (name.equals("let")) {
-        Object value = children[1].eval();
-        String varName = children[0].toString();
-        if (varName.endsWith("$")) {
-          value = String.valueOf(value);
-        } else if (!(value instanceof Double)) {
-          throw new RuntimeException("Trying to assign string '" + value + "' to a number variable.");
-        }
-        variables.put(varName, value);
-      } else if (name.equals("list")) {
-        System.out.println();
-        for (Map.Entry<Integer,List<Statement>> entry : program.entrySet()) {
-          System.out.print(entry.getKey());
-          List<Statement> line = entry.getValue();
-          String previous = "";
-          for (int i = 0; i < line.size(); i++) {
-            System.out.print(i == 0 ? " "
-                : previous.equals("if") ? " THEN "
-                : previous.isEmpty() ? ": " : " : ");
-            System.out.print(line.get(i));
-            previous = line.get(i).name;
-          }
-          System.out.println();
-        }
-      } else if (name.equals("print") || name.equals("input")) {
-        for (Node child : children) {
-          if (name.equals("input") && child instanceof VariableNode) {
-            VariableNode variable = (VariableNode) child;
-            Object value;
-            try {
-              value = reader.readLine();
-              if (!variable.name.endsWith("$")) {
-                value = Double.parseDouble((String) value);
-              }
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            } catch (NumberFormatException e) {
-              value = Double.NaN;
-            }
-            variables.put(variable.name, value);
+      if (type == null) {
+        return null;
+      }
+      switch (type) {
+        case CLEAR:
+          clear();
+          break;
+
+        case DUMP:
+          if (lastException != null) {
+            lastException.printStackTrace();
+            lastException = null;
           } else {
-            System.out.print(child.eval());
+            System.out.println("\n" + variables);
           }
+          break;
+
+        case GOTO:
+          return children[0].eval();
+
+        case IF:
+          return children[0].eval().equals(0.0) ? Boolean.FALSE : null;
+
+        case LET: {
+          Object value = children[1].eval();
+          String varName = children[0].toString();
+          if (varName.endsWith("$")) {
+            value = String.valueOf(value);
+          } else if (!(value instanceof Double)) {
+            throw new RuntimeException("Trying to assign string '" + value + "' to a number variable.");
+          }
+          variables.put(varName, value);
+          break;
         }
-        if (suffix.isEmpty()) {
+        case LIST:
           System.out.println();
-        }
-      } else if (name.equals("run")) {
-        clear();
-        return 0;
-      } else if (!name.isEmpty()) {
-        throw new RuntimeException("Unimplemented statement: " + name);
+          for (Map.Entry<Integer,List<Statement>> entry : program.entrySet()) {
+            System.out.print(entry.getKey());
+            List<Statement> line = entry.getValue();
+            StatementType previous = null;
+            for (int i = 0; i < line.size(); i++) {
+              System.out.print(i == 0 ? " "
+                  : previous == StatementType.IF ? " THEN "
+                  : previous == null ? ": " : " : ");
+              System.out.print(line.get(i));
+              previous = line.get(i).type;
+            }
+            System.out.println();
+          }
+          break;
+
+        case INPUT:
+        case PRINT:
+          for (Node child : children) {
+            if (type == StatementType.INPUT && child instanceof VariableNode) {
+              VariableNode variable = (VariableNode) child;
+              Object value;
+              try {
+                value = reader.readLine();
+                if (!variable.name.endsWith("$")) {
+                  value = Double.parseDouble((String) value);
+                }
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              } catch (NumberFormatException e) {
+                value = Double.NaN;
+             }
+             variables.put(variable.name, value);
+            } else {
+              System.out.print(child.eval());
+            }
+          }
+          if (suffix.isEmpty()) {
+            System.out.println();
+          }
+          break;
+
+        case RUN:
+          clear();
+          return 0;
+
+        default:
+         throw new RuntimeException("Unimplemented statement: " + type);
       }
       return null;
     }
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder(name.toUpperCase());
+      if (type == null) {
+        return "";
+      }
+      StringBuilder sb = new StringBuilder(type.name());
       if (children.length > 0) {
         sb.append(' ');
         sb.append(children[0]);
@@ -319,7 +422,7 @@ public class Basic {
     public Object eval() {
       Object result = variables.get(name);
       if (result == null) {
-        throw new RuntimeException("Undefined variable: " + name);
+        throw new RuntimeException("Undefined variable: '" + name + "'");
       }
       return result;
     }
@@ -459,12 +562,15 @@ public class Basic {
 
     @Override
     public Node call(String name, String bracket, List<Node> arguments) {
-      try {
-        return new FunctionNode(Math.class.getMethod(name.toLowerCase(), new Class[]{Double.TYPE}),
-            arguments.toArray(new Node[arguments.size()]));
-      } catch (NoSuchMethodException e) {
-        throw new RuntimeException(e);
+      Method method = builtins.get(name.toLowerCase());
+      if (method == null) {
+        throw new IllegalArgumentException("Function '" + name + "' not found.");
       }
+      if (method.getParameterTypes().length != arguments.size()) {
+        throw new IllegalArgumentException("Expected: " + method.getParameterTypes().length
+            + " parameters; provided: " + arguments.size());
+      }
+      return new FunctionNode(method, arguments.toArray(new Node[arguments.size()]));
     }
 
     @Override
