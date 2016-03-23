@@ -25,8 +25,8 @@ import java.util.TreeMap;
 public class Basic {
 
   enum StatementType {
-    CLEAR, CONTINUE, DATA, DIM, DEF, DUMP, END, FOR, GOTO, GOSUB, IF, INPUT, LET, LIST, NEXT,
-    ON, PRINT, READ, REM, RETURN, RUN, STOP}
+    CLEAR, CONTINUE, DATA, DIM, DEF, DUMP, END, FOR, GOTO, GOSUB, IF, INPUT, LET, LIST, LOAD,
+    NEXT, ON, PRINT, READ, REM, RESTORE, RETURN, RUN, STOP}
 
   enum BuiltinType {
     // N: Required number, n: optional number, S: Required string, s: optional string.
@@ -69,12 +69,15 @@ public class Basic {
 
   int currentLine;
   int currentIndex;
+  int[] dataPosition = new int[3];
+  Statement dataStatement;
   int[] stopped;
 
   void clear() {
     variables.clear();
     getVariables(0).put("pi", Math.PI);
     getVariables(0).put("tau", 2 * Math.PI);
+    Arrays.fill(dataPosition, 0);
     stopped = null;
   }
 
@@ -106,16 +109,21 @@ public class Basic {
       type = StatementType.LET;
     } else {
       tokenizer.nextToken();
-      name = tokenizer.currentValue;
     }
     switch (type) {
-      case DIM: {
+      case DATA: // Any number of params
+      case DIM:
+      case READ: {
         ArrayList<Node> vars = new ArrayList<>();
         do {
           vars.add(expressionParser.parse(tokenizer));
         } while (tokenizer.tryConsume(","));
         return new Statement(type, vars.toArray(new Node[vars.size()]));
       }
+      case DEF:
+      case FOR:
+        throw new RuntimeException("NYI");
+
       case GOTO:
       case GOSUB:
         return new Statement(type, expressionParser.parse(tokenizer));
@@ -160,6 +168,15 @@ public class Basic {
         }
         return new Statement(type, delimiter.toArray(new String[delimiter.size()]),
             args.toArray(new Node[args.size()]));
+
+      case NEXT:
+      case RUN:
+      case RESTORE:
+        if (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF &&
+            tokenizer.currentValue != ":") {
+          return new Statement(type, expressionParser.parse(tokenizer));
+        }
+        return new Statement(type);
 
       case REM: {
         StringBuilder sb = new StringBuilder();
@@ -352,6 +369,7 @@ public class Basic {
           clear();
           break;
 
+        case DATA:
         case DIM:
           // We just do dynamic expansion as needed.
           break;
@@ -400,6 +418,29 @@ public class Basic {
         case PRINT:
           prinput();
           break;
+        case READ:
+          for (int i = 0; i < children.length; i++) {
+            while (dataStatement == null || dataPosition[2] >= dataStatement.children.length) {
+              dataPosition[2] = 0;
+              if (dataStatement != null) {
+                dataPosition[1]++;
+              }
+              dataStatement = find(StatementType.DATA, null, dataPosition);
+              if (dataStatement == null) {
+                throw new RuntimeException("Out of data.");
+              }
+            }
+            ((Variable) children[i]).set(dataStatement.children[dataPosition[2]++].eval());
+          }
+          break;
+
+        case RESTORE:
+          dataStatement = null;
+          Arrays.fill(dataPosition, 0);
+          if (children.length > 0) {
+            dataPosition[0] = (int) evalDouble(0);
+          }
+          break;
 
         case RETURN: {
           if (stack.isEmpty()) {
@@ -412,7 +453,7 @@ public class Basic {
         }
         case RUN:
           clear();
-          currentLine = 0;
+          currentLine = children.length == 0 ? 0 : (int) evalDouble(0);
           currentIndex = 0;
           break;
 
@@ -425,6 +466,24 @@ public class Basic {
 
         default:
          throw new RuntimeException("Unimplemented statement: " + type);
+      }
+      return null;
+    }
+
+    Statement find(StatementType type, String name, int[] position) {
+      Map.Entry<Integer,List<Statement>> entry;
+      while (null != (entry = program.ceilingEntry(position[0]))) {
+        position[0] = entry.getKey();
+        List<Statement> list = entry.getValue();
+        while (position[1] < list.size()) {
+          Statement statement = list.get(position[1]);
+          if (statement.type == type) {
+            return statement;
+          }
+          position[1]++;
+        }
+        position[0]++;
+        position[1] = 0;
       }
       return null;
     }
