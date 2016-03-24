@@ -3,6 +3,7 @@ package org.kobjects.expressionparser;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -94,7 +95,7 @@ public class ExpressionParser<T> {
   private final HashSet<String> primarySymbols = new HashSet<>();
   private final HashMap<String, String[]> calls = new HashMap<>();
   private final HashMap<String, String[]> groups = new HashMap<>();
-  private final HashMap<String, Boolean> allSymbols = new HashMap<>();
+  private final HashMap<String, Boolean> allSymbols = new LinkedHashMap<>();
 
   private final ArrayList<Operators> precedenceList = new ArrayList<>();
   private final Processor<T> processor;
@@ -398,7 +399,7 @@ public class ExpressionParser<T> {
    */
   public static class Tokenizer {
     public static final Pattern DEFAULT_NUMBER_PATTERN = Pattern.compile(
-        "\\G\\s*\\d+(\\.\\d*)?([eE][+-]?\\d+)?");
+        "\\G\\s*(\\d+(\\.\\d*)?|\\.\\d+)([eE][+-]?\\d+)?");
 
     public static final Pattern DEFAULT_IDENTIFIER_PATTERN = Pattern.compile(
         "\\G\\s*[\\p{IsAlphabetic}_\\$][\\p{IsAlphabetic}_\\$\\d]*");
