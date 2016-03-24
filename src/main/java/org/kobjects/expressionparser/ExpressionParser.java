@@ -1,11 +1,13 @@
 package org.kobjects.expressionparser;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 /**
@@ -95,7 +97,7 @@ public class ExpressionParser<T> {
   private final HashSet<String> primarySymbols = new HashSet<>();
   private final HashMap<String, String[]> calls = new HashMap<>();
   private final HashMap<String, String[]> groups = new HashMap<>();
-  private final HashMap<String, Boolean> allSymbols = new LinkedHashMap<>();
+  private final HashMap<String, Boolean> allSymbols = new HashMap<>();
 
   private final ArrayList<Operators> precedenceList = new ArrayList<>();
   private final Processor<T> processor;
@@ -429,7 +431,18 @@ public class ExpressionParser<T> {
     public Tokenizer(Scanner scanner, Iterable<String> symbols) {
       this.scanner = scanner;
       StringBuilder sb = new StringBuilder("\\G\\s*(");
+
+      TreeSet<String> sorted = new TreeSet<>(new Comparator<String>() {
+        @Override
+        public int compare(String s1, String s2) {
+          int dl = -Integer.compare(s1.length(), s2.length());
+          return dl == 0 ? s1.compareTo(s2) : dl;
+        }
+      });
       for (String symbol: symbols) {
+        sorted.add(symbol);
+      }
+      for (String symbol: sorted) {
         sb.append(Pattern.quote(symbol)).append('|');
       }
       sb.setCharAt(sb.length() - 1, ')');
