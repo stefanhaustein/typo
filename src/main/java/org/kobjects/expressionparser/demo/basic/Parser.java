@@ -42,7 +42,7 @@ class Parser {
 
   Statement parseStatement(ExpressionParser.Tokenizer tokenizer) {
     String name = tokenizer.currentValue;
-    if (tryConsume(tokenizer, "GO")) {
+    if (tryConsume(tokenizer, "GO")) {  // GO TO, GO SUB -> GOTO, GOSUB
       name += tokenizer.currentValue;
     } else if (name.equals("?")) {
       name = "PRINT";

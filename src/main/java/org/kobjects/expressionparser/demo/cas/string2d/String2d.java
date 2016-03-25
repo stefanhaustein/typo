@@ -38,7 +38,7 @@ public class String2d {
   public static String hline(int width) {
     StringBuilder sb = new StringBuilder(width);
     for (int i = 0; i < width; i++) {
-      sb.append('\u23af');
+      sb.append('\u2500');  // 23af
     }
     return sb.toString();
   }
