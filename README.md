@@ -10,8 +10,8 @@ A simple [single-file](src/main/java/org/kobjects/expressionparser/ExpressionPar
 The parser configuration supports simple mathematical expressions, and the processor just evaluates them immediately, without constructing an intermediate tree representation.
 
 ```
-Expression? 3*5^2+4*7
-Result:     103.0
+Expression? 5+2*-2^3^2
+Result:     -1019.0
 ```
 
 [SetDemo.java](src/main/java/org/kobjects/expressionparser/demo/sets/SetDemo.java) is similar to the calculator demo,
@@ -70,7 +70,20 @@ The BASIC demo [parser](src/main/java/org/kobjects/expressionparser/demo/interpr
   251392K SYSTEM  252056464 BASIC BYTES FREE
 
 READY.
-load "http://www.vintage-interpreter.net/bcg/superstartrek.bas"
+print "Hello World"
+Hello World
+
+READY.
+10 print "Hello World"
+list
+
+10 PRINT "Hello World"
+
+READY.
+run
+Hello World
+
+load "http://www.vintage-basic.net/bcg/superstartrek.bas"
 run
                                     ,------*------,
                     ,-------------   '---  ------'
