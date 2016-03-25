@@ -33,7 +33,7 @@ Result:     2
 
 ## Tree building
 
-[CasDemo.java](src/main/java/org/kobjects/expressionparser/demo/cas/CasDemo.java) shows how to builds a tree from the input. It's also able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
+[TreeBuilder.java](src/main/java/org/kobjects/expressionparser/demo/cas/TreeBuilder.java) shows how to builds a tree from the input. The corresponding [demo app](src/main/java/org/kobjects/expressionparser/demo/cas/) is able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
 
 ```
 Input?  derive(1/x, x)
@@ -62,7 +62,7 @@ Flat:   -1/x²
 
 ## Integration with a "main" parser
 
-The basic demo [parser](src/main/java/org/kobjects/expressionparser/demo/parser/Parser.java) is able to parse 70's BASIC programs. 
+The BASIC demo [parser](src/main/java/org/kobjects/expressionparser/demo/basic/Parser.java) is able to parse 70's BASIC programs. The rest of the [basic demo directory](src/main/java/org/kobjects/expressionparser/demo/basic/) contains some code to run them.  
 
 ```
   **** EXPRESSION PARSER BASIC DEMO V1 ****
