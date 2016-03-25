@@ -1,7 +1,7 @@
 
 A simple [single-file](src/main/java/org/kobjects/expressionparser/ExpressionParser.java) configurable Java parser for mathematical expressions.
 
-# Examples and demos
+# Examples and Demos
 
 ## Immediate evaluation
 
