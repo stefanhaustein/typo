@@ -454,7 +454,7 @@ public class ExpressionParser<T> {
           currentPosition, cause);
     }
 
-    public void nextToken() {
+    public TokenType nextToken() {
       currentPosition += currentValue.length();
       String value;
       if (scanner.ioException() != null) {
@@ -483,6 +483,7 @@ public class ExpressionParser<T> {
         leadingWhitespace = "";
         currentValue = value;
       }
+      return currentType;
     }
 
     @Override

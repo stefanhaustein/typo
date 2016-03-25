@@ -1,6 +1,5 @@
 package org.kobjects.expressionparser.demo.basic;
 
-
 class Literal extends Node {
   Object value;
 
@@ -22,7 +21,7 @@ class Literal extends Node {
   @Override
   public String toString() {
     if (value != Basic.INVISIBLE_STRING && value instanceof String) {
-      return Basic.quote((String) value);
+      return "\"" + ((String) value).replace("\"", "\"\"") + '"';
     }
     return Basic.toString(value);
   }

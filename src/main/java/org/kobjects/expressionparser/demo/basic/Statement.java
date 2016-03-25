@@ -41,7 +41,7 @@ class Statement extends Node {
     }
 
     if (interpreter.trace) {
-      System.out.println(interpreter.currentLine + ":" + interpreter.currentIndex + ": " + this);
+      System.out.print(interpreter.currentLine + ":" + interpreter.currentIndex + ": " + this);
     }
 
     switch (type) {
@@ -63,9 +63,8 @@ class Statement extends Node {
         break;
       }
       case DATA:
-      case DIM:
+      case DIM:   // We just do dynamic expansion as needed.
       case REM:
-        // We just do dynamic expansion as needed.
         break;
 
       case DUMP:
@@ -106,7 +105,7 @@ class Statement extends Node {
         if (evalDouble(0) == 0.0) {
           interpreter.currentLine++;
           interpreter.currentIndex = 0;
-        } else if (children.length == 1) {
+        } else if (children.length == 2) {
           interpreter.currentLine = (int) evalDouble(1);
           interpreter.currentIndex = 0;
         }
@@ -114,6 +113,9 @@ class Statement extends Node {
 
       case LET: {
         ((Variable) children[0]).set(children[1].eval());
+        if (interpreter.trace) {
+          System.out.print (" // " + children[0].eval());
+        }
         break;
       }
       case LIST:
@@ -134,8 +136,27 @@ class Statement extends Node {
         break;
 
       case INPUT:
+        input();
+        break;
+
       case PRINT:
-        prInput();
+        for (int i = 0; i < children.length; i++) {
+          Object val = children[i].eval();
+          if (val instanceof Double) {
+            double d = (Double) val;
+            interpreter.print((d < 0 ? "" : " ") + Basic.toString(d) + " ");
+          } else {
+            interpreter.print(Basic.toString(val));
+          }
+          if (i < delimiter.length && delimiter[i].equals(", ")) {
+            interpreter.print(
+                "                    ".substring(0, 14 - (interpreter.tabPos % 14)));
+          }
+        }
+        if (delimiter.length < children.length &&
+            (children.length == 0 || !children[children.length - 1].toString().startsWith("TAB"))) {
+          interpreter.print("\n");
+        }
         break;
 
       case ON: {
@@ -212,6 +233,9 @@ class Statement extends Node {
 
       default:
         throw new RuntimeException("Unimplemented statement: " + type);
+    }
+    if (interpreter.trace) {
+      System.out.println();
     }
     return null;
   }
@@ -327,32 +351,35 @@ class Statement extends Node {
     interpreter.nextSubIndex = 0;
   }
 
-  void prInput() {
+  void input() {
     for (int i = 0; i < children.length; i++) {
       Node child = children[i];
       if (type == Type.INPUT && child instanceof Variable) {
+        if (i <= 0 || i > delimiter.length || !delimiter[i-1].equals(", ")) {
+          interpreter.print("? ");
+        }
         Variable variable = (Variable) child;
         Object value;
-        try {
-          value = interpreter.reader.readLine();
-          if (!variable.name.endsWith("$")) {
-            value = Double.parseDouble((String) value);
+        while(true) {
+          try {
+            value = interpreter.reader.readLine();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
           }
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        } catch (NumberFormatException e) {
-          value = Double.NaN;
+          if (variable.name.endsWith("$")) {
+            break;
+          }
+          try {
+            value = Double.parseDouble((String) value);
+            break;
+          } catch (NumberFormatException e) {
+            interpreter.print("Not a number. Please enter a number: ");
+          }
         }
         variable.set(value);
       } else {
         interpreter.print(Basic.toString(child.eval()));
       }
-      if (i < delimiter.length && delimiter[i].equals(", ")) {
-        interpreter.print("\t");
-      }
-    }
-    if (delimiter.length < children.length) {
-      interpreter.print("\n");
     }
   }
 
