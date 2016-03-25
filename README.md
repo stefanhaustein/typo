@@ -33,7 +33,7 @@ Result:     2
 
 ## Tree building
 
-[TreeBuilder.java](src/main/java/org/kobjects/expressionparser/demo/cas/TreeBuilder.java) shows how to builds a tree from the input. The corresponding [demo app](src/main/java/org/kobjects/expressionparser/demo/cas/) is able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
+[TreeBuilder.java](src/main/java/org/kobjects/expressionparser/demo/cas/TreeBuilder.java) shows how to builds a tree from the input (using a [node factory](src/main/java/org/kobjects/expressionparser/demo/cas/tree/NodeFactory.java). The corresponding [demo app](src/main/java/org/kobjects/expressionparser/demo/cas/) is able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
 
 ```
 Input?  derive(1/x, x)
