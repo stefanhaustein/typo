@@ -20,9 +20,9 @@ class Literal extends Node {
 
   @Override
   public String toString() {
-    if (value != Basic.INVISIBLE_STRING && value instanceof String) {
+    if (value != Interpreter.INVISIBLE_STRING && value instanceof String) {
       return "\"" + ((String) value).replace("\"", "\"\"") + '"';
     }
-    return Basic.toString(value);
+    return Interpreter.toString(value);
   }
 }

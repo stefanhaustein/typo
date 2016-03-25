@@ -164,7 +164,7 @@ public class ExpressionParser<T> {
     }
   }
 
-    /**
+  /**
    * Add prefixOperator, infixOperator or postfix operators with the given precedence.
    */
   public void addOperators(OperatorType type, int precedence, String... names) {
@@ -212,7 +212,7 @@ public class ExpressionParser<T> {
   }
 
   /**
-   * Parse the given expression using a simple StreamTokenizer-based parser.
+   * Parser the given expression using a simple StreamTokenizer-based parser.
    * Leftover tokens will cause an exception.
    */
   public T parse(String expr) {
@@ -226,7 +226,7 @@ public class ExpressionParser<T> {
   }
 
   /**
-   * Parse an expression from the given tokenizer. Leftover tokens will be ignored and
+   * Parser an expression from the given tokenizer. Leftover tokens will be ignored and
    * may be handled by the caller.
    */
   public T parse(Tokenizer tokenizer) {
@@ -427,7 +427,7 @@ public class ExpressionParser<T> {
 
     protected final Scanner scanner;
 
-    public Tokenizer(Scanner scanner, Iterable<String> symbols) {
+    public Tokenizer(Scanner scanner, Iterable<String> symbols, String... additionalSymbols) {
       this.scanner = scanner;
       StringBuilder sb = new StringBuilder("\\G\\s*(");
 
@@ -439,6 +439,9 @@ public class ExpressionParser<T> {
         }
       });
       for (String symbol: symbols) {
+        sorted.add(symbol);
+      }
+      for (String symbol: additionalSymbols) {
         sorted.add(symbol);
       }
       for (String symbol: sorted) {

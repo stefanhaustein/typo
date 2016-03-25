@@ -4,10 +4,10 @@ import java.util.TreeMap;
 
 // Not static for access to the variables.
 class Variable extends Node {
-  final Basic interpreter;
+  final Interpreter interpreter;
   final String name;
 
-  Variable(Basic interpreter, String name, Node... children) {
+  Variable(Interpreter interpreter, String name, Node... children) {
     super(children);
     this.interpreter = interpreter;
     this.name = name;

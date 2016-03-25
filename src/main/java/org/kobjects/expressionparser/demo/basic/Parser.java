@@ -9,15 +9,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class Parser {
-  final Basic interpreter;
+  final Interpreter interpreter;
   final ExpressionParser<Node> expressionParser;
-  final ArrayList<String> symbols = new ArrayList<>();
 
-  Parser(Basic basic) {
-    this.interpreter = basic;
+  Parser(Interpreter interpreter) {
+    this.interpreter = interpreter;
 
     expressionParser = new ExpressionParser<>(new ExpressionBuilder());
     expressionParser.addCallBrackets("(", ",", ")");
+    expressionParser.addCallBrackets("[", ",", "]");  // HP
     expressionParser.addGroupBrackets("(", null, ")");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 7, "^");
     expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 6, "-");
@@ -27,17 +27,10 @@ class Parser {
     expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 2, "not", "NOT", "Not");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "and", "AND", "And");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "or", "OR", "Or");
-
-    symbols.add(":");
-    symbols.add(";");
-    symbols.add("?");
-    for (String s : expressionParser.getSymbols()) {
-      symbols.add(s);
-    }
   }
 
   ExpressionParser.Tokenizer createTokenizer(String line) {
-    return new GwTokenizer(new Scanner(line), symbols);
+    return new GwTokenizer(new Scanner(line), expressionParser.getSymbols());
   }
 
   Statement parseStatement(ExpressionParser.Tokenizer tokenizer) {
@@ -135,7 +128,7 @@ class Parser {
             delimiter.add(tokenizer.currentValue + " ");
             tokenizer.nextToken();
             if (delimiter.size() > args.size()) {
-              args.add(new Literal(Basic.INVISIBLE_STRING));
+              args.add(new Literal(Interpreter.INVISIBLE_STRING));
             }
           } else {
             args.add(expressionParser.parse(tokenizer));
@@ -241,7 +234,7 @@ class Parser {
     int gwConsumed = 0;
 
     GwTokenizer(Scanner scanner, Iterable<String> symbols) {
-      super(scanner, symbols);
+      super(scanner, symbols, ":", ";", "?");
       stringPattern = Pattern.compile("\\G\\s*(\"[^\"]*\")+");
     }
 

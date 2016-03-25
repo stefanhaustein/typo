@@ -22,7 +22,7 @@ abstract class Node {
   }
 
   String evalString(int i) {
-    return Basic.toString(children[i].eval());
+    return Interpreter.toString(children[i].eval());
   }
 
   public String toString() {

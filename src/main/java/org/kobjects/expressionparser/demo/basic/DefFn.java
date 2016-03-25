@@ -1,13 +1,13 @@
 package org.kobjects.expressionparser.demo.basic;
 
 class DefFn {
-  Basic basic;
+  Interpreter interpreter;
   String[] parameterNames;
   String name;
   Node expression;
 
-  DefFn(Basic basic, Node assignment) {
-    this.basic = basic;
+  DefFn(Interpreter interpreter, Node assignment) {
+    this.interpreter = interpreter;
     if (!(assignment instanceof Operator)
         || !((Operator) assignment).name.equals("=")
         || !(assignment.children[0] instanceof FnCall)) {
@@ -30,14 +30,14 @@ class DefFn {
     Object[] saved = new Object[parameterNames.length];
     for (int i = 0; i < parameterNames.length; i++) {
       String param = parameterNames[i];
-      saved[i] = basic.variables.get(param);
-      basic.variables.put(param, parameterValues[i]);
+      saved[i] = interpreter.variables.get(param);
+      interpreter.variables.put(param, parameterValues[i]);
     }
     try {
       return expression.eval();
     } finally {
       for (int i = 0; i < parameterNames.length; i++) {
-        basic.variables.put(parameterNames[i], saved[i]);
+        interpreter.variables.put(parameterNames[i], saved[i]);
       }
     }
   }

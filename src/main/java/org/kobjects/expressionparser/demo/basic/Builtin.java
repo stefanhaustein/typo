@@ -17,10 +17,10 @@ class Builtin extends Node {
     }
   }
 
-  final Basic interpreter;
+  final Interpreter interpreter;
   final Type type;
 
-  Builtin(Basic interpreter, Type id, Node... args) {
+  Builtin(Interpreter interpreter, Type id, Node... args) {
     super(args);
     this.interpreter = interpreter;
     this.type = id;
@@ -61,7 +61,7 @@ class Builtin extends Node {
       case SGN: return Math.signum(evalDouble(0));
       case SIN: return Math.sin(evalDouble(0));
       case SQR: return Math.sqrt(evalDouble(0));
-      case STR$: return Basic.toString(evalDouble(0));
+      case STR$: return Interpreter.toString(evalDouble(0));
       case RIGHT$: {
         String s = evalString(0);
         return s.substring(Math.min(s.length(), s.length() - evalInt(1)));

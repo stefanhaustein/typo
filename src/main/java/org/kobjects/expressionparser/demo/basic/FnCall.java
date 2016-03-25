@@ -2,10 +2,10 @@ package org.kobjects.expressionparser.demo.basic;
 
 // User-defined function
 class FnCall extends Node {
-  final Basic interpreter;
+  final Interpreter interpreter;
   final String name;
 
-  FnCall(Basic interpreter, String name, Node... children) {
+  FnCall(Interpreter interpreter, String name, Node... children) {
     super(children);
     this.interpreter = interpreter;
     this.name = name;

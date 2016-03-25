@@ -20,18 +20,18 @@ class Statement extends Node {
     STOP, TRON, TROFF
   }
 
-  final Basic interpreter;
+  final Interpreter interpreter;
   final Type type;
   final String[] delimiter;
 
-  Statement(Basic interpreter, Type type, String[] delimiter, Node... children) {
+  Statement(Interpreter interpreter, Type type, String[] delimiter, Node... children) {
     super(children);
     this.interpreter = interpreter;
     this.type = type;
     this.delimiter = delimiter;
   }
 
-  Statement(Basic interpreter, Type type, Node... children) {
+  Statement(Interpreter interpreter, Type type, Node... children) {
     this(interpreter, type, null, children);
   }
 
@@ -91,7 +91,7 @@ class Statement extends Node {
         break;
 
       case GOSUB: {
-        Basic.StackEntry entry = new Basic.StackEntry();
+        Interpreter.StackEntry entry = new Interpreter.StackEntry();
         entry.lineNumber = interpreter.currentLine;
         entry.statementIndex = interpreter.currentIndex;
         interpreter.stack.add(entry);
@@ -144,9 +144,9 @@ class Statement extends Node {
           Object val = children[i].eval();
           if (val instanceof Double) {
             double d = (Double) val;
-            interpreter.print((d < 0 ? "" : " ") + Basic.toString(d) + " ");
+            interpreter.print((d < 0 ? "" : " ") + Interpreter.toString(d) + " ");
           } else {
-            interpreter.print(Basic.toString(val));
+            interpreter.print(Interpreter.toString(val));
           }
           if (i < delimiter.length && delimiter[i].equals(", ")) {
             interpreter.print(
@@ -163,7 +163,7 @@ class Statement extends Node {
         int index = (int) Math.round(evalDouble(0));
         if (index < children.length && index > 0) {
           if (delimiter[0].equals(" GOSUB ")) {
-            Basic.StackEntry entry = new Basic.StackEntry();
+            Interpreter.StackEntry entry = new Interpreter.StackEntry();
             entry.lineNumber = interpreter.currentLine;
             entry.statementIndex = interpreter.currentIndex;
             interpreter.stack.add(entry);
@@ -203,7 +203,7 @@ class Statement extends Node {
           if (interpreter.stack.isEmpty()) {
             throw new RuntimeException("RETURN without GOSUB.");
           }
-          Basic.StackEntry entry = interpreter.stack.remove(interpreter.stack.size() - 1);
+          Interpreter.StackEntry entry = interpreter.stack.remove(interpreter.stack.size() - 1);
           if (entry.forVariable == null) {
             interpreter.currentLine = entry.lineNumber;
             interpreter.currentIndex = entry.statementIndex + 1;
@@ -315,7 +315,7 @@ class Statement extends Node {
       interpreter.currentIndex = nextPosition[1];
       interpreter.nextSubIndex = nextPosition[2] + 1;
     } else {
-      Basic.StackEntry entry = new Basic.StackEntry();
+      Interpreter.StackEntry entry = new Interpreter.StackEntry();
       entry.forVariable = (Variable) children[0];
       entry.end = end;
       entry.step = step;
@@ -328,7 +328,7 @@ class Statement extends Node {
   void loopEnd() {
     for (int i = interpreter.nextSubIndex; i < Math.max(children.length, 1); i++) {
       String name = children.length == 0 ? null : children[i].toString();
-      Basic.StackEntry entry;
+      Interpreter.StackEntry entry;
       while (true) {
         if (interpreter.stack.isEmpty()
             || interpreter.stack.get(interpreter.stack.size() - 1).forVariable == null) {
@@ -378,7 +378,7 @@ class Statement extends Node {
         }
         variable.set(value);
       } else {
-        interpreter.print(Basic.toString(child.eval()));
+        interpreter.print(Interpreter.toString(child.eval()));
       }
     }
   }
