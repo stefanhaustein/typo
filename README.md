@@ -1,7 +1,7 @@
 
 A simple [single-file](src/main/java/org/kobjects/expressionparser/ExpressionParser.java) configurable Java parser for mathematical expressions.
 
-# Examples and demos
+# Examples and Demos
 
 ## Immediate evaluation
 
@@ -62,7 +62,7 @@ Flat:   -1/x²
 
 ## Integration with a "main" parser
 
-The BASIC demo [parser](src/main/java/org/kobjects/expressionparser/demo/interpreter/Parser.java) is able to parse 70's BASIC programs. The rest of the [interpreter demo directory](src/main/java/org/kobjects/expressionparser/demo/interpreter/) contains some code to run them.
+The [BASIC demo parser](src/main/java/org/kobjects/expressionparser/demo/interpreter/Parser.java) is able to parse 70's BASIC programs. The rest of the [BASIC demo directory](src/main/java/org/kobjects/expressionparser/demo/interpreter/) contains some code to run them.
 
 ```
   **** EXPRESSION PARSER BASIC DEMO V1 ****
