@@ -92,7 +92,7 @@ class Parser {
         if (!(assignment instanceof Operator) || !(assignment.children[0] instanceof Variable)
             || assignment.children[0].children.length != 0
             || !((Operator) assignment).name.equals("=")) {
-          throw new RuntimeException("Variable assignment expected after FOR");
+          throw new RuntimeException("LocalVariable assignment expected after FOR");
         }
         require(tokenizer, "TO");
         Node end = expressionParser.parse(tokenizer);

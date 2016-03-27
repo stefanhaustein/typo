@@ -52,7 +52,7 @@ public class SetDemo {
     }
 
     @Override
-    public Object primarySymbol(String name) {
+    public Object primary(String name, ExpressionParser.Tokenizer tokenizer) {
       if (name.equals("\u2205")){
         return new LinkedHashSet<Object>();
       }
@@ -96,7 +96,7 @@ public class SetDemo {
     parser.addGroupBrackets("|", null, "|");
     parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "\u2229");
     parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "\u222a", "\u2216", "\\");
-    parser.addPrimarySymbols("\u2205");
+    parser.addPrimary("\u2205");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Expression? ");

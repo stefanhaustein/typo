@@ -20,6 +20,7 @@ public class ExpressionParser<T> {
    * to avoid the need to implement methods that never trigger for a given syntax.
    */
   public static class Processor<T> {
+
     /** Called when an infix operator with the given name is parsed. */
     public T infixOperator(String name, T left, T right) {
       throw new UnsupportedOperationException("infixOperator(" + name + ", " + left + ", " + right + ')');
@@ -39,12 +40,12 @@ public class ExpressionParser<T> {
      * Called when a symbol that is neither an operator nor an identifier is parsed
      * (e.g. the empty set symbol).
      */
-    public T primarySymbol(String name) {
-      throw new UnsupportedOperationException("primarySymbol(" + name + ")");
+    public T primary(String name, Tokenizer tokenizer) {
+      throw new UnsupportedOperationException("primary(" + name + ", " + tokenizer + ")");
     }
 
     /** Called when a suffix operator with the given name is parsed. */
-    public T suffixOperator(String name, T argument) {
+    public T suffixOperator(String name, T argument, Tokenizer tokenizer) {
       throw new UnsupportedOperationException("suffixOperator(" + name + ", " + argument + ')');
     }
 
@@ -93,7 +94,7 @@ public class ExpressionParser<T> {
     INFIX, INFIX_RTL, PREFIX, SUFFIX
   }
 
-  private final HashSet<String> primarySymbols = new HashSet<>();
+  private final HashSet<String> primary = new HashSet<>();
   private final HashMap<String, String[]> calls = new HashMap<>();
   private final HashMap<String, String[]> groups = new HashMap<>();
   private final HashMap<String, Boolean> allSymbols = new HashMap<>();
@@ -158,9 +159,9 @@ public class ExpressionParser<T> {
     return this;
   }
 
-  public void addPrimarySymbols(String... names) {
+  public void addPrimary(String... names) {
     for (String name : names) {
-      primarySymbols.add(addSymbol(name, false));
+      primary.add(addSymbol(name, false));
     }
   }
 
@@ -293,7 +294,7 @@ public class ExpressionParser<T> {
         String[] apply = operators.apply.get(candidate);
         result = processor.apply(result, candidate, parseList(tokenizer, apply[0], apply[1]));
       } else {
-        result = processor.suffixOperator(candidate, result);
+        result = processor.suffixOperator(candidate, result, tokenizer);
       }
       candidate = tokenizer.currentValue;
     }
@@ -343,6 +344,11 @@ public class ExpressionParser<T> {
         }
       }
     }
+    if (primary.contains(candidate)) {
+      tokenizer.nextToken();
+      return processor.primary(candidate, tokenizer);
+    }
+
     T result;
     switch (tokenizer.currentType) {
       case NUMBER:
@@ -364,12 +370,6 @@ public class ExpressionParser<T> {
         result = processor.stringLiteral(candidate);
         tokenizer.nextToken();
         break;
-      case SYMBOL:
-        if (primarySymbols.contains(candidate)) {
-          result = processor.primarySymbol(candidate);
-          tokenizer.nextToken();
-          break;
-        } // Fall-through intended.
       default:
         throw tokenizer.exception("Unexpected token type.", null);
     }
@@ -451,6 +451,23 @@ public class ExpressionParser<T> {
       symbolPattern = Pattern.compile(sb.toString());
     }
 
+    public TokenType consume(String expected) {
+      if (!tryConsume(expected)) {
+        throw exception("Expected: '" + expected + "'.", null);
+      }
+      return currentType;
+    }
+
+    public String consumeIdentifier() {
+      if (currentType != TokenType.IDENTIFIER) {
+        throw exception("Identifier expected!", null);
+      }
+      String identifier = currentValue;
+      nextToken();
+      return identifier;
+    }
+
+
     public ParsingException exception(String message, Exception cause) {
       return new ParsingException(message
           + " Position: " + currentPosition + " Token: '" + currentValue + "' Type: " + currentType,
@@ -476,6 +493,7 @@ public class ExpressionParser<T> {
       } else if ((value = scanner.findWithinHorizon("\\G\\s*\\S*", 0)) != null) {
         currentType = TokenType.UNRECOGNIZED;
       } else {
+        currentType = TokenType.UNRECOGNIZED;
         throw exception("EOF not reached, but catchall not matched.", null);
       }
       if (value.length() > 0 && value.charAt(0) <= ' ') {
