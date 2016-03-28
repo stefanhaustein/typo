@@ -1,11 +1,11 @@
 package org.kobjects.expressionparser.demo.typo;
 
 
-class PropertyAccess extends Node {
+class GetProperty extends Node {
 
   Classifier.Member member;
 
-  PropertyAccess(Node base, Classifier.Member member) {
+  GetProperty(Node base, Classifier.Member member) {
     super(member.type, base);
     this.member = member;
   }

@@ -1,11 +1,13 @@
 package org.kobjects.expressionparser.demo.typo;
 
 class Function implements Applicable {
+  String name;
   FunctionType type;
   Parameter[] parameters;
   Statement[] body;
 
-  Function(Type returnType, Parameter[] parameters, Statement... body) {
+  Function(String name, Type returnType, Parameter[] parameters, Statement... body) {
+    this.name = name;
     this.parameters = parameters;
     this.body = body;
 

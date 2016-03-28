@@ -11,7 +11,7 @@ class DefFn {
     if (!(assignment instanceof Operator)
         || !((Operator) assignment).name.equals("=")
         || !(assignment.children[0] instanceof FnCall)) {
-      throw new RuntimeException("Assignment to function declaration expected.");
+      throw new RuntimeException("SetLocal to function declaration expected.");
     }
     FnCall target = (FnCall) assignment.children[0];
     this.name = target.name;

@@ -31,6 +31,6 @@ class Literal extends Node {
 
   @Override
   public Object eval(EvaluationContext context) {
-    return value;
+    return value instanceof Function ? new EvaluationContext(context.self, (Function) value) : value;
   }
 }

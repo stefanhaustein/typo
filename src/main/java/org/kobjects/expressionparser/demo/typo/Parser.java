@@ -3,7 +3,7 @@ package org.kobjects.expressionparser.demo.typo;
 
 import org.kobjects.expressionparser.ExpressionParser;
 
-import java.io.StringReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -21,7 +21,8 @@ class Parser {
   }
   ParsingContext parsingContext;
 
-  public ExpressionParser.Tokenizer createTokenizer(StringReader reader) {
+
+  public ExpressionParser.Tokenizer createTokenizer(Reader reader) {
     return new ExpressionParser.Tokenizer(new Scanner(reader), expressionParser.getSymbols(), "{", "}", ";", ":");
   }
 
@@ -53,7 +54,7 @@ class Parser {
         clazz.addField(memberName, parseType(tokenizer));
         tokenizer.consume(";");
       } else if (tokenizer.currentValue.equals("(")) {
-        clazz.addMethod(memberName, parseFunction(tokenizer));
+        clazz.addMethod(memberName, parseFunction(tokenizer, false));
       }
     }
     parsingContext.declare(clazz.name, clazz);
@@ -63,21 +64,26 @@ class Parser {
   Node parseDot(Node base, String name) {
     Classifier.Member member =
         ((Classifier) base.type).members.get(name);
-    return new PropertyAccess(base, member);
+    return new GetProperty(base, member);
   }
 
-  Function parseFunction(ExpressionParser.Tokenizer tokenizer) {
-    tokenizer.consume("(");
+  Function parseFunction(ExpressionParser.Tokenizer tokenizer, boolean method) {
+    String functionName = null;
+    if (!method && !tokenizer.tryConsume("(")) {
+      functionName = tokenizer.consumeIdentifier();
+      tokenizer.consume("(");
+    }
     ArrayList<Function.Parameter> parameterList = new ArrayList<>();
     if (!tokenizer.tryConsume(")")) {
       do {
-        String name = tokenizer.consumeIdentifier();
+        String parameterName = tokenizer.consumeIdentifier();
         tokenizer.consume(":");
         Type type = parsingContext.resolveType(tokenizer.consumeIdentifier());
-        parameterList.add(new Function.Parameter(name, type));
+        parameterList.add(new Function.Parameter(parameterName, type));
       } while(tokenizer.tryConsume(","));
       tokenizer.consume(")");
     }
+
     tokenizer.consume("{");
 
     ParsingContext savedContext = parsingContext;
@@ -91,9 +97,14 @@ class Parser {
     tokenizer.consume("}");
 
     parsingContext = savedContext;
-    return new Function(type,
+    Function fn = new Function(functionName, type,
         parameterList.toArray(new Function.Parameter[parameterList.size()]),
         body.toArray(new Statement[body.size()]));
+    // TODO: Move before body!
+    if (functionName != null) {
+      parsingContext.addLocal(functionName, fn.type);
+    }
+    return fn;
   }
 
   Statement parseInterface(ExpressionParser.Tokenizer tokenizer) {
@@ -102,10 +113,9 @@ class Parser {
 
   Statement parseStatement(ExpressionParser.Tokenizer tokenizer, boolean cli) {
     Statement result;
-   /* if (tokenizer.tryConsume("function")) {
-      result = new Statement(Statement.Kind.EXPRESSION, parseFunction(context, tokenizer));
-    } else */
-    if (tokenizer.tryConsume("class")) {
+    if (tokenizer.tryConsume("let")) {
+      result = parseLet(tokenizer);
+    } else if (tokenizer.tryConsume("class")) {
       result = new Statement(parseClass(tokenizer));
     } else if (tokenizer.tryConsume("interface")) {
       result = parseInterface(tokenizer);
@@ -113,13 +123,24 @@ class Parser {
       result = new Statement(Statement.Kind.RETURN,
           expressionParser.parse(tokenizer));
     } else {
+      Node expression = expressionParser.parse(tokenizer);
       result = new Statement(cli ? Statement.Kind.RETURN : Statement.Kind.EXPRESSION,
-          expressionParser.parse(tokenizer));
+            expression);
     }
-    if (!tokenizer.tryConsume(";") && !cli) {
+    tokenizer.tryConsume(";");
+/*    if (!tokenizer.tryConsume(";") && !cli) {
       throw tokenizer.exception("Semicolon expected after statement.", null);
-    }
+    } */
     return result;
+  }
+
+  private Statement parseLet(ExpressionParser.Tokenizer tokenizer) {
+    //tokenizer.nextToken();
+    String target = tokenizer.consumeIdentifier();
+    tokenizer.consume("=");
+    Node expr = expressionParser.parse(tokenizer);
+    int index = parsingContext.addLocal(target, expr.type);
+    return new Statement(index, expr);
   }
 
   Node parseNew(ExpressionParser.Tokenizer tokenizer) {
@@ -141,12 +162,17 @@ class Parser {
     return parsingContext.resolveType(name);
   }
 
-
   class ExpressionProcessor extends ExpressionParser.Processor<Node> {
     @Override
     public Node primary(String name, ExpressionParser.Tokenizer tokenizer) {
       if (name.equals("function")) {
-        return new Literal(parseFunction(tokenizer));
+        Function fn = parseFunction(tokenizer, false);
+        Literal literal = new Literal(fn);
+        if (fn.name != null) {
+          return new SetLocal(parsingContext.locals.get(fn.name).localIndex,
+              literal);
+        }
+        return literal;
       }
       if (name.equals("new")) {
         return parseNew(tokenizer);
@@ -157,23 +183,29 @@ class Parser {
     @Override
     public Node identifier(String name) {
       Object o = parsingContext.resolve(name);
-      if (o instanceof LocalVariable) {
-        LocalVariable var = (LocalVariable) o;
-        return new LocalVariable(var.name, var.type, var.index);
+      if (o == null) {
+        throw new RuntimeException("Undeclared variable: " + name);
+      }
+      if (o instanceof ParsingContext.LocalDeclaration) {
+        ParsingContext.LocalDeclaration var = (ParsingContext.LocalDeclaration) o;
+        return new GetLocal(var.name, var.type, var.localIndex);
       }
       if (o instanceof Classifier.Member) {
         Classifier.Member member = (Classifier.Member) o;
-        return new PropertyAccess(new This(parsingContext.self), member);
+        return new GetProperty(new This(parsingContext.self), member);
       }
       if (o instanceof Classifier) {
         return new Literal(o);
       }
-
-      throw new RuntimeException("Undeclared variable: " + name);
+      throw new RuntimeException("Don't know how to handle " + o + " class " + o.getClass()
+          + " for identifier " + name);
   }
 
     @Override
     public Node infixOperator(String name, Node left, Node right) {
+      if (left.type != Type.NUMBER || right.type != Type.NUMBER) {
+        return new Concat(left, right);
+      }
       Wasm.Op op;
       switch(name.charAt(0)) {
         case '+': op = Wasm.Op.F64Add; break;

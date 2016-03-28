@@ -231,7 +231,13 @@ public class ExpressionParser<T> {
    * may be handled by the caller.
    */
   public T parse(Tokenizer tokenizer) {
-    return parseOperator(tokenizer, 0);
+    try {
+      return parseOperator(tokenizer, 0);
+    } catch (ParsingException e) {
+      throw e;
+    } catch (Exception e) {
+      throw tokenizer.exception(e.getMessage(), e);
+    }
   }
 
   private T parseOperator(Tokenizer tokenizer, int precedence) {
@@ -389,9 +395,13 @@ public class ExpressionParser<T> {
 
   public static class ParsingException extends RuntimeException {
     final public int position;
-    public ParsingException(String text, int position, Exception base) {
+    final public int line;
+    final public int column;
+    public ParsingException(String text, int position, int line, int column, Exception base) {
       super(text, base);
       this.position = position;
+      this.line = line;
+      this.column = column;
     }
   }
 
@@ -420,6 +430,8 @@ public class ExpressionParser<T> {
     public Pattern endPattern = DEFAULT_END_PATTERN;
     public Pattern symbolPattern;
 
+    public int currentLine = 1;
+    public int lastLineStart = 0;
     public int currentPosition = 0;
     public String currentValue = "";
     public TokenType currentType = TokenType.BOF;
@@ -469,9 +481,10 @@ public class ExpressionParser<T> {
 
 
     public ParsingException exception(String message, Exception cause) {
+      int column = currentPosition - lastLineStart + 1;
       return new ParsingException(message
-          + " Position: " + currentPosition + " Token: '" + currentValue + "' Type: " + currentType,
-          currentPosition, cause);
+          + " Position: " + currentLine + ":" + column + " (" + currentPosition + ") Token: '" + currentValue + "' Type: " + currentType,
+          currentPosition, currentLine, column, cause);
     }
 
     public TokenType nextToken() {
@@ -499,7 +512,17 @@ public class ExpressionParser<T> {
       if (value.length() > 0 && value.charAt(0) <= ' ') {
         currentValue = value.trim();
         leadingWhitespace = value.substring(0, value.length() - currentValue.length());
-        currentPosition += leadingWhitespace.length();
+        int pos = 0;
+        while (true) {
+          int j = leadingWhitespace.indexOf('\n', pos);
+          if (j == -1) {
+            break;
+          }
+          pos = j + 1;
+          currentLine++;
+          lastLineStart = currentPosition + j;
+          currentPosition += leadingWhitespace.length();
+        }
       } else {
         leadingWhitespace = "";
         currentValue = value;

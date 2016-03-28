@@ -1,10 +1,11 @@
 package org.kobjects.expressionparser.demo.typo;
 
 class Statement {
-  enum Kind {RETURN, EXPRESSION, DECLARATION};
+  enum Kind {RETURN, EXPRESSION, TYPE_DECLARATION, LET};
 
   static Object NO_RETURN = new Object();
 
+  int index;
   Kind kind;
   Node expression;
   Type type;
@@ -15,10 +16,17 @@ class Statement {
     this.expression = node;
   }
 
+  Statement(int index, Node node) {
+    this.kind = Kind.LET;
+    this.type = Type.NONE;
+    this.index = index;
+    this.expression = node;
+  }
+
   Statement(Type type) {
     this.type = type;
     this.expression = null;
-    this.kind = Kind.DECLARATION;
+    this.kind = Kind.TYPE_DECLARATION;
   }
 
   public Object eval(EvaluationContext context) {
@@ -28,7 +36,9 @@ class Statement {
       case EXPRESSION:
         expression.eval(context);
         return NO_RETURN;
-      case DECLARATION:
+      case LET:
+        context.setLocal(index, expression.eval(context));
+      case TYPE_DECLARATION:
         return NO_RETURN;
       default:
         throw new UnsupportedOperationException(kind.name());
@@ -37,7 +47,7 @@ class Statement {
 
   public String toString() {
     switch (kind) {
-      case DECLARATION: return type.toString();
+      case TYPE_DECLARATION: return type.toString();
       case RETURN: return "return " + expression + ";";
       default:
         return expression + ";";

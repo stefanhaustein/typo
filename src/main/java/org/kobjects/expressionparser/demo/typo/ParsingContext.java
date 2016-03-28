@@ -4,19 +4,20 @@ import java.util.LinkedHashMap;
 
 class ParsingContext {
   Classifier self;
-  LinkedHashMap<String, Object> locals = new LinkedHashMap<>();
+  LinkedHashMap<String, LocalDeclaration> locals = new LinkedHashMap<>();
   // Move into classifiers
-  LinkedHashMap<String, Classifier> classifiers = new LinkedHashMap<>();
+  LinkedHashMap<String, Type> types = new LinkedHashMap<>();
 
   ParsingContext(Classifier self) {
     this.self = self;
   }
 
-  void addLocal(String name, Type type) {
+  int addLocal(String name, Type type) {
     if (locals.containsKey(name)) {
       throw new RuntimeException("Duplicate variable '" + name + "'");
     }
     locals.put(name, new LocalDeclaration(name, type, locals.size()));
+    return locals.size() - 1;
   }
 
   Object resolve(String name) {
@@ -30,8 +31,8 @@ class ParsingContext {
   }
 
   Type resolveType(String s) {
-    if (classifiers.containsKey(s)) {
-      return classifiers.get(s);
+    if (types.containsKey(s)) {
+      return types.get(s);
     }
     if (s.equals("number")) {
       return Type.NUMBER;
@@ -43,8 +44,8 @@ class ParsingContext {
     throw new RuntimeException("Unknown type: '" + s + "'");
   }
 
-  public void declare(String name, Classifier clazz) {
-    classifiers.put(name, clazz);
+  public void declare(String name, Type clazz) {
+    types.put(name, clazz);
   }
 
   static class LocalDeclaration {
