@@ -62,7 +62,7 @@ Flat:   -1/x²
 
 ## Integration with a "main" parser
 
-The [BASIC demo parser](src/main/java/org/kobjects/expressionparser/demo/interpreter/Parser.java) is able to parse 70's BASIC programs. The rest of the [BASIC demo directory](src/main/java/org/kobjects/expressionparser/demo/interpreter/) contains some code to run them.
+The [BASIC demo parser](src/main/java/org/kobjects/expressionparser/demo/basic/Parser.java) is able to parse 70's BASIC programs. The rest of the [BASIC demo directory](src/main/java/org/kobjects/expressionparser/demo/basic/) contains some code to run them.
 
 ```
   **** EXPRESSION PARSER BASIC DEMO V1 ****
