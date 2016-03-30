@@ -18,8 +18,8 @@ import java.net.URLConnection;
 public class Shell {
 
   static Processor processor = new Processor();
-  static org.kobjects.expressionparser.demo.thin.EvaluationContext evaluationContext;
-  static org.kobjects.expressionparser.demo.thin.ParsingContext parsingContext;
+  static EvaluationContext evaluationContext;
+  static ParsingContext parsingContext;
 
   static void load(String url) {
     try {
@@ -72,7 +72,7 @@ public class Shell {
       }
 
       @Override
-      public Object apply(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
+      public Object apply(EvaluationContext context) {
         System.out.println(context.getLocal(0));
         return null;
       }
@@ -84,7 +84,7 @@ public class Shell {
       }
 
       @Override
-      public Object apply(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
+      public Object apply(EvaluationContext context) {
         load(String.valueOf(context.locals[0]));
         return null;
       }
@@ -94,8 +94,8 @@ public class Shell {
     Instance root = rootClass.newInstance(null);
     root.setField(rootClass.members.get("console").fieldIndex, console);
 
-    parsingContext = new org.kobjects.expressionparser.demo.thin.ParsingContext(rootClass);
-    evaluationContext = new org.kobjects.expressionparser.demo.thin.EvaluationContext(root, null);
+    parsingContext = new ParsingContext(rootClass);
+    evaluationContext = new EvaluationContext(root, null);
 
     while (true) {
       System.out.print("Expression? ");

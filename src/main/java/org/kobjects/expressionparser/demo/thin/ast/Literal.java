@@ -1,5 +1,7 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 import org.kobjects.expressionparser.demo.thin.type.Types;
 
@@ -33,12 +35,12 @@ class Literal implements Expression {
   }
 
   @Override
-  public Expression resolve(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public Expression resolve(ParsingContext context) {
     return this;
   }
 
   @Override
-  public Object eval(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
+  public Object eval(EvaluationContext context) {
     return value;
   }
 
@@ -48,6 +50,6 @@ class Literal implements Expression {
   }
 
   @Override
-  public void resolveSignatures(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public void resolveSignatures(ParsingContext context) {
   }
 }

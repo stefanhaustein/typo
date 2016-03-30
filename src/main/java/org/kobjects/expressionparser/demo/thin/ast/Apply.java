@@ -1,5 +1,8 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
+
 class Apply extends Node {
   Expression target;
 
@@ -9,8 +12,8 @@ class Apply extends Node {
   }
 
   @Override
-  public Object eval(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
-    org.kobjects.expressionparser.demo.thin.EvaluationContext newContext = (org.kobjects.expressionparser.demo.thin.EvaluationContext) target.eval(context);
+  public Object eval(EvaluationContext context) {
+    EvaluationContext newContext = (EvaluationContext) target.eval(context);
     for (int i = 0; i < children.length; i++) {
       newContext.setLocal(i, children[i].eval(context));
     }
@@ -18,14 +21,14 @@ class Apply extends Node {
   }
 
   @Override
-  public Expression resolve(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public Expression resolve(ParsingContext context) {
     resolveChildren(context);
     target = target.resolve(context);
     return this;
   }
 
   @Override
-  public void resolveSignatures(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public void resolveSignatures(ParsingContext context) {
     target.resolveSignatures(context);
     super.resolveSignatures(context);
   }

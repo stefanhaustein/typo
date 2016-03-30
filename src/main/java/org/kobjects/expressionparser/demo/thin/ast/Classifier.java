@@ -1,5 +1,10 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
+import org.kobjects.expressionparser.demo.thin.Applicable;
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.Field;
+import org.kobjects.expressionparser.demo.thin.Instance;
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.MetaType;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
@@ -7,8 +12,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Classifier implements org.kobjects.expressionparser.demo.thin.ast.Expression, Type {
-
+public class Classifier implements Expression, Type {
 
   public enum Kind {CLASS, INTERFACE};
   public enum Modifier {STATIC, PUBLIC}
@@ -29,7 +33,7 @@ public class Classifier implements org.kobjects.expressionparser.demo.thin.ast.E
   }
 
   @Override
-  public void resolveSignatures(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public void resolveSignatures(ParsingContext context) {
     for (Member member: members.values()) {
       if (member.implementation != null) {
         if (member.implementation instanceof Function) {
@@ -51,7 +55,7 @@ public class Classifier implements org.kobjects.expressionparser.demo.thin.ast.E
     return member;
   }
 
-  public void addMethod(String name, org.kobjects.expressionparser.demo.thin.Applicable applicable) {
+  public void addMethod(String name, Applicable applicable) {
     Member member = new Member();
     member.name = name;
     member.implementation = applicable;
@@ -65,21 +69,21 @@ public class Classifier implements org.kobjects.expressionparser.demo.thin.ast.E
 
 
   @Override
-  public org.kobjects.expressionparser.demo.thin.ast.Expression resolve(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public Expression resolve(ParsingContext context) {
     return this;
   }
 
   @Override
-  public Object eval(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
+  public Object eval(EvaluationContext context) {
     return this;
   }
 
-  public org.kobjects.expressionparser.demo.thin.Instance newInstance(org.kobjects.expressionparser.demo.thin.EvaluationContext context, Object... args) {
-    return new org.kobjects.expressionparser.demo.thin.Instance(this);
+  public Instance newInstance(EvaluationContext context, Object... args) {
+    return new Instance(this);
   }
 
   @Override
-  public Type resolveType(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public Type resolveType(ParsingContext context) {
     return this;
   }
 
@@ -89,11 +93,31 @@ public class Classifier implements org.kobjects.expressionparser.demo.thin.ast.E
   }
 
 
-  public static class Member {
+  public static class Member implements Field {
     EnumSet<Modifier> modifiers;
     String name;
     Type type;
     public int fieldIndex;
-    org.kobjects.expressionparser.demo.thin.Applicable implementation;
+    Applicable implementation;
+
+    @Override
+    public String name() {
+      return name;
+    }
+
+    @Override
+    public void set(EvaluationContext context, Object value) {
+      context.self.setField(fieldIndex, value);
+    }
+
+    @Override
+    public Type type() {
+      return type;
+    }
+
+    @Override
+    public Object get(EvaluationContext context) {
+      return context.self.fields[fieldIndex];
+    }
   }
 }

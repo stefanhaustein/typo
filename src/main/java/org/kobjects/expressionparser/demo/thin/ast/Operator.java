@@ -8,13 +8,13 @@ import org.kobjects.expressionparser.demo.thin.type.Type;
 public class Operator extends Node {
   Wasm.Op op;
 
-  public Operator(Wasm.Op op, org.kobjects.expressionparser.demo.thin.ast.Expression... children) {
+  public Operator(Wasm.Op op, Expression... children) {
     super(Type.NUMBER, children);
     this.op = op;
   }
 
   @Override
-  public org.kobjects.expressionparser.demo.thin.ast.Expression resolve(ParsingContext context) {
+  public Expression resolve(ParsingContext context) {
     throw new UnsupportedOperationException("Already resolved.");
   }
 

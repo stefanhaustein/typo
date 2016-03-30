@@ -2,6 +2,7 @@ package org.kobjects.expressionparser.demo.thin.ast;
 
 
 import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.Field;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
@@ -27,17 +28,11 @@ class UnresolvedIdentifier implements Expression {
     if (o == null) {
       throw new RuntimeException("Undeclared variable: " + name);
     }
-    if (o instanceof ParsingContext.LocalDeclaration) {
-      ParsingContext.LocalDeclaration var = (ParsingContext.LocalDeclaration) o;
-      return new org.kobjects.expressionparser.demo.thin.ast.GetLocal(
-          var.name, var.type, var.localIndex);
+    if (o instanceof Field) {
+      return new GetField((Field) o);
     }
-    if (o instanceof org.kobjects.expressionparser.demo.thin.ast.Classifier.Member) {
-      org.kobjects.expressionparser.demo.thin.ast.Classifier.Member member = (org.kobjects.expressionparser.demo.thin.ast.Classifier.Member) o;
-      return new org.kobjects.expressionparser.demo.thin.ast.GetProperty(new org.kobjects.expressionparser.demo.thin.ast.This(), member);
-    }
-    if (o instanceof org.kobjects.expressionparser.demo.thin.ast.Classifier) {
-      return new org.kobjects.expressionparser.demo.thin.ast.Literal(o);
+    if (o instanceof Classifier) {
+      return new Literal(o);
     }
     throw new RuntimeException("Don't know how to handle " + o + " class " + o.getClass()
         + " for identifier " + name);
@@ -50,6 +45,5 @@ class UnresolvedIdentifier implements Expression {
 
   @Override
   public void resolveSignatures(ParsingContext context) {
-
   }
 }

@@ -1,14 +1,19 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
+import org.kobjects.expressionparser.demo.thin.Applicable;
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
+import org.kobjects.expressionparser.demo.thin.type.FunctionType;
+import org.kobjects.expressionparser.demo.thin.type.Type;
 
-public class Function implements Expression, org.kobjects.expressionparser.demo.thin.Applicable {
+public class Function implements Expression, Applicable {
   String name;
   public Parameter[] parameters;
   org.kobjects.expressionparser.demo.thin.type.Type returnType;
   org.kobjects.expressionparser.demo.thin.type.FunctionType type;
   public Statement body;
 
-  Function(String name, Parameter[] parameters, org.kobjects.expressionparser.demo.thin.type.Type returnType, Statement body) {
+  Function(String name, Parameter[] parameters, Type returnType, Statement body) {
     this.name = name;
     this.parameters = parameters;
     this.returnType = returnType;
@@ -16,34 +21,34 @@ public class Function implements Expression, org.kobjects.expressionparser.demo.
   }
 
   @Override
-  public Object apply(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
+  public Object apply(EvaluationContext context) {
     return body.eval(context);
   }
 
   @Override
-  public Object eval(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
-    return new org.kobjects.expressionparser.demo.thin.EvaluationContext(context.self, this);
+  public Object eval(EvaluationContext context) {
+    return new EvaluationContext(context.self, this);
   }
 
   @Override
-  public Expression resolve(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
-    org.kobjects.expressionparser.demo.thin.ParsingContext bodyContext = new org.kobjects.expressionparser.demo.thin.ParsingContext(context.self);
+  public Expression resolve(ParsingContext context) {
+    ParsingContext bodyContext = new ParsingContext(context.self);
     for (Parameter param : parameters) {
-      bodyContext.addLocal(param.name, param.type);
+      bodyContext.declareLocal(param.name, param.type);
     }
     body.resolve(bodyContext);
     return this;
   }
 
   @Override
-  public void resolveSignatures(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public void resolveSignatures(ParsingContext context) {
     returnType = returnType.resolveType(context);
-    org.kobjects.expressionparser.demo.thin.type.Type[] parameterTypes = new org.kobjects.expressionparser.demo.thin.type.Type[parameters.length];
+    org.kobjects.expressionparser.demo.thin.type.Type[] parameterTypes = new Type[parameters.length];
     for (int i = 0; i < parameterTypes.length; i++) {
       parameterTypes[i] = parameters[i].type.resolveType(context);
       parameters[i].type = parameterTypes[i];
     }
-    type = new org.kobjects.expressionparser.demo.thin.type.FunctionType(returnType, parameterTypes);
+    type = new FunctionType(returnType, parameterTypes);
     body.resolveSignatures(context);
   }
 
@@ -74,15 +79,15 @@ public class Function implements Expression, org.kobjects.expressionparser.demo.
   }
 
   @Override
-  public org.kobjects.expressionparser.demo.thin.type.FunctionType type() {
+  public FunctionType type() {
     return type;
   }
 
   public static class Parameter {
     String name;
-    org.kobjects.expressionparser.demo.thin.type.Type type;
+    Type type;
 
-    public Parameter(String name, org.kobjects.expressionparser.demo.thin.type.Type type) {
+    public Parameter(String name, Type type) {
       this.name = name;
       this.type = type;
     }

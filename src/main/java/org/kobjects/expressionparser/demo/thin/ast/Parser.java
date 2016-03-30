@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class Parser {
   ExpressionProcessor expressionProcessor = new ExpressionProcessor();
-  ExpressionParser<org.kobjects.expressionparser.demo.thin.ast.Expression> expressionParser = new ExpressionParser<>(expressionProcessor);
+  ExpressionParser<Expression> expressionParser = new ExpressionParser<>(expressionProcessor);
   {
     expressionParser.addPrimary("function");
     expressionParser.addPrimary("new");
@@ -26,60 +26,60 @@ public class Parser {
     return new ExpressionParser.Tokenizer(new Scanner(reader), expressionParser.getSymbols(), "{", "}", ";", ":");
   }
 
-  public org.kobjects.expressionparser.demo.thin.ast.Statement parseBlock(ExpressionParser.Tokenizer tokenizer,
-                                List<org.kobjects.expressionparser.demo.thin.ast.Classifier> newClasses) {
-    List<org.kobjects.expressionparser.demo.thin.ast.Statement> result = new ArrayList<>();
+  public Statement parseBlock(ExpressionParser.Tokenizer tokenizer,
+                                List<Classifier> newClasses) {
+    List<Statement> result = new ArrayList<>();
     while (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF &&
         !tokenizer.currentValue.equals("}")) {
       if (tokenizer.tryConsume(";")) {
         continue;
       }
-      org.kobjects.expressionparser.demo.thin.ast.Statement statement = parseStatement(tokenizer);
-      if (statement.kind == org.kobjects.expressionparser.demo.thin.ast.Statement.Kind.CLASSIFIER) {
+      Statement statement = parseStatement(tokenizer);
+      if (statement.kind == Statement.Kind.CLASSIFIER) {
         if (newClasses == null) {
           throw new RuntimeException("class permitted at top level only.");
         }
-        newClasses.add((org.kobjects.expressionparser.demo.thin.ast.Classifier) statement.expression);
+        newClasses.add((Classifier) statement.expression);
       }
       result.add(statement);
     }
     if (result.size() == 1) {
       return result.get(0);
     }
-    return new org.kobjects.expressionparser.demo.thin.ast.Statement(result.toArray(new org.kobjects.expressionparser.demo.thin.ast.Statement[result.size()]));
+    return new Statement(result.toArray(new Statement[result.size()]));
   }
 
-  org.kobjects.expressionparser.demo.thin.ast.Classifier parseClass(ExpressionParser.Tokenizer tokenizer) {
+  Classifier parseClass(ExpressionParser.Tokenizer tokenizer) {
     String name = tokenizer.consumeIdentifier();
-    org.kobjects.expressionparser.demo.thin.ast.Classifier classifier = new org.kobjects.expressionparser.demo.thin.ast.Classifier(org.kobjects.expressionparser.demo.thin.ast.Classifier.Kind.CLASS, name);
+    Classifier classifier = new Classifier(Classifier.Kind.CLASS, name);
     tokenizer.consume("{");
     while (!tokenizer.tryConsume("}")) {
-      org.kobjects.expressionparser.demo.thin.ast.Classifier.Member member = new org.kobjects.expressionparser.demo.thin.ast.Classifier.Member();
-      member.name = tokenizer.consumeIdentifier();
+      String memberName = tokenizer.consumeIdentifier();
       if (tokenizer.tryConsume(":")) {
-        member.type = parseType(tokenizer);
+        Type type = parseType(tokenizer);
+        classifier.addField(memberName, type);
         tokenizer.consume(";");
       } else if (tokenizer.currentValue.equals("(")) {
-        member.implementation = parseFunction(tokenizer, false);
+        Function fn = parseFunction(tokenizer, false);
+        classifier.addMethod(memberName, fn);
       }
-      classifier.addMember(member);
     }
     return classifier;
   }
 
-  org.kobjects.expressionparser.demo.thin.ast.Function parseFunction(ExpressionParser.Tokenizer tokenizer, boolean method) {
+  Function parseFunction(ExpressionParser.Tokenizer tokenizer, boolean method) {
     String functionName = null;
     if (!method && !tokenizer.tryConsume("(")) {
       functionName = tokenizer.consumeIdentifier();
       tokenizer.consume("(");
     }
-    ArrayList<org.kobjects.expressionparser.demo.thin.ast.Function.Parameter> parameterList = new ArrayList<>();
+    ArrayList<Function.Parameter> parameterList = new ArrayList<>();
     if (!tokenizer.tryConsume(")")) {
       do {
         String parameterName = tokenizer.consumeIdentifier();
         tokenizer.consume(":");
         Type parameterType = parseType(tokenizer);
-        parameterList.add(new org.kobjects.expressionparser.demo.thin.ast.Function.Parameter(parameterName, parameterType));
+        parameterList.add(new Function.Parameter(parameterName, parameterType));
       } while(tokenizer.tryConsume(","));
       tokenizer.consume(")");
     }
@@ -89,35 +89,35 @@ public class Parser {
 
     tokenizer.consume("{");
 
-    org.kobjects.expressionparser.demo.thin.ast.Statement body = parseBlock(tokenizer, null);
+    Statement body = parseBlock(tokenizer, null);
     tokenizer.consume("}");
 
-    org.kobjects.expressionparser.demo.thin.ast.Function fn = new org.kobjects.expressionparser.demo.thin.ast.Function(functionName,
-        parameterList.toArray(new org.kobjects.expressionparser.demo.thin.ast.Function.Parameter[parameterList.size()]),
+    Function fn = new Function(functionName,
+        parameterList.toArray(new Function.Parameter[parameterList.size()]),
         returnType,
         body);
     return fn;
   }
 
-  org.kobjects.expressionparser.demo.thin.ast.Statement parseInterface(ExpressionParser.Tokenizer tokenizer) {
+  Statement parseInterface(ExpressionParser.Tokenizer tokenizer) {
     throw new RuntimeException("NYI");
   }
 
-  private org.kobjects.expressionparser.demo.thin.ast.Statement parseStatement(ExpressionParser.Tokenizer tokenizer) {
-    org.kobjects.expressionparser.demo.thin.ast.Statement result;
+  private Statement parseStatement(ExpressionParser.Tokenizer tokenizer) {
+    Statement result;
     if (tokenizer.tryConsume("let")) {
       result = parseLet(tokenizer);
     } else if (tokenizer.tryConsume("class")) {
-      org.kobjects.expressionparser.demo.thin.ast.Classifier classifier = parseClass(tokenizer);
+      Classifier classifier = parseClass(tokenizer);
 
-      result = new org.kobjects.expressionparser.demo.thin.ast.Statement(org.kobjects.expressionparser.demo.thin.ast.Statement.Kind.CLASSIFIER, classifier);
+      result = new Statement(Statement.Kind.CLASSIFIER, classifier);
     } else if (tokenizer.tryConsume("interface")) {
       result = parseInterface(tokenizer);
     } else if (tokenizer.tryConsume("return")) {
-      result = new org.kobjects.expressionparser.demo.thin.ast.Statement(org.kobjects.expressionparser.demo.thin.ast.Statement.Kind.RETURN,
+      result = new Statement(Statement.Kind.RETURN,
           expressionParser.parse(tokenizer));
     } else {
-      result = new org.kobjects.expressionparser.demo.thin.ast.Statement(org.kobjects.expressionparser.demo.thin.ast.Statement.Kind.EXPRESSION,
+      result = new Statement(Statement.Kind.EXPRESSION,
           expressionParser.parse(tokenizer));
     }
     tokenizer.tryConsume(";");
@@ -127,25 +127,25 @@ public class Parser {
     return result;
   }
 
-  private org.kobjects.expressionparser.demo.thin.ast.Statement parseLet(ExpressionParser.Tokenizer tokenizer) {
+  private Statement parseLet(ExpressionParser.Tokenizer tokenizer) {
     String target = tokenizer.consumeIdentifier();
     tokenizer.consume("=");
-    org.kobjects.expressionparser.demo.thin.ast.Expression expr = expressionParser.parse(tokenizer);
-    return new org.kobjects.expressionparser.demo.thin.ast.Statement(org.kobjects.expressionparser.demo.thin.ast.Statement.Kind.LET,
-        new org.kobjects.expressionparser.demo.thin.ast.UnresolvedOperator("=", new org.kobjects.expressionparser.demo.thin.ast.UnresolvedIdentifier(target), expr));
+    Expression expr = expressionParser.parse(tokenizer);
+    return new Statement(Statement.Kind.LET,
+        new UnresolvedOperator("=", new UnresolvedIdentifier(target), expr));
   }
 
-  org.kobjects.expressionparser.demo.thin.ast.Expression parseNew(ExpressionParser.Tokenizer tokenizer) {
+  Expression parseNew(ExpressionParser.Tokenizer tokenizer) {
     Type type = parseType(tokenizer);
     tokenizer.consume("(");
-    ArrayList<org.kobjects.expressionparser.demo.thin.ast.Expression> args = new ArrayList<>();
+    ArrayList<Expression> args = new ArrayList<>();
     if (!tokenizer.currentValue.equals(")")) {
       do {
         args.add(expressionParser.parse(tokenizer));
       } while (tokenizer.tryConsume(","));
     }
     tokenizer.consume(")");
-    return new org.kobjects.expressionparser.demo.thin.ast.New(type, args.toArray(new org.kobjects.expressionparser.demo.thin.ast.Expression[args.size()]));
+    return new New(type, args.toArray(new Expression[args.size()]));
   }
 
   Type parseType(ExpressionParser.Tokenizer tokenizer) {
@@ -153,9 +153,9 @@ public class Parser {
     return new UnresolvedType(name);
   }
 
-  class ExpressionProcessor extends ExpressionParser.Processor<org.kobjects.expressionparser.demo.thin.ast.Expression> {
+  class ExpressionProcessor extends ExpressionParser.Processor<Expression> {
     @Override
-    public org.kobjects.expressionparser.demo.thin.ast.Expression primary(String name, ExpressionParser.Tokenizer tokenizer) {
+    public Expression primary(String name, ExpressionParser.Tokenizer tokenizer) {
       if (name.equals("function")) {
         return parseFunction(tokenizer, false);
       }
@@ -166,37 +166,37 @@ public class Parser {
     }
 
     @Override
-    public org.kobjects.expressionparser.demo.thin.ast.Expression identifier(String name) {
-      return new org.kobjects.expressionparser.demo.thin.ast.UnresolvedIdentifier(name);
+    public Expression identifier(String name) {
+      return new UnresolvedIdentifier(name);
     }
 
     @Override
-    public org.kobjects.expressionparser.demo.thin.ast.Expression infixOperator(String name, org.kobjects.expressionparser.demo.thin.ast.Expression left, org.kobjects.expressionparser.demo.thin.ast.Expression right) {
-      return new org.kobjects.expressionparser.demo.thin.ast.UnresolvedOperator(name, left, right);
+    public Expression infixOperator(String name,Expression left, Expression right) {
+      return new UnresolvedOperator(name, left, right);
     }
 
     @Override
-    public org.kobjects.expressionparser.demo.thin.ast.Expression suffixOperator(String name, org.kobjects.expressionparser.demo.thin.ast.Expression param, ExpressionParser.Tokenizer tokenizer) {
+    public Expression suffixOperator(String name, Expression param, ExpressionParser.Tokenizer tokenizer) {
       if (name.equals(".")) {
         String propertyName = tokenizer.consumeIdentifier();
-        return new org.kobjects.expressionparser.demo.thin.ast.UnresolvedProperty(param, propertyName);
+        return new UnresolvedProperty(param, propertyName);
       }
       return super.suffixOperator(name, param, tokenizer);
     }
 
     @Override
-    public org.kobjects.expressionparser.demo.thin.ast.Expression stringLiteral(String rawValue) {
-      return new org.kobjects.expressionparser.demo.thin.ast.Literal(ExpressionParser.unquote(rawValue));
+    public Expression stringLiteral(String rawValue) {
+      return new Literal(ExpressionParser.unquote(rawValue));
     }
 
     @Override
-    public org.kobjects.expressionparser.demo.thin.ast.Expression numberLiteral(String value) {
-      return new org.kobjects.expressionparser.demo.thin.ast.Literal(Double.parseDouble(value));
+    public Expression numberLiteral(String value) {
+      return new Literal(Double.parseDouble(value));
     }
 
     @Override
-    public org.kobjects.expressionparser.demo.thin.ast.Expression apply(org.kobjects.expressionparser.demo.thin.ast.Expression to, String bracket, List<org.kobjects.expressionparser.demo.thin.ast.Expression> parameterList) {
-      return new org.kobjects.expressionparser.demo.thin.ast.Apply(to, parameterList.toArray(new org.kobjects.expressionparser.demo.thin.ast.Expression[parameterList.size()]));
+    public Expression apply(Expression to, String bracket, List<Expression> parameterList) {
+      return new Apply(to, parameterList.toArray(new Expression[parameterList.size()]));
     }
   }
 }

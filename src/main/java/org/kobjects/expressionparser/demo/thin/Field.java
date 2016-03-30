@@ -1,7 +1,11 @@
 package org.kobjects.expressionparser.demo.thin;
 
-/**
- * Created by haustein on 30.03.16.
- */
+
+import org.kobjects.expressionparser.demo.thin.type.Type;
+
 public interface Field {
+  String name();
+  void set(EvaluationContext context, Object value);
+  Type type();
+  Object get(EvaluationContext context);
 }

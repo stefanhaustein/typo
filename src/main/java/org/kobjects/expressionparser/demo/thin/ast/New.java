@@ -1,6 +1,8 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
 
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
 class New extends Node {
@@ -24,7 +26,7 @@ class New extends Node {
   }
 
   @Override
-  public Expression resolve(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public Expression resolve(ParsingContext context) {
     resolveChildren(context);
     type = type.resolveType(context);
     if (!(type instanceof org.kobjects.expressionparser.demo.thin.ast.Classifier)) {
@@ -34,11 +36,11 @@ class New extends Node {
   }
 
   @Override
-  public Object eval(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
+  public Object eval(EvaluationContext context) {
     Object[] args = new Object[children.length];
     for (int i = 0; i < args.length; i++) {
       args[i] = children[i].eval(context);
     }
-    return (((org.kobjects.expressionparser.demo.thin.ast.Classifier) type).newInstance(context, args));
+    return (((Classifier) type).newInstance(context, args));
   }
 }

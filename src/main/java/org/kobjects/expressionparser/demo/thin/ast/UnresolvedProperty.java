@@ -1,6 +1,9 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
 
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
+
 class UnresolvedProperty extends Node {
 
   private final String name;
@@ -11,12 +14,12 @@ class UnresolvedProperty extends Node {
   }
 
   @Override
-  public Expression resolve(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public Expression resolve(ParsingContext context) {
     throw new RuntimeException("NYI");
   }
 
   @Override
-  public Expression eval(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
+  public Expression eval(EvaluationContext context) {
     throw new RuntimeException("NYI");
   }
 

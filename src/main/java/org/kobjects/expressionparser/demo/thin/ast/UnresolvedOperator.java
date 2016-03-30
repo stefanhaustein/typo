@@ -1,5 +1,7 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
 class UnresolvedOperator extends Node {
@@ -11,7 +13,7 @@ class UnresolvedOperator extends Node {
   }
 
   @Override
-  public Expression resolve(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public Expression resolve(ParsingContext context) {
     boolean allNumber = true;
     Expression[] resolved = new Expression[children.length];
     for (int i = 0; i < children.length; i++) {
@@ -41,7 +43,7 @@ class UnresolvedOperator extends Node {
   }
 
   @Override
-  public Object eval(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
+  public Object eval(EvaluationContext context) {
     throw new UnsupportedOperationException("Unresolved");
   }
 

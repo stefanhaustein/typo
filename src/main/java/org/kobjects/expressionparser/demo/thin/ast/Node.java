@@ -1,5 +1,6 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
@@ -25,7 +26,7 @@ abstract class Node implements Expression {
     this.children = children;
   }
 
-  double evalF64(org.kobjects.expressionparser.demo.thin.EvaluationContext context, int index) {
+  double evalF64(EvaluationContext context, int index) {
     return (Double) children[index].eval(context);
   }
 

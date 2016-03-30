@@ -1,5 +1,8 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
+
 public class Statement {
   private String NO_RESULT = new String("NO_RESULT");
 
@@ -19,7 +22,7 @@ public class Statement {
     this.children = children;
   }
 
-  public Object eval(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
+  public Object eval(EvaluationContext context) {
     switch (kind) {
       case BLOCK:
         for (Statement s: children) {
@@ -57,7 +60,7 @@ public class Statement {
     }
   }
 
-  public void resolveSignatures(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public void resolveSignatures(ParsingContext context) {
     if (expression != null) {
       expression.resolveSignatures(context);
     }
@@ -68,7 +71,7 @@ public class Statement {
     }
   }
 
-  public void resolve(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public void resolve(ParsingContext context) {
     if (expression != null) {
       expression = expression.resolve(context);
     }

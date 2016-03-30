@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 
 import org.kobjects.expressionparser.demo.thin.ast.Classifier;
 import org.kobjects.expressionparser.demo.thin.type.Type;
-import org.kobjects.expressionparser.demo.thin.type.Types;
 
 public class ParsingContext {
   public Classifier self;
@@ -16,7 +15,7 @@ public class ParsingContext {
     this.self = self;
   }
 
-  public int addLocal(String name, Type type) {
+  public int declareLocal(String name, Type type) {
     if (locals.containsKey(name)) {
       throw new RuntimeException("Duplicate variable '" + name + "'");
     }
@@ -52,11 +51,7 @@ public class ParsingContext {
     types.put(clazz.name(), clazz);
   }
 
-  public Type typeOf(Object o) {
-    return Types.typeOf(o);
-  }
-
-  public static class LocalDeclaration {
+  public static class LocalDeclaration implements Field {
     public String name;
     public Type type;
     public int localIndex;
@@ -65,6 +60,26 @@ public class ParsingContext {
       this.name = name;
       this.type = type;
       this.localIndex = localIndex;
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
+
+    @Override
+    public void set(EvaluationContext context, Object value) {
+      context.locals[localIndex] = value;
+    }
+
+    @Override
+    public Type type() {
+      return type;
+    }
+
+    @Override
+    public Object get(EvaluationContext context) {
+      return context.locals[localIndex];
     }
   }
 
