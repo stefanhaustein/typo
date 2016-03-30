@@ -63,11 +63,6 @@ public class Classifier implements Expression, Type {
     members.put(name, member);
   }
 
-  public void addMember(Member member) {
-    members.put(member.name, member);
-  }
-
-
   @Override
   public Expression resolve(ParsingContext context) {
     return this;

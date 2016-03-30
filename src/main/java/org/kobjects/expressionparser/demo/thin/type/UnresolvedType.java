@@ -16,7 +16,7 @@ public class UnresolvedType implements Type {
 
   @Override
   public Type resolveType(ParsingContext context) {
-    Object resolved = context.resolve(name);
+    Object resolved = context.resolveStatic(name);
     if (!(resolved instanceof Type)) {
       throw new RuntimeException("Not a type: " + name);
     }

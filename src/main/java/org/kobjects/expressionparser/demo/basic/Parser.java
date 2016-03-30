@@ -296,7 +296,7 @@ class Parser {
           }
           for (int i = 0; i < arguments.size(); i++) {
             if (signature.charAt(i) != arguments.get(i).returnType().getSimpleName().charAt(0)) {
-              throw new RuntimeException("Parameter number " + i + " returnType mismatch.");
+              throw new RuntimeException("Parameter number " + i + " type mismatch.");
             }
           }
           return new Builtin(interpreter, builtinId, children);

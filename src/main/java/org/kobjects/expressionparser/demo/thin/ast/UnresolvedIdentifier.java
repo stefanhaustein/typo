@@ -24,18 +24,18 @@ class UnresolvedIdentifier implements Expression {
 
   @Override
   public Expression resolve(ParsingContext context) {
-    Object o = context.resolve(name);
-    if (o == null) {
-      throw new RuntimeException("Undeclared variable: " + name);
+    Field field = context.resolveField(name);
+    if (field != null) {
+      return new Variable(field);
     }
-    if (o instanceof Field) {
-      return new GetField((Field) o);
+    Object o = context.resolveStatic(name);
+    if (o instanceof Expression) {
+      return (Expression) o;
     }
-    if (o instanceof Classifier) {
+    if (o != null) {
       return new Literal(o);
     }
-    throw new RuntimeException("Don't know how to handle " + o + " class " + o.getClass()
-        + " for identifier " + name);
+    throw new RuntimeException("Cannot resolve identifier '" + name + "'.");
   }
 
   @Override

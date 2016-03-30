@@ -1,5 +1,6 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
+import org.kobjects.expressionparser.demo.thin.Applicable;
 import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
 
@@ -13,17 +14,24 @@ class Apply extends Node {
 
   @Override
   public Object eval(EvaluationContext context) {
-    EvaluationContext newContext = (EvaluationContext) target.eval(context);
+    Applicable applicable = (Applicable) target.eval(context);
+    EvaluationContext newContext = new EvaluationContext(context.self, applicable);
     for (int i = 0; i < children.length; i++) {
       newContext.setLocal(i, children[i].eval(context));
     }
-    return newContext.applicable.apply(newContext);
+    return applicable.apply(newContext);
   }
 
   @Override
   public Expression resolve(ParsingContext context) {
     resolveChildren(context);
     target = target.resolve(context);
+
+    if (target instanceof Property) {
+      Property property = (Property) target;
+      return new ApplyProperty(property.base, property.member, children);
+    }
+
     return this;
   }
 

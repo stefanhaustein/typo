@@ -1,5 +1,7 @@
 package org.kobjects.expressionparser.demo.thin.type;
 
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
+
 public class MetaType implements Type {
   Type of;
 
@@ -13,7 +15,7 @@ public class MetaType implements Type {
   }
 
   @Override
-  public Type resolveType(org.kobjects.expressionparser.demo.thin.ParsingContext context) {
+  public Type resolveType(ParsingContext context) {
     return this;
   }
 }

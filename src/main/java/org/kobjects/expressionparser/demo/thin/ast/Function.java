@@ -27,12 +27,12 @@ public class Function implements Expression, Applicable {
 
   @Override
   public Object eval(EvaluationContext context) {
-    return new EvaluationContext(context.self, this);
+    return this;
   }
 
   @Override
   public Expression resolve(ParsingContext context) {
-    ParsingContext bodyContext = new ParsingContext(context.self);
+    ParsingContext bodyContext = new ParsingContext(context, context.self);
     for (Parameter param : parameters) {
       bodyContext.declareLocal(param.name, param.type);
     }

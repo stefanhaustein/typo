@@ -6,22 +6,26 @@ import org.kobjects.expressionparser.demo.thin.ParsingContext;
 
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Processor {
   Parser parser = new Parser();
 
   public Statement process(ParsingContext context, Reader reader) {
-    List<Classifier> newClassifiers = new ArrayList<>();
+    Map<String, Object> newStatics = new HashMap<>();
     ExpressionParser.Tokenizer tokenizer = parser.createTokenizer(reader);
     tokenizer.nextToken();
-    Statement body = parser.parseBlock(tokenizer, newClassifiers);
+    Statement body = parser.parseBlock(tokenizer, newStatics);
 
-    for (Classifier classifier : newClassifiers) {
-      context.declare(classifier);
+    for (String name : newStatics.keySet()) {
+      context.declareStatic(name, newStatics.get(name));
     }
 
     System.out.println("Raw Parsed: " + body);
+    System.out.println("New statics: " + newStatics);
 
     body.resolveSignatures(context);
 

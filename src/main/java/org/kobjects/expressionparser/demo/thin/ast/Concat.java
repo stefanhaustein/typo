@@ -4,7 +4,7 @@ import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
-public class Concat extends Node {
+class Concat extends Node {
 
   public Concat(Expression left, Expression right) {
     super(Type.STRING, left, right);

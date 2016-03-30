@@ -5,7 +5,7 @@ import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.Wasm;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
-public class Operator extends Node {
+class Operator extends Node {
   Wasm.Op op;
 
   public Operator(Wasm.Op op, Expression... children) {

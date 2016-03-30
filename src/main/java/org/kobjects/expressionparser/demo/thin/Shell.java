@@ -18,8 +18,8 @@ import java.net.URLConnection;
 public class Shell {
 
   static Processor processor = new Processor();
+  static ParsingContext parsingContext = new ParsingContext(null, null);
   static EvaluationContext evaluationContext;
-  static ParsingContext parsingContext;
 
   static void load(String url) {
     try {
@@ -39,8 +39,7 @@ public class Shell {
       reader.close();
       is.close();
 
-      //adjustLocals();
-
+      adjustLocals();
 
       System.out.println("Parsed: " + parsed);
 //        s.eval(evaluationContext);
@@ -50,20 +49,18 @@ public class Shell {
     }
   }
 
-  /*
   static void adjustLocals() {
-    if (parser.parsingContext.locals.size() > evaluationContext.locals.length) {
-      Object[] newLocals = new Object[parser.parsingContext.locals.size()];
+    if (parsingContext.locals.size() > evaluationContext.locals.length) {
+      Object[] newLocals = new Object[parsingContext.locals.size()];
       System.arraycopy(evaluationContext.locals, 0, newLocals, 0, evaluationContext.locals.length);
       evaluationContext.locals = newLocals;
     }
   }
-  */
+
 
   public static void main(String[] args) throws IOException {
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-    Classifier rootClass = new Classifier(Classifier.Kind.CLASS, "Root");
     Classifier consoleClass = new Classifier(Classifier.Kind.CLASS, "Console");
     consoleClass.addMethod("log", new Applicable() {
       @Override
@@ -77,7 +74,7 @@ public class Shell {
         return null;
       }
     });
-    rootClass.addMethod("load", new Applicable() {
+    parsingContext.declareStatic("load", new Applicable() {
       @Override
       public FunctionType type() {
         return new FunctionType(Type.VOID, Type.STRING);
@@ -89,13 +86,10 @@ public class Shell {
         return null;
       }
     });
-    rootClass.addField("console", consoleClass);
-    Instance console = consoleClass.newInstance(null);
-    Instance root = rootClass.newInstance(null);
-    root.setField(rootClass.members.get("console").fieldIndex, console);
 
-    parsingContext = new ParsingContext(rootClass);
-    evaluationContext = new EvaluationContext(root, null);
+    Instance console = consoleClass.newInstance(null);
+    parsingContext.declareStatic("console", console);
+    evaluationContext = new EvaluationContext(null, null);
 
     while (true) {
       System.out.print("Expression? ");
@@ -110,6 +104,8 @@ public class Shell {
         if (statement.kind == Statement.Kind.EXPRESSION) {
           statement.kind = Statement.Kind.RETURN;
         }
+
+        adjustLocals();
 
         System.out.println("Result:     " + statement.eval(evaluationContext));
       } catch (Exception e) {

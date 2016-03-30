@@ -8,11 +8,18 @@ import org.kobjects.expressionparser.demo.thin.type.Type;
 public class ParsingContext {
   public Classifier self;
   LinkedHashMap<String, LocalDeclaration> locals = new LinkedHashMap<>();
-  // Move into classifiers
-  LinkedHashMap<String, Type> types = new LinkedHashMap<>();
+  LinkedHashMap<String, Object> statics;
 
-  public ParsingContext(Classifier self) {
+  public ParsingContext(ParsingContext parent, Classifier self) {
     this.self = self;
+    if (parent != null) {
+      statics = parent.statics;
+    } else {
+      statics = new LinkedHashMap<>();
+      statics.put("number", Type.NUMBER);
+      statics.put("string", Type.STRING);
+      statics.put("void", Type.VOID);
+    }
   }
 
   public int declareLocal(String name, Type type) {
@@ -23,32 +30,22 @@ public class ParsingContext {
     return locals.size() - 1;
   }
 
-  public Object resolve(String name) {
+  public void declareStatic(String name, Object value) {
+    statics.put(name, value);
+  }
+
+  public Field resolveField(String name) {
     if (locals.containsKey(name)) {
       return locals.get(name);
     }
-    if (self.members.containsKey(name)) {
+    if (self != null && self.members.containsKey(name)) {
       return self.members.get(name);
     }
-    return resolveType(name);
+    return null;
   }
 
-  Type resolveType(String s) {
-    if (types.containsKey(s)) {
-      return types.get(s);
-    }
-    if (s.equals("number")) {
-      return Type.NUMBER;
-    }
-    if (s.equals("string")) {
-      return Type.STRING;
-    }
-
-    throw new RuntimeException("Unknown returnType: '" + s + "'");
-  }
-
-  public void declare(Type clazz) {
-    types.put(clazz.name(), clazz);
+  public Object resolveStatic(String name) {
+    return statics.get(name);
   }
 
   public static class LocalDeclaration implements Field {
@@ -82,5 +79,4 @@ public class ParsingContext {
       return context.locals[localIndex];
     }
   }
-
 }

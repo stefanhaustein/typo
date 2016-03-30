@@ -3,27 +3,48 @@ package org.kobjects.expressionparser.demo.thin.ast;
 
 import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
+import org.kobjects.expressionparser.demo.thin.type.Type;
 
-class UnresolvedProperty extends Node {
-
-  private final String name;
+class UnresolvedProperty implements Expression {
+  final Expression base;
+  final String name;
 
   UnresolvedProperty(Expression base, String name) {
-    super(null, base);
+    this.base = base;
     this.name = name;
   }
 
   @Override
   public Expression resolve(ParsingContext context) {
-    throw new RuntimeException("NYI");
+    Expression resolvedBase = base.resolve(context);
+    if (!(resolvedBase.type() instanceof Classifier)) {
+      throw new RuntimeException("Classifier expected; got: " + resolvedBase.type());
+    }
+    Classifier classifier = (Classifier) resolvedBase.type();
+
+    Classifier.Member member = classifier.members.get(name);
+    if (member == null) {
+      throw new RuntimeException("Member '" + name + "' not found in " + classifier);
+    }
+    return new Property(resolvedBase, member);
   }
 
   @Override
   public Expression eval(EvaluationContext context) {
-    throw new RuntimeException("NYI");
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Type type() {
+    return null;
+  }
+
+  @Override
+  public void resolveSignatures(ParsingContext context) {
+    base.resolveSignatures(context);
   }
 
   public String toString() {
-    return children[0] + "." + name;
+    return base + "." + name;
   }
 }

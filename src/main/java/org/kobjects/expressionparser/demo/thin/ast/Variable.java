@@ -5,10 +5,10 @@ import org.kobjects.expressionparser.demo.thin.Field;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
-class GetField implements Expression {
+class Variable implements Expression {
   final Field field;
 
-  public GetField(Field field) {
+  public Variable(Field field) {
     this.field = field;
   }
 

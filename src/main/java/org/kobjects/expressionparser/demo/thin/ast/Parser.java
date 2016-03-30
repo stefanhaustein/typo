@@ -7,9 +7,10 @@ import org.kobjects.expressionparser.demo.thin.type.UnresolvedType;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
-public class Parser {
+class Parser {
   ExpressionProcessor expressionProcessor = new ExpressionProcessor();
   ExpressionParser<Expression> expressionParser = new ExpressionParser<>(expressionProcessor);
   {
@@ -26,21 +27,14 @@ public class Parser {
     return new ExpressionParser.Tokenizer(new Scanner(reader), expressionParser.getSymbols(), "{", "}", ";", ":");
   }
 
-  public Statement parseBlock(ExpressionParser.Tokenizer tokenizer,
-                                List<Classifier> newClasses) {
+  public Statement parseBlock(ExpressionParser.Tokenizer tokenizer, Map<String, Object> statics) {
     List<Statement> result = new ArrayList<>();
     while (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF &&
         !tokenizer.currentValue.equals("}")) {
       if (tokenizer.tryConsume(";")) {
         continue;
       }
-      Statement statement = parseStatement(tokenizer);
-      if (statement.kind == Statement.Kind.CLASSIFIER) {
-        if (newClasses == null) {
-          throw new RuntimeException("class permitted at top level only.");
-        }
-        newClasses.add((Classifier) statement.expression);
-      }
+      Statement statement = parseStatement(tokenizer, statics);
       result.add(statement);
     }
     if (result.size() == 1) {
@@ -103,13 +97,16 @@ public class Parser {
     throw new RuntimeException("NYI");
   }
 
-  private Statement parseStatement(ExpressionParser.Tokenizer tokenizer) {
+  private Statement parseStatement(ExpressionParser.Tokenizer tokenizer, Map<String, Object> statics) {
     Statement result;
     if (tokenizer.tryConsume("let")) {
       result = parseLet(tokenizer);
     } else if (tokenizer.tryConsume("class")) {
       Classifier classifier = parseClass(tokenizer);
-
+      if (statics == null) {
+        throw new RuntimeException("Classes only permitted at top level.");
+      }
+      statics.put(classifier.name, classifier);
       result = new Statement(Statement.Kind.CLASSIFIER, classifier);
     } else if (tokenizer.tryConsume("interface")) {
       result = parseInterface(tokenizer);
@@ -117,8 +114,15 @@ public class Parser {
       result = new Statement(Statement.Kind.RETURN,
           expressionParser.parse(tokenizer));
     } else {
-      result = new Statement(Statement.Kind.EXPRESSION,
-          expressionParser.parse(tokenizer));
+      Expression expression = expressionParser.parse(tokenizer);
+      if (expression instanceof Function
+          && ((Function) expression).name != null) {
+        if (statics == null) {
+          throw new RuntimeException("Named functions only permitted at top level.");
+        }
+        statics.put(((Function) expression).name, expression);
+      }
+      result = new Statement(Statement.Kind.EXPRESSION, expression);
     }
     tokenizer.tryConsume(";");
 /*    if (!tokenizer.tryConsume(";") && !cli) {
