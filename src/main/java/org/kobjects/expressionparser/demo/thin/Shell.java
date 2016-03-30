@@ -29,7 +29,7 @@ public class Shell {
         connection.setDoInput(true);
         is = connection.getInputStream();
       } else {
-        System.out.println("Url: " + url);
+        System.out.println("resource: '" + url + "'");
         is = Shell.class.getResourceAsStream(url);
       }
       BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
