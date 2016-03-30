@@ -377,7 +377,7 @@ public class ExpressionParser<T> {
         tokenizer.nextToken();
         break;
       default:
-        throw tokenizer.exception("Unexpected token type.", null);
+        throw tokenizer.exception("Unexpected token returnType.", null);
     }
     return result;
   }

@@ -1,20 +1,21 @@
-package org.kobjects.expressionparser.demo.typo;
+package org.kobjects.expressionparser.demo.thin.ast;
 
-class Operator extends Node {
+import org.kobjects.expressionparser.demo.thin.EvaluationContext;
+import org.kobjects.expressionparser.demo.thin.ParsingContext;
+import org.kobjects.expressionparser.demo.thin.Wasm;
+import org.kobjects.expressionparser.demo.thin.type.Type;
+
+public class Operator extends Node {
   Wasm.Op op;
 
-  Operator(Wasm.Op op, Node... children) {
-    super(Type.fromWasm(op.type), children);
+  public Operator(Wasm.Op op, org.kobjects.expressionparser.demo.thin.ast.Expression... children) {
+    super(Type.NUMBER, children);
     this.op = op;
-    if (children.length != op.paramTypes.length) {
-      throw new IllegalArgumentException("Expected " + op.paramTypes.length + " parameters; got "
-          + children.length);
-    }
-    for (int i = 0; i < children.length; i++) {
-      if (children[i].type.wasmType != op.paramTypes[i]) {
-        throw new IllegalArgumentException("Type mismatch for parameter " + i + ": expected");
-      }
-    }
+  }
+
+  @Override
+  public org.kobjects.expressionparser.demo.thin.ast.Expression resolve(ParsingContext context) {
+    throw new UnsupportedOperationException("Already resolved.");
   }
 
   public Object eval(EvaluationContext ctx) {

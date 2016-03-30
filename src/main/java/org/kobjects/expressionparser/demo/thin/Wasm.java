@@ -1,11 +1,11 @@
-package org.kobjects.expressionparser.demo.typo;
+package org.kobjects.expressionparser.demo.thin;
 
 
 public class Wasm {
-  enum Type {
+  public enum Type {
     F64
   }
-  enum Op {
+  public enum Op {
     F64Add(0x89, Type.F64, Type.F64, Type.F64),
     F64Sub(0x8a, Type.F64, Type.F64, Type.F64),
     F64Mul(0x8b, Type.F64, Type.F64, Type.F64),
@@ -16,7 +16,7 @@ public class Wasm {
 
     int opCode;
     Type type;
-    Type[] paramTypes;
+    public Type[] paramTypes;
 
     Op(int opcode, Type type, Type... paramTypes) {
       this.opCode = opcode;

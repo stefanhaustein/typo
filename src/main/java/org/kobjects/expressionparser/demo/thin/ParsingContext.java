@@ -1,18 +1,21 @@
-package org.kobjects.expressionparser.demo.typo;
+package org.kobjects.expressionparser.demo.thin;
 
 import java.util.LinkedHashMap;
 
-class ParsingContext {
-  Classifier self;
+import org.kobjects.expressionparser.demo.thin.ast.Classifier;
+import org.kobjects.expressionparser.demo.thin.type.Type;
+
+public class ParsingContext {
+  public Classifier self;
   LinkedHashMap<String, LocalDeclaration> locals = new LinkedHashMap<>();
   // Move into classifiers
   LinkedHashMap<String, Type> types = new LinkedHashMap<>();
 
-  ParsingContext(Classifier self) {
+  public ParsingContext(Classifier self) {
     this.self = self;
   }
 
-  int addLocal(String name, Type type) {
+  public int addLocal(String name, Type type) {
     if (locals.containsKey(name)) {
       throw new RuntimeException("Duplicate variable '" + name + "'");
     }
@@ -20,7 +23,7 @@ class ParsingContext {
     return locals.size() - 1;
   }
 
-  Object resolve(String name) {
+  public Object resolve(String name) {
     if (locals.containsKey(name)) {
       return locals.get(name);
     }
@@ -41,17 +44,22 @@ class ParsingContext {
       return Type.STRING;
     }
 
-    throw new RuntimeException("Unknown type: '" + s + "'");
+    throw new RuntimeException("Unknown returnType: '" + s + "'");
   }
 
-  public void declare(String name, Type clazz) {
-    types.put(name, clazz);
+  public void declare(Type clazz) {
+    types.put(clazz.name(), clazz);
   }
 
-  static class LocalDeclaration {
-    String name;
-    Type type;
-    int localIndex;
+  public Type typeOf(Object o) {
+    return Type.of(o);
+  }
+
+  public static class LocalDeclaration {
+    public String name;
+    public Type type;
+    public int localIndex;
+
     LocalDeclaration(String name, Type type, int localIndex) {
       this.name = name;
       this.type = type;

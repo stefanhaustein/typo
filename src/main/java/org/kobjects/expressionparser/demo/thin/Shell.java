@@ -1,7 +1,11 @@
-package org.kobjects.expressionparser.demo.typo;
+package org.kobjects.expressionparser.demo.thin;
 
 
-import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.demo.thin.type.FunctionType;
+import org.kobjects.expressionparser.demo.thin.type.Type;
+import org.kobjects.expressionparser.demo.thin.ast.Classifier;
+import org.kobjects.expressionparser.demo.thin.ast.Processor;
+import org.kobjects.expressionparser.demo.thin.ast.Statement;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,12 +14,12 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
 
 public class Shell {
 
-  static Parser parser = new Parser();
-  static EvaluationContext evaluationContext;
+  static Processor processor = new Processor();
+  static org.kobjects.expressionparser.demo.thin.EvaluationContext evaluationContext;
+  static org.kobjects.expressionparser.demo.thin.ParsingContext parsingContext;
 
   static void load(String url) {
     try {
@@ -30,34 +34,31 @@ public class Shell {
       }
       BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 
-      ExpressionParser.Tokenizer tokenizer = parser.createTokenizer(reader);
-      tokenizer.nextToken();
-      ArrayList<Statement> result = new ArrayList<Statement>();
-      parser.parseBody(tokenizer, result);
+      Statement parsed = processor.process(parsingContext, reader);
 
       reader.close();
       is.close();
 
-      adjustLocals();
+      //adjustLocals();
 
-      for (Statement s: result) {
-        System.out.println("Exec: " + s);
-        s.eval(evaluationContext);
-      }
+
+      System.out.println("Parsed: " + parsed);
+//        s.eval(evaluationContext);
 
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
+  /*
   static void adjustLocals() {
     if (parser.parsingContext.locals.size() > evaluationContext.locals.length) {
       Object[] newLocals = new Object[parser.parsingContext.locals.size()];
       System.arraycopy(evaluationContext.locals, 0, newLocals, 0, evaluationContext.locals.length);
       evaluationContext.locals = newLocals;
     }
-
   }
+  */
 
   public static void main(String[] args) throws IOException {
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -71,7 +72,7 @@ public class Shell {
       }
 
       @Override
-      public Object apply(EvaluationContext context) {
+      public Object apply(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
         System.out.println(context.getLocal(0));
         return null;
       }
@@ -83,7 +84,7 @@ public class Shell {
       }
 
       @Override
-      public Object apply(EvaluationContext context) {
+      public Object apply(org.kobjects.expressionparser.demo.thin.EvaluationContext context) {
         load(String.valueOf(context.locals[0]));
         return null;
       }
@@ -93,8 +94,8 @@ public class Shell {
     Instance root = rootClass.newInstance(null);
     root.setField(rootClass.members.get("console").fieldIndex, console);
 
-    parser.parsingContext = new ParsingContext(rootClass);
-    evaluationContext = new EvaluationContext(root, null);
+    parsingContext = new org.kobjects.expressionparser.demo.thin.ParsingContext(rootClass);
+    evaluationContext = new org.kobjects.expressionparser.demo.thin.EvaluationContext(root, null);
 
     while (true) {
       System.out.print("Expression? ");
@@ -103,14 +104,14 @@ public class Shell {
         line += ";";
       }
       try {
-        ExpressionParser.Tokenizer tokenizer = parser.createTokenizer(new StringReader(line));
-        tokenizer.nextToken();
-        Statement node = parser.parseStatement(tokenizer, true);
-        System.out.println("Parsed:     " + node);
+        Statement statement = processor.process(parsingContext, new StringReader(line));
+        System.out.println("Parsed:     " + statement);
 
-        adjustLocals();
+        if (statement.kind == Statement.Kind.EXPRESSION) {
+          statement.kind = Statement.Kind.RETURN;
+        }
 
-        System.out.println("Result:     " + node.eval(evaluationContext));
+        System.out.println("Result:     " + statement.eval(evaluationContext));
       } catch (Exception e) {
         e.printStackTrace();
       }
