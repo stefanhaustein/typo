@@ -117,7 +117,7 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
     }
 
     @Override
-    public void nextToken() {
+    public TokenType nextToken() {
       if (pendingExponent != null) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < pendingExponent.length(); i++) {
@@ -127,7 +127,7 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
         currentType = TokenType.NUMBER;
         currentValue = sb.toString();
         pendingExponent = null;
-        return;
+        return currentType;
       }
       String value = scanner.findWithinHorizon(EXPONENT_PATTERN, 0);
       if (value != null) {
@@ -142,9 +142,9 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
         }
         currentType = TokenType.SYMBOL;
         currentValue = "^";
-        return;
+        return currentType;
       }
-      super.nextToken();
+      return super.nextToken();
     }
   }
 
