@@ -13,7 +13,11 @@ class Concat extends Node {
 
   @Override
   public void print(CodePrinter cp) {
-    cp.append("concat(").append(children[0]).append(children[1]).append(')');
+    cp.append('(');
+    children[0].print(cp);
+    cp.append(" + ");
+    children[1].print(cp);
+    cp.append(')');
   }
 
   @Override

@@ -25,7 +25,8 @@ public class Apply extends Node {
 
   @Override
   public void print(CodePrinter cp) {
-    cp.append(target).append('(');
+    target.print(cp);
+    cp.append('(');
     if (children.length > 0) {
       cp.append(children[0]);
       for (int i = 1; i < children.length; i++) {

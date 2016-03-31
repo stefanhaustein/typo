@@ -1,6 +1,7 @@
 package org.kobjects.expressionparser.demo.thinscript.type;
 
 
+import org.kobjects.expressionparser.demo.thinscript.expression.Function;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 
 import java.util.Arrays;
@@ -27,5 +28,28 @@ public class FunctionType implements Type {
   @Override
   public String toString() {
     return name();
+  }
+
+  @Override
+  public boolean assignableFrom(Type other) {
+    return equals(other);
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof FunctionType)) {
+      return false;
+    }
+    FunctionType otherF = (FunctionType) other;
+    if (!returnType.equals(otherF.returnType)
+        || parameterTypes.length != otherF.parameterTypes.length) {
+      return false;
+    }
+    for (int i = 0; i < parameterTypes.length; i++) {
+      if (!parameterTypes[i].equals(otherF.parameterTypes[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 }

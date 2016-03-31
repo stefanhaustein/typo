@@ -65,8 +65,12 @@ public class Function implements Expression, Applicable {
         cp.append(parameters[i]);
       }
     }
-    cp.append("): ");
-    cp.append(returnType);
+    cp.append(")");
+    if (owner == null || this != owner.constructor) {
+      cp.append(": ");
+      cp.append(returnType.name());
+    }
+    cp.append(' ');
     if (body instanceof Block){
       body.print(cp);
     } else {
@@ -81,8 +85,8 @@ public class Function implements Expression, Applicable {
   }
 
   @Override
-  public Expression resolve(ParsingContext context) {
-    ParsingContext bodyContext = new ParsingContext(context, context.self);
+  public Function resolve(ParsingContext context) {
+    ParsingContext bodyContext = new ParsingContext(context, owner);
     for (Parameter param : parameters) {
       bodyContext.declareLocal(param.name, param.type);
     }

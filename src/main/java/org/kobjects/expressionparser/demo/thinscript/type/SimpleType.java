@@ -11,6 +11,19 @@ public class SimpleType implements Type {
   }
 
   @Override
+  public boolean assignableFrom(Type other) {
+    return equals(other);
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof SimpleType)) {
+      return false;
+    }
+    return name.equals(((SimpleType) other).name);
+  }
+
+  @Override
   public String name() {
     return name;
   }
@@ -19,7 +32,6 @@ public class SimpleType implements Type {
   public Type resolveType(ParsingContext context) {
     return this;
   }
-
   @Override
   public String toString() {
     return name;

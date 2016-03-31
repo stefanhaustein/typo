@@ -22,7 +22,9 @@ public class Assignment extends Node {
 
   @Override
   public void print(CodePrinter cp) {
-    cp.append(children[0]).append(" = ").append(children[1]);
+    children[0].print(cp);
+    cp.append(" = ");
+    children[1].print(cp);
   }
 
   @Override

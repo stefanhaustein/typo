@@ -36,6 +36,9 @@ public class UnresolvedIdentifier implements Expression {
 
   @Override
   public Expression resolve(ParsingContext context) {
+    if (name.equals("this") && context.self != null) {
+      return new This(context.self);
+    }
     Field field = context.resolveField(name);
     if (field != null) {
       return new Variable(field);

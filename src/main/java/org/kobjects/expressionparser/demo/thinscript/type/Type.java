@@ -4,9 +4,9 @@ import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 
 public interface Type {
 
-
   String name();
 
   Type resolveType(ParsingContext context);
 
+  boolean assignableFrom(Type type);
 }

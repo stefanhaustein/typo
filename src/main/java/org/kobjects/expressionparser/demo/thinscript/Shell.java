@@ -82,8 +82,7 @@ public class Shell {
       }
     });
 
-    Instance console = consoleClass.newInstance(null);
-    parsingContext.declareStatic("console", console);
+    parsingContext.declareStatic("console", new Instance(consoleClass));
     EvaluationContext evaluationContext = new EvaluationContext(null, null);
 
     while (true) {

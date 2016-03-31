@@ -2,6 +2,7 @@ package org.kobjects.expressionparser.demo.thinscript.parser;
 
 import org.kobjects.expressionparser.ExpressionParser;
 import org.kobjects.expressionparser.demo.thinscript.expression.Apply;
+import org.kobjects.expressionparser.demo.thinscript.expression.Assignment;
 import org.kobjects.expressionparser.demo.thinscript.expression.Expression;
 import org.kobjects.expressionparser.demo.thinscript.expression.Function;
 import org.kobjects.expressionparser.demo.thinscript.expression.Literal;
@@ -20,9 +21,12 @@ import org.kobjects.expressionparser.demo.thinscript.type.UnresolvedType;
 
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 class Parser {
   ExpressionProcessor expressionProcessor = new ExpressionProcessor();
@@ -69,7 +73,11 @@ class Parser {
         tokenizer.consume(";");
       } else if (tokenizer.currentValue.equals("(")) {
         Function fn = parseFunction(classifier, memberName, tokenizer);
-        classifier.addMethod(memberName, fn);
+        if (memberName.equals("constructor")) {
+          classifier.constructor = fn;
+        } else {
+          classifier.addMethod(memberName, fn);
+        }
       }
     }
     return classifier;
@@ -80,22 +88,50 @@ class Parser {
   Function parseFunction(Classifier owner, String name, ExpressionParser.Tokenizer tokenizer) {
     tokenizer.consume("(");
     ArrayList<Function.Parameter> parameterList = new ArrayList<>();
+    List<Statement> init = new ArrayList<>();
+    boolean isConstructor = owner != null && name.equals("constructor");
     if (!tokenizer.tryConsume(")")) {
+      Set<Classifier.Modifier> permittedModifiers = !isConstructor ?
+          EnumSet.noneOf(Classifier.Modifier.class) : EnumSet.of(
+          Classifier.Modifier.PUBLIC, Classifier.Modifier.PRIVATE, Classifier.Modifier.PROTECTED);
       do {
-        String parameterName = tokenizer.consumeIdentifier();
+        Set<Classifier.Modifier> modifiers = parseModifiers(tokenizer, permittedModifiers);
+            String parameterName = tokenizer.consumeIdentifier();
         tokenizer.consume(":");
         Type parameterType = parseType(tokenizer);
+        if (!modifiers.isEmpty()) {
+          owner.addField(parameterName, parameterType);
+          init.add(new ExpressionStatement(new UnresolvedOperator("=",
+              new UnresolvedProperty(new UnresolvedIdentifier("this"), parameterName),
+              new UnresolvedIdentifier(parameterName))));
+        }
         parameterList.add(new Function.Parameter(parameterName, parameterType));
       } while(tokenizer.tryConsume(","));
       tokenizer.consume(")");
     }
 
-    tokenizer.consume(":");
-    Type returnType = parseType(tokenizer);
+    Type returnType;
+    if (isConstructor) {
+      returnType = owner;
+    } else {
+      tokenizer.consume(":");
+      returnType = parseType(tokenizer);
+    }
 
     tokenizer.consume("{");
 
     Statement body = parseBlock(tokenizer, null);
+    if (init != null) {
+      if (body instanceof Block) {
+        for (Statement s : ((Block) body).children) {
+          init.add(s);
+        }
+      } else {
+        init.add(body);
+      }
+      body = new Block(init.toArray(new Statement[init.size()]));
+    }
+
     tokenizer.consume("}");
 
     Function fn = new Function(owner, name,
@@ -103,6 +139,26 @@ class Parser {
         returnType,
         body);
     return fn;
+  }
+
+  private EnumSet<Classifier.Modifier> parseModifiers(
+      ExpressionParser.Tokenizer tokenizer, Set<Classifier.Modifier> permitted) {
+    EnumSet<Classifier.Modifier> result = EnumSet.noneOf(Classifier.Modifier.class);
+    while (true) {
+      Classifier.Modifier modifier;
+      if (tokenizer.tryConsume("static")) {
+        modifier = Classifier.Modifier.STATIC;
+      } else if (tokenizer.tryConsume("public")) {
+        modifier = Classifier.Modifier.PUBLIC;
+      } else {
+        break;
+      }
+      if (!permitted.contains(modifier)) {
+        throw new RuntimeException("Modifier '" + modifier.name().toLowerCase() + "' not permitted here.");
+      }
+      result.add(modifier);
+    }
+    return result;
   }
 
   Statement parseInterface(ExpressionParser.Tokenizer tokenizer) {

@@ -19,10 +19,11 @@ import java.util.Map;
 public class Classifier extends Statement implements Type, Typed {
 
   public enum Kind {CLASS, INTERFACE};
-  public enum Modifier {STATIC, PUBLIC}
+  public enum Modifier {PUBLIC, PRIVATE, PROTECTED, STATIC}
 
   final Kind kind;
   final String name;
+  public Function constructor;
 
   public Map<String, Member> members = new LinkedHashMap<>();
   public int fieldCount;
@@ -32,6 +33,7 @@ public class Classifier extends Statement implements Type, Typed {
     this.name = name;
   }
 
+
   @Override
   public String name() {
     return name;
@@ -39,6 +41,9 @@ public class Classifier extends Statement implements Type, Typed {
 
   @Override
   public void resolveSignatures(ParsingContext context) {
+    if (constructor != null) {
+      constructor.resolveSignatures(context);
+    }
     for (Member member: members.values()) {
       if (member.implementation != null) {
         if (member.implementation instanceof Function) {
@@ -46,7 +51,7 @@ public class Classifier extends Statement implements Type, Typed {
         }
         member.type = member.implementation.type();
       } else {
-        member.type.resolveType(context);
+        member.type = member.type.resolveType(context);
       }
     }
   }
@@ -69,16 +74,25 @@ public class Classifier extends Statement implements Type, Typed {
   }
 
   @Override
+  public boolean assignableFrom(Type other) {
+    return this == other;
+  }
+
+  @Override
   public void resolve(ParsingContext context) {
+    if (constructor != null) {
+      constructor = constructor.resolve(context);
+    }
+    for (Member member: members.values()) {
+      if (member.implementation instanceof Function) {
+        member.implementation = ((Function) member.implementation).resolve(context);
+      }
+    }
   }
 
   @Override
   public Object eval(EvaluationContext context) {
     return NO_RESULT;
-  }
-
-  public Instance newInstance(EvaluationContext context, Object... args) {
-    return new Instance(this);
   }
 
   @Override
@@ -89,15 +103,26 @@ public class Classifier extends Statement implements Type, Typed {
   @Override
   public void print(CodePrinter cp) {
     cp.append("class ").append(name).append(" {");
-    if (members.size() > 0) {
+    if (members.size() > 0 || constructor != null) {
       cp.indent();
+
       for (Member member : members.values()) {
-        cp.newLine();
         if (member.implementation == null) {
+          cp.newLine();
           cp.append(member.name);
           cp.append(": ");
-          cp.append(member.type);
-        } else {
+          cp.append(member.type.name());
+        }
+      }
+
+      if (constructor != null) {
+        cp.newLine();
+        constructor.print(cp);
+      }
+
+      for (Member member : members.values()) {
+        if (member.implementation != null) {
+          cp.newLine();
           ((Printable) member.implementation).print(cp);
         }
       }

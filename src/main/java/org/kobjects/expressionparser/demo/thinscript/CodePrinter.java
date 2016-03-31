@@ -17,11 +17,6 @@ public class CodePrinter {
     return this;
   }
 
-  public CodePrinter append(Printable p) {
-    p.print(this);
-    return this;
-  }
-
   public CodePrinter append(Object o) {
     sb.append(String.valueOf(o));
     return this;

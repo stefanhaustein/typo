@@ -6,7 +6,7 @@ import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 
 public class Block extends Statement {
-  Statement[] children;
+  public Statement[] children;
 
   public Block(Statement[] children) {
     this.children = children;

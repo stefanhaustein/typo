@@ -10,6 +10,19 @@ public class MetaType implements Type {
   }
 
   @Override
+  public boolean assignableFrom(Type other) {
+    return equals(other);
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof MetaType)) {
+      return false;
+    }
+    return of.equals(((MetaType) other).of);
+  }
+
+  @Override
   public String name() {
     return "meta<" + of + ">";
   }

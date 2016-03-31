@@ -10,6 +10,11 @@ public class UnresolvedType implements Type {
   }
 
   @Override
+  public boolean assignableFrom(Type other) {
+    throw new UnsupportedOperationException("Can't perform assignment checks on unresolved types.");
+  }
+
+  @Override
   public String name() {
     return "unresolved<" + name + ">";
   }

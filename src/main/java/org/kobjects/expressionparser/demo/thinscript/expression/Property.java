@@ -35,6 +35,7 @@ class Property implements Expression {
 
   @Override
   public void print(CodePrinter cp) {
+    base.print(cp);
     cp.append('.').append(member.name());
   }
 
