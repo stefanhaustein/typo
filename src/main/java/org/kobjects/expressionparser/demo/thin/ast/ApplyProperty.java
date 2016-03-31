@@ -28,4 +28,21 @@ class ApplyProperty extends Node {
     }
     return member.implementation.apply(newContext);
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(base.toString());
+    sb.append('.');
+    sb.append(member.name());
+    sb.append('(');
+    if (children.length > 0) {
+      sb.append(children[0]);
+      for (int i = 1; i < children.length; i++) {
+        sb.append(", ");
+        sb.append(children[i]);
+      }
+    }
+    sb.append(')');
+    return sb.toString();
+  }
 }

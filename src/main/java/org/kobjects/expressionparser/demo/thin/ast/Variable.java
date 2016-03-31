@@ -13,6 +13,11 @@ class Variable implements Expression {
   }
 
   @Override
+  public void assign(EvaluationContext context, Object value) {
+    field.set(context, value);
+  }
+
+  @Override
   public Expression resolve(ParsingContext context) {
     throw new UnsupportedOperationException("Already resolved");
   }
@@ -29,6 +34,11 @@ class Variable implements Expression {
 
   @Override
   public void resolveSignatures(ParsingContext context) {
+  }
+
+  @Override
+  public boolean isAssignable() {
+    return true;
   }
 
   @Override

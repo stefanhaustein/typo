@@ -54,6 +54,7 @@ public class Statement {
           sb.append(s);
         }
         sb.append("} ");
+        return sb.toString();
       }
       default:
         return expression + "; ";
@@ -72,6 +73,10 @@ public class Statement {
   }
 
   public void resolve(ParsingContext context) {
+    if (kind == Kind.LET) {
+      UnresolvedOperator op = (UnresolvedOperator) expression;
+      context.declareLocal(op.children[0].toString(), op.children[1].resolve(context).type());
+    }
     if (expression != null) {
       expression = expression.resolve(context);
     }

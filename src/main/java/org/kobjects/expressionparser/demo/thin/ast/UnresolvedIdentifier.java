@@ -13,13 +13,19 @@ class UnresolvedIdentifier implements Expression {
     this.name = name;
   }
 
-  public String toString() {
-    return name;
+  @Override
+  public void assign(EvaluationContext context, Object value) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public Object eval(EvaluationContext context) {
     throw new UnsupportedOperationException("Can't eval unresolved identifier '" + name + "'.");
+  }
+
+  @Override
+  public boolean isAssignable() {
+    return false;
   }
 
   @Override
@@ -39,11 +45,17 @@ class UnresolvedIdentifier implements Expression {
   }
 
   @Override
+  public void resolveSignatures(ParsingContext context) {
+  }
+
+  @Override
+  public String toString() {
+    return name;
+  }
+
+  @Override
   public Type type() {
     return null;
   }
 
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-  }
 }

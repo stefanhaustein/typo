@@ -26,8 +26,18 @@ public class Function implements Expression, Applicable {
   }
 
   @Override
+  public void assign(EvaluationContext context, Object value) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Object eval(EvaluationContext context) {
     return this;
+  }
+
+  @Override
+  public boolean isAssignable() {
+    return false;
   }
 
   @Override

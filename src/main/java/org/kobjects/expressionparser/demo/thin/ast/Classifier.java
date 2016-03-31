@@ -28,6 +28,7 @@ public class Classifier implements Expression, Type {
     this.name = name;
   }
 
+  @Override
   public String name() {
     return name;
   }
@@ -46,6 +47,10 @@ public class Classifier implements Expression, Type {
     }
   }
 
+  public void assign(EvaluationContext context, Object value) {
+    throw new UnsupportedOperationException();
+  }
+
   public Member addField(String name, Type type) {
     Member member = new Member();
     member.name = name;
@@ -61,6 +66,11 @@ public class Classifier implements Expression, Type {
     member.implementation = applicable;
     member.fieldIndex = -1;
     members.put(name, member);
+  }
+
+  @Override
+  public boolean isAssignable() {
+    return false;
   }
 
   @Override

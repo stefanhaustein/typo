@@ -23,6 +23,11 @@ class UnresolvedOperator extends Node {
       }
     }
 
+    if (name.equals("=")) {
+      return new Assignment(resolved[0], resolved[1]);
+    }
+
+
     if (!allNumber) {
       if (!name.equals("+")) {
         throw new IllegalArgumentException("number arguments expected for " + name);

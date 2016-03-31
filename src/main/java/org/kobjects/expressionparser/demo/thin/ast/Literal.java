@@ -29,6 +29,11 @@ class Literal implements Expression {
     this.value = value;
   }
 
+  @Override
+  public void assign(EvaluationContext context, Object value) {
+    throw new UnsupportedOperationException();
+  }
+
   public String toString() {
     return value instanceof String
         ? quote((String) value) : String.valueOf(value);
@@ -43,6 +48,12 @@ class Literal implements Expression {
   public Object eval(EvaluationContext context) {
     return value;
   }
+
+  @Override
+  public boolean isAssignable() {
+    return false;
+  }
+
 
   @Override
   public Type type() {

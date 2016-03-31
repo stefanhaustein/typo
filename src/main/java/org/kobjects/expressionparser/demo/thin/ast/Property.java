@@ -16,8 +16,9 @@ class Property implements Expression {
   }
 
   @Override
-  public Expression resolve(ParsingContext context) {
-    throw new UnsupportedOperationException("Already resolved.");
+  public void assign(EvaluationContext context, Object value) {
+    Instance instance = (Instance) base.eval(context);
+    instance.setField(member.fieldIndex, value);
   }
 
   @Override
@@ -27,8 +28,18 @@ class Property implements Expression {
   }
 
   @Override
+  public boolean isAssignable() {
+    return member.fieldIndex != -1;
+  }
+
+  @Override
   public Type type() {
     return member.type();
+  }
+
+  @Override
+  public Expression resolve(ParsingContext context) {
+    throw new UnsupportedOperationException("Already resolved.");
   }
 
   @Override

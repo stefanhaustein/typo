@@ -15,6 +15,21 @@ class UnresolvedProperty implements Expression {
   }
 
   @Override
+  public void assign(EvaluationContext context, Object value) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Expression eval(EvaluationContext context) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean isAssignable() {
+    return false;
+  }
+
+  @Override
   public Expression resolve(ParsingContext context) {
     Expression resolvedBase = base.resolve(context);
     if (!(resolvedBase.type() instanceof Classifier)) {
@@ -30,21 +45,17 @@ class UnresolvedProperty implements Expression {
   }
 
   @Override
-  public Expression eval(EvaluationContext context) {
-    throw new UnsupportedOperationException();
+  public void resolveSignatures(ParsingContext context) {
+    base.resolveSignatures(context);
+  }
+
+  @Override
+  public String toString() {
+    return base + "." + name;
   }
 
   @Override
   public Type type() {
     return null;
-  }
-
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-    base.resolveSignatures(context);
-  }
-
-  public String toString() {
-    return base + "." + name;
   }
 }
