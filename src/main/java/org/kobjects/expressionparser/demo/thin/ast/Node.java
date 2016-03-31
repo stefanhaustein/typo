@@ -4,10 +4,10 @@ import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
-abstract class Node implements Expression {
+public abstract class Node implements Expression {
 
   Type type;
-  final Expression[] children;
+  public final Expression[] children;
 
   Node(Type type, Expression... children) {
     this.type = type;

@@ -4,7 +4,7 @@ import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
-class UnresolvedOperator extends Node {
+public class UnresolvedOperator extends Node {
   String name;
 
   UnresolvedOperator(String name, Expression... children) {
@@ -24,7 +24,7 @@ class UnresolvedOperator extends Node {
     }
 
     if (name.equals("=")) {
-      if (resolved[0].isAssignable()) {
+      if (!resolved[0].isAssignable()) {
         throw new RuntimeException("Cannot assign to " + resolved[0]);
       }
       return new Assignment(resolved[0], resolved[1]);

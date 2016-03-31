@@ -2,7 +2,7 @@ package org.kobjects.expressionparser.demo.thin;
 
 import java.util.LinkedHashMap;
 
-import org.kobjects.expressionparser.demo.thin.ast.Classifier;
+import org.kobjects.expressionparser.demo.thin.statement.Classifier;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
 public class ParsingContext {
@@ -22,12 +22,13 @@ public class ParsingContext {
     }
   }
 
-  public int declareLocal(String name, Type type) {
+  public LocalDeclaration declareLocal(String name, Type type) {
     if (locals.containsKey(name)) {
       throw new RuntimeException("Duplicate variable '" + name + "'");
     }
-    locals.put(name, new LocalDeclaration(name, type, locals.size()));
-    return locals.size() - 1;
+    LocalDeclaration declaration = new LocalDeclaration(name, type, locals.size());
+    locals.put(name, declaration);
+    return declaration;
   }
 
   public void declareStatic(String name, Object value) {

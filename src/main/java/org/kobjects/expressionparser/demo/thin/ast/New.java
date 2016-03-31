@@ -3,6 +3,7 @@ package org.kobjects.expressionparser.demo.thin.ast;
 
 import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
+import org.kobjects.expressionparser.demo.thin.statement.Classifier;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
 class New extends Node {
@@ -29,7 +30,7 @@ class New extends Node {
   public Expression resolve(ParsingContext context) {
     resolveChildren(context);
     type = type.resolveType(context);
-    if (!(type instanceof org.kobjects.expressionparser.demo.thin.ast.Classifier)) {
+    if (!(type instanceof Classifier)) {
       throw new RuntimeException("'" + type + "' must be a class for new.");
     }
     return this;

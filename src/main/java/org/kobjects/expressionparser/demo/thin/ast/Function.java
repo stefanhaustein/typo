@@ -3,14 +3,16 @@ package org.kobjects.expressionparser.demo.thin.ast;
 import org.kobjects.expressionparser.demo.thin.Applicable;
 import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
+import org.kobjects.expressionparser.demo.thin.statement.Block;
+import org.kobjects.expressionparser.demo.thin.statement.Statement;
 import org.kobjects.expressionparser.demo.thin.type.FunctionType;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
 public class Function implements Expression, Applicable {
   String name;
   public Parameter[] parameters;
-  org.kobjects.expressionparser.demo.thin.type.Type returnType;
-  org.kobjects.expressionparser.demo.thin.type.FunctionType type;
+  Type returnType;
+  FunctionType type;
   public Statement body;
 
   Function(String name, Parameter[] parameters, Type returnType, Statement body) {
@@ -78,7 +80,7 @@ public class Function implements Expression, Applicable {
     sb.append("):");
     sb.append(returnType);
     sb.append(" ");
-    if (body.kind == Statement.Kind.BLOCK){
+    if (body instanceof Block){
       sb.append(body);
     } else {
       sb.append("{");

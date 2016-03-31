@@ -1,13 +1,13 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
-import org.kobjects.expressionparser.ExpressionParser;
 import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.Instance;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
+import org.kobjects.expressionparser.demo.thin.statement.Classifier;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 
 class Property implements Expression {
-  Classifier.Member member;
+  org.kobjects.expressionparser.demo.thin.statement.Classifier.Member member;
   Expression base;
 
   Property(Expression base, Classifier.Member member) {

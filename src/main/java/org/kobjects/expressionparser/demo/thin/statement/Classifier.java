@@ -1,18 +1,21 @@
-package org.kobjects.expressionparser.demo.thin.ast;
+package org.kobjects.expressionparser.demo.thin.statement;
 
 import org.kobjects.expressionparser.demo.thin.Applicable;
 import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.Field;
 import org.kobjects.expressionparser.demo.thin.Instance;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
+import org.kobjects.expressionparser.demo.thin.ast.Expression;
+import org.kobjects.expressionparser.demo.thin.ast.Function;
 import org.kobjects.expressionparser.demo.thin.type.MetaType;
 import org.kobjects.expressionparser.demo.thin.type.Type;
+import org.kobjects.expressionparser.demo.thin.type.Typed;
 
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Classifier implements Expression, Type {
+public class Classifier extends Statement implements Type, Typed {
 
   public enum Kind {CLASS, INTERFACE};
   public enum Modifier {STATIC, PUBLIC}
@@ -47,10 +50,6 @@ public class Classifier implements Expression, Type {
     }
   }
 
-  public void assign(EvaluationContext context, Object value) {
-    throw new UnsupportedOperationException();
-  }
-
   public Member addField(String name, Type type) {
     Member member = new Member();
     member.name = name;
@@ -69,18 +68,12 @@ public class Classifier implements Expression, Type {
   }
 
   @Override
-  public boolean isAssignable() {
-    return false;
-  }
-
-  @Override
-  public Expression resolve(ParsingContext context) {
-    return this;
+  public void resolve(ParsingContext context) {
   }
 
   @Override
   public Object eval(EvaluationContext context) {
-    return this;
+    return NO_RESULT;
   }
 
   public Instance newInstance(EvaluationContext context, Object... args) {
@@ -92,7 +85,10 @@ public class Classifier implements Expression, Type {
     return this;
   }
 
-  @Override
+  public String toString() {
+    return name + " { /* TBD */ }";
+  }
+
   public Type type() {
     return new MetaType(this);
   }
@@ -103,7 +99,7 @@ public class Classifier implements Expression, Type {
     String name;
     Type type;
     public int fieldIndex;
-    Applicable implementation;
+    public Applicable implementation;
 
     @Override
     public String name() {

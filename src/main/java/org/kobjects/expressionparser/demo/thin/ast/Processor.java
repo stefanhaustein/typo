@@ -3,13 +3,11 @@ package org.kobjects.expressionparser.demo.thin.ast;
 
 import org.kobjects.expressionparser.ExpressionParser;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
+import org.kobjects.expressionparser.demo.thin.statement.Statement;
 
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Processor {
   Parser parser = new Parser();
@@ -33,11 +31,5 @@ public class Processor {
 
     body.resolve(context);
     return body;
-  }
-
-  private void resolveSignatures(ParsingContext context, Statement[] body) {
-    for (Statement statement : body) {
-      statement.resolveSignatures(context);
-    }
   }
 }

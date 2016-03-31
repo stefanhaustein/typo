@@ -32,12 +32,12 @@ class UnresolvedProperty implements Expression {
   @Override
   public Expression resolve(ParsingContext context) {
     Expression resolvedBase = base.resolve(context);
-    if (!(resolvedBase.type() instanceof Classifier)) {
+    if (!(resolvedBase.type() instanceof org.kobjects.expressionparser.demo.thin.statement.Classifier)) {
       throw new RuntimeException("Classifier expected; got: " + resolvedBase.type());
     }
-    Classifier classifier = (Classifier) resolvedBase.type();
+    org.kobjects.expressionparser.demo.thin.statement.Classifier classifier = (org.kobjects.expressionparser.demo.thin.statement.Classifier) resolvedBase.type();
 
-    Classifier.Member member = classifier.members.get(name);
+    org.kobjects.expressionparser.demo.thin.statement.Classifier.Member member = classifier.members.get(name);
     if (member == null) {
       throw new RuntimeException("Member '" + name + "' not found in " + classifier);
     }

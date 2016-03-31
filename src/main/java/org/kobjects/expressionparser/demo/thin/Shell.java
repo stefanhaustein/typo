@@ -1,11 +1,13 @@
 package org.kobjects.expressionparser.demo.thin;
 
 
+import org.kobjects.expressionparser.demo.thin.statement.ExpressionStatement;
+import org.kobjects.expressionparser.demo.thin.statement.Return;
 import org.kobjects.expressionparser.demo.thin.type.FunctionType;
 import org.kobjects.expressionparser.demo.thin.type.Type;
-import org.kobjects.expressionparser.demo.thin.ast.Classifier;
+import org.kobjects.expressionparser.demo.thin.statement.Classifier;
 import org.kobjects.expressionparser.demo.thin.ast.Processor;
-import org.kobjects.expressionparser.demo.thin.ast.Statement;
+import org.kobjects.expressionparser.demo.thin.statement.Statement;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -101,8 +103,8 @@ public class Shell {
         Statement statement = processor.process(parsingContext, new StringReader(line));
         System.out.println("Parsed:     " + statement);
 
-        if (statement.kind == Statement.Kind.EXPRESSION) {
-          statement.kind = Statement.Kind.RETURN;
+        if (statement instanceof ExpressionStatement) {
+          statement = new Return(((ExpressionStatement) statement).expression);
         }
 
         adjustLocals();

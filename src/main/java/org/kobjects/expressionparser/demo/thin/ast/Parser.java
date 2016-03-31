@@ -1,6 +1,12 @@
 package org.kobjects.expressionparser.demo.thin.ast;
 
 import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.demo.thin.statement.Block;
+import org.kobjects.expressionparser.demo.thin.statement.Classifier;
+import org.kobjects.expressionparser.demo.thin.statement.ExpressionStatement;
+import org.kobjects.expressionparser.demo.thin.statement.Let;
+import org.kobjects.expressionparser.demo.thin.statement.Return;
+import org.kobjects.expressionparser.demo.thin.statement.Statement;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 import org.kobjects.expressionparser.demo.thin.type.UnresolvedType;
 
@@ -40,12 +46,12 @@ class Parser {
     if (result.size() == 1) {
       return result.get(0);
     }
-    return new Statement(result.toArray(new Statement[result.size()]));
+    return new Block(result.toArray(new Statement[result.size()]));
   }
 
-  Classifier parseClass(ExpressionParser.Tokenizer tokenizer) {
+  org.kobjects.expressionparser.demo.thin.statement.Classifier parseClass(ExpressionParser.Tokenizer tokenizer) {
     String name = tokenizer.consumeIdentifier();
-    Classifier classifier = new Classifier(Classifier.Kind.CLASS, name);
+    org.kobjects.expressionparser.demo.thin.statement.Classifier classifier = new org.kobjects.expressionparser.demo.thin.statement.Classifier(org.kobjects.expressionparser.demo.thin.statement.Classifier.Kind.CLASS, name);
     tokenizer.consume("{");
     while (!tokenizer.tryConsume("}")) {
       String memberName = tokenizer.consumeIdentifier();
@@ -83,7 +89,7 @@ class Parser {
 
     tokenizer.consume("{");
 
-    Statement body = parseBlock(tokenizer, null);
+    org.kobjects.expressionparser.demo.thin.statement.Statement body = parseBlock(tokenizer, null);
     tokenizer.consume("}");
 
     Function fn = new Function(functionName,
@@ -106,13 +112,12 @@ class Parser {
       if (statics == null) {
         throw new RuntimeException("Classes only permitted at top level.");
       }
-      statics.put(classifier.name, classifier);
-      result = new Statement(Statement.Kind.CLASSIFIER, classifier);
+      statics.put(classifier.name(), classifier);
+      result = classifier;
     } else if (tokenizer.tryConsume("interface")) {
       result = parseInterface(tokenizer);
     } else if (tokenizer.tryConsume("return")) {
-      result = new Statement(Statement.Kind.RETURN,
-          expressionParser.parse(tokenizer));
+      result = new Return(expressionParser.parse(tokenizer));
     } else {
       Expression expression = expressionParser.parse(tokenizer);
       if (expression instanceof Function
@@ -122,7 +127,7 @@ class Parser {
         }
         statics.put(((Function) expression).name, expression);
       }
-      result = new Statement(Statement.Kind.EXPRESSION, expression);
+      result = new ExpressionStatement(expression);
     }
     tokenizer.tryConsume(";");
 /*    if (!tokenizer.tryConsume(";") && !cli) {
@@ -135,8 +140,7 @@ class Parser {
     String target = tokenizer.consumeIdentifier();
     tokenizer.consume("=");
     Expression expr = expressionParser.parse(tokenizer);
-    return new Statement(Statement.Kind.LET,
-        new UnresolvedOperator("=", new UnresolvedIdentifier(target), expr));
+    return new Let(target, expr);
   }
 
   Expression parseNew(ExpressionParser.Tokenizer tokenizer) {

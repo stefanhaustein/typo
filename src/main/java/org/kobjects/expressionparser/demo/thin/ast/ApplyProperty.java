@@ -3,13 +3,14 @@ package org.kobjects.expressionparser.demo.thin.ast;
 import org.kobjects.expressionparser.demo.thin.EvaluationContext;
 import org.kobjects.expressionparser.demo.thin.Instance;
 import org.kobjects.expressionparser.demo.thin.ParsingContext;
+import org.kobjects.expressionparser.demo.thin.statement.Classifier;
 
 class ApplyProperty extends Node {
   final Expression base;
-  final Classifier.Member member;
+  final org.kobjects.expressionparser.demo.thin.statement.Classifier.Member member;
 
   ApplyProperty(Expression base, Classifier.Member member, Expression[] children) {
-    super(member.type, children);
+    super(member.type(), children);
     this.base = base;
     this.member = member;
   }

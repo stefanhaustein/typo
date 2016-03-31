@@ -1,6 +1,6 @@
 package org.kobjects.expressionparser.demo.thin;
 
-import org.kobjects.expressionparser.demo.thin.ast.Classifier;
+import org.kobjects.expressionparser.demo.thin.statement.Classifier;
 import org.kobjects.expressionparser.demo.thin.type.Type;
 import org.kobjects.expressionparser.demo.thin.type.Typed;
 
