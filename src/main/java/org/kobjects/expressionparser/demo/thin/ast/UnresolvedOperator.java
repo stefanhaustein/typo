@@ -24,9 +24,11 @@ class UnresolvedOperator extends Node {
     }
 
     if (name.equals("=")) {
+      if (resolved[0].isAssignable()) {
+        throw new RuntimeException("Cannot assign to " + resolved[0]);
+      }
       return new Assignment(resolved[0], resolved[1]);
     }
-
 
     if (!allNumber) {
       if (!name.equals("+")) {
