@@ -6,7 +6,7 @@ import org.kobjects.expressionparser.demo.thinscript.Printable;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 
 public abstract class Statement implements Printable {
-  String NO_RESULT = new String("NO_RESULT");
+  final static Object NO_RESULT = new String("NO_RESULT");
 
   public abstract Object eval(EvaluationContext context);
 

@@ -24,6 +24,19 @@ public class Apply extends Node {
   }
 
   @Override
+  public void print(CodePrinter cp) {
+    cp.append(target).append('(');
+    if (children.length > 0) {
+      cp.append(children[0]);
+      for (int i = 1; i < children.length; i++) {
+        cp.append(", ");
+        cp.append(children[i]);
+      }
+    }
+    cp.append(')');
+  }
+
+  @Override
   public Expression resolve(ParsingContext context) {
     resolveChildren(context);
     target = target.resolve(context);
@@ -42,16 +55,4 @@ public class Apply extends Node {
     super.resolveSignatures(context);
   }
 
-  @Override
-  public void print(CodePrinter cp) {
-    cp.append("(");
-    if (children.length > 0) {
-      cp.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        cp.append(", ");
-        cp.append(children[i]);
-      }
-    }
-    cp.append(')');
-  }
 }

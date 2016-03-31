@@ -12,6 +12,16 @@ public class CodePrinter {
     indent = indent.substring(0, indent.length() - 2);
   }
 
+  public CodePrinter append(char c) {
+    sb.append(c);
+    return this;
+  }
+
+  public CodePrinter append(Printable p) {
+    p.print(this);
+    return this;
+  }
+
   public CodePrinter append(Object o) {
     sb.append(String.valueOf(o));
     return this;

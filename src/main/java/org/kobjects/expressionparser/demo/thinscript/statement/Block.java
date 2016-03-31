@@ -15,8 +15,10 @@ public class Block extends Statement {
   @Override
   public Object eval(EvaluationContext context) {
     for (Statement s: children) {
+      System.out.println("Eval block statement: " + s);
       Object result = s.eval(context);
       if (result != NO_RESULT) {
+        System.out.println("Aborting; Result observed: " + result);
         return result;
       }
     }

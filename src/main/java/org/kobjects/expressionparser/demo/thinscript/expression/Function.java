@@ -51,28 +51,6 @@ public class Function implements Expression, Applicable {
   }
 
   @Override
-  public Expression resolve(ParsingContext context) {
-    ParsingContext bodyContext = new ParsingContext(context, context.self);
-    for (Parameter param : parameters) {
-      bodyContext.declareLocal(param.name, param.type);
-    }
-    body.resolve(bodyContext);
-    return this;
-  }
-
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-    returnType = returnType.resolveType(context);
-    Type[] parameterTypes = new Type[parameters.length];
-    for (int i = 0; i < parameterTypes.length; i++) {
-      parameterTypes[i] = parameters[i].type.resolveType(context);
-      parameters[i].type = parameterTypes[i];
-    }
-    type = new FunctionType(returnType, parameterTypes);
-    body.resolveSignatures(context);
-  }
-
-
   public void print(CodePrinter cp) {
     if (owner == null) {
       cp.append("function ");
@@ -100,6 +78,28 @@ public class Function implements Expression, Applicable {
       cp.newLine();
       cp.append("}");
     }
+  }
+
+  @Override
+  public Expression resolve(ParsingContext context) {
+    ParsingContext bodyContext = new ParsingContext(context, context.self);
+    for (Parameter param : parameters) {
+      bodyContext.declareLocal(param.name, param.type);
+    }
+    body.resolve(bodyContext);
+    return this;
+  }
+
+  @Override
+  public void resolveSignatures(ParsingContext context) {
+    returnType = returnType.resolveType(context);
+    Type[] parameterTypes = new Type[parameters.length];
+    for (int i = 0; i < parameterTypes.length; i++) {
+      parameterTypes[i] = parameters[i].type.resolveType(context);
+      parameters[i].type = parameterTypes[i];
+    }
+    type = new FunctionType(returnType, parameterTypes);
+    body.resolveSignatures(context);
   }
 
   @Override
