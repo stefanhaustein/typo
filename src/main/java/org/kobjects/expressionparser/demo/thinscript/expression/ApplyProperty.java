@@ -38,7 +38,7 @@ class ApplyProperty extends Node {
     cp.append(member.name());
     cp.append('(');
     if (children.length > 0) {
-      cp.append(children[0]);
+      children[0].print(cp);
       for (int i = 1; i < children.length; i++) {
         cp.append(", ");
         children[i].print(cp);

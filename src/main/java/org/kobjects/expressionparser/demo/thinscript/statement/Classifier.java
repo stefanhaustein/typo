@@ -4,19 +4,17 @@ import org.kobjects.expressionparser.demo.thinscript.Applicable;
 import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.Field;
-import org.kobjects.expressionparser.demo.thinscript.Instance;
 import org.kobjects.expressionparser.demo.thinscript.Printable;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 import org.kobjects.expressionparser.demo.thinscript.expression.Function;
-import org.kobjects.expressionparser.demo.thinscript.type.MetaType;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
-import org.kobjects.expressionparser.demo.thinscript.type.Typed;
+import org.kobjects.expressionparser.demo.thinscript.type.Types;
 
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Classifier extends Statement implements Type, Typed {
+public class Classifier extends Statement implements Type {
 
   public enum Kind {CLASS, INTERFACE};
   public enum Modifier {PUBLIC, PRIVATE, PROTECTED, STATIC}
@@ -75,7 +73,7 @@ public class Classifier extends Statement implements Type, Typed {
 
   @Override
   public boolean assignableFrom(Type other) {
-    return this == other;
+    return this == other || other == Types.NULL;
   }
 
   @Override
@@ -131,11 +129,6 @@ public class Classifier extends Statement implements Type, Typed {
     }
     cp.append("}");
   }
-
-  public Type type() {
-    return new MetaType(this);
-  }
-
 
   public static class Member implements Field {
     EnumSet<Modifier> modifiers;

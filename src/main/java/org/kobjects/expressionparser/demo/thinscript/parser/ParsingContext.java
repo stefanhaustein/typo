@@ -19,6 +19,8 @@ public class ParsingContext {
       statics = parent.statics;
     } else {
       statics = new LinkedHashMap<>();
+      statics.put("boolean", Types.BOOLEAN);
+      statics.put("int", Types.INT);
       statics.put("number", Types.NUMBER);
       statics.put("string", Types.STRING);
       statics.put("void", Types.VOID);

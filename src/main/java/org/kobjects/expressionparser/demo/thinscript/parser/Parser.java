@@ -2,7 +2,6 @@ package org.kobjects.expressionparser.demo.thinscript.parser;
 
 import org.kobjects.expressionparser.ExpressionParser;
 import org.kobjects.expressionparser.demo.thinscript.expression.Apply;
-import org.kobjects.expressionparser.demo.thinscript.expression.Assignment;
 import org.kobjects.expressionparser.demo.thinscript.expression.Expression;
 import org.kobjects.expressionparser.demo.thinscript.expression.Function;
 import org.kobjects.expressionparser.demo.thinscript.expression.Literal;
@@ -13,16 +12,17 @@ import org.kobjects.expressionparser.demo.thinscript.expression.UnresolvedProper
 import org.kobjects.expressionparser.demo.thinscript.statement.Block;
 import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
 import org.kobjects.expressionparser.demo.thinscript.statement.ExpressionStatement;
-import org.kobjects.expressionparser.demo.thinscript.statement.Let;
-import org.kobjects.expressionparser.demo.thinscript.statement.Return;
+import org.kobjects.expressionparser.demo.thinscript.statement.IfStatement;
+import org.kobjects.expressionparser.demo.thinscript.statement.LetStatement;
+import org.kobjects.expressionparser.demo.thinscript.statement.ReturnStatement;
 import org.kobjects.expressionparser.demo.thinscript.statement.Statement;
+import org.kobjects.expressionparser.demo.thinscript.statement.WhileStatement;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
 import org.kobjects.expressionparser.demo.thinscript.type.UnresolvedType;
 
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -34,10 +34,11 @@ class Parser {
   {
     expressionParser.addPrimary("function");
     expressionParser.addPrimary("new");
-    expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 4, ".");
-    expressionParser.addApplyBrackets(3, "(", ",", ")");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 2, "*", "/");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "+", "-");
+    expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 5, ".");
+    expressionParser.addApplyBrackets(4, "(", ",", ")");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 3, "*", "/");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 2, "+", "-");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "==", "!=");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "=");
   }
 
@@ -121,7 +122,7 @@ class Parser {
     tokenizer.consume("{");
 
     Statement body = parseBlock(tokenizer, null);
-    if (init != null) {
+    if (init.size() > 0) {
       if (body instanceof Block) {
         for (Statement s : ((Block) body).children) {
           init.add(s);
@@ -167,8 +168,9 @@ class Parser {
 
   private Statement parseStatement(ExpressionParser.Tokenizer tokenizer, Map<String, Object> statics) {
     Statement result;
-    if (tokenizer.tryConsume("let")) {
-      result = parseLet(tokenizer);
+    if (tokenizer.tryConsume("{")) {
+      result = parseBlock(tokenizer, null);
+      tokenizer.consume("}");
     } else if (tokenizer.tryConsume("class")) {
       Classifier classifier = parseClass(tokenizer);
       if (statics == null) {
@@ -176,10 +178,30 @@ class Parser {
       }
       statics.put(classifier.name(), classifier);
       result = classifier;
+    } else if (tokenizer.tryConsume("if")) {
+      tokenizer.consume("(");
+      Expression condition = expressionParser.parse(tokenizer);
+      tokenizer.consume(")");
+
+      Statement thenBranch = parseStatement(tokenizer, null);
+      if (tokenizer.tryConsume("else")) {
+        Statement elseBranch = parseStatement(tokenizer, null);
+        result = new IfStatement(condition, thenBranch, elseBranch);
+      } else {
+        result = new IfStatement(condition, thenBranch);
+      }
     } else if (tokenizer.tryConsume("interface")) {
       result = parseInterface(tokenizer);
+    } else if (tokenizer.tryConsume("let") || tokenizer.tryConsume("var")) {
+      result = parseLet(tokenizer);
     } else if (tokenizer.tryConsume("return")) {
-      result = new Return(expressionParser.parse(tokenizer));
+      result = new ReturnStatement(expressionParser.parse(tokenizer));
+    } else if (tokenizer.tryConsume("while")) {
+      tokenizer.consume("(");
+      Expression condition = expressionParser.parse(tokenizer);
+      tokenizer.consume(")");
+      Statement body = parseStatement(tokenizer, null);
+      result = new WhileStatement(condition, body);
     } else {
       Expression expression = expressionParser.parse(tokenizer);
       if (expression instanceof Function
@@ -202,7 +224,7 @@ class Parser {
     String target = tokenizer.consumeIdentifier();
     tokenizer.consume("=");
     Expression expr = expressionParser.parse(tokenizer);
-    return new Let(target, expr);
+    return new LetStatement(target, expr);
   }
 
   Expression parseNew(ExpressionParser.Tokenizer tokenizer) {
@@ -241,6 +263,13 @@ class Parser {
 
     @Override
     public Expression identifier(String name) {
+      if (name.equals("true")) {
+        return new Literal(true, null);
+      } else if (name.equals("false")) {
+        return new Literal(false, null);
+      } else if (name.equals("null")) {
+        return new Literal(null, null);
+      }
       return new UnresolvedIdentifier(name);
     }
 
@@ -265,7 +294,11 @@ class Parser {
 
     @Override
     public Expression numberLiteral(String value) {
-      return new Literal(Double.parseDouble(value), null);
+      double d = Double.parseDouble(value);
+      if (value.matches("[0-9]+") && d >= Integer.MIN_VALUE && d <= Integer.MAX_VALUE) {
+        return new Literal((int) d, null);
+      }
+      return new Literal(d, null);
     }
 
     @Override

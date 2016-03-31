@@ -29,9 +29,13 @@ public class UnresolvedOperator extends Node {
     Expression[] resolved = new Expression[children.length];
     for (int i = 0; i < children.length; i++) {
       resolved[i] = children[i].resolve(context);
-      if (resolved[i].type() != Types.NUMBER) {
+      if (!Types.NUMBER.assignableFrom(resolved[i].type())) {
         allNumber = false;
       }
+    }
+
+    if (name.equals("==") || name.equals("!=")) {
+      return new Comparison(name.equals("=="), resolved[0], resolved[1]);
     }
 
     if (name.equals("=")) {

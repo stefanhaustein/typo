@@ -12,8 +12,7 @@ public class EvaluationContext {
     this.self = self;
     if (applicable instanceof Function) {
       Function function = (Function) applicable;
-      Function.Parameter[] params = function.parameters;
-      this.locals = new Object[params.length];
+      this.locals = new Object[function.localCount];
     } else if (applicable instanceof Applicable){
       this.locals = new Object[applicable.type().parameterTypes.length];
     } else {

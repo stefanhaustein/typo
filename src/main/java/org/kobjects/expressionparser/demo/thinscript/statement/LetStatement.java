@@ -2,20 +2,24 @@ package org.kobjects.expressionparser.demo.thinscript.statement;
 
 import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
+import org.kobjects.expressionparser.demo.thinscript.Field;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 import org.kobjects.expressionparser.demo.thinscript.expression.Expression;
 
-public class Return extends Statement {
-
+public class LetStatement extends Statement {
+  Field target;
+  String variableName;
   Expression expression;
 
-  public Return(Expression expression) {
+  public LetStatement(String variableName, Expression expression) {
+    this.variableName = variableName;
     this.expression = expression;
   }
 
   @Override
   public Object eval(EvaluationContext context) {
-    return expression.eval(context);
+    target.set(context, expression.eval(context));
+    return NO_RESULT;
   }
 
   @Override
@@ -26,11 +30,12 @@ public class Return extends Statement {
   @Override
   public void resolve(ParsingContext context) {
     expression = expression.resolve(context);
+    target = context.declareLocal(variableName, expression.type());
   }
 
   @Override
   public void print(CodePrinter cp) {
-    cp.append("return ");
+    cp.append("let ").append(variableName).append(" = ");
     expression.print(cp);
     cp.append("; ");
   }

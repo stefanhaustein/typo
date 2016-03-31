@@ -17,6 +17,7 @@ public class Function implements Expression, Applicable {
   Type returnType;
   FunctionType type;
   public Statement body;
+  public int localCount;
 
   public Function(Classifier owner, String name, Parameter[] parameters, Type returnType, Statement body) {
     this.owner = owner;
@@ -91,6 +92,7 @@ public class Function implements Expression, Applicable {
       bodyContext.declareLocal(param.name, param.type);
     }
     body.resolve(bodyContext);
+    this.localCount = bodyContext.locals.size();
     return this;
   }
 

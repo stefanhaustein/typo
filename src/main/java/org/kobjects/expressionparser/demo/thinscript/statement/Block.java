@@ -3,13 +3,11 @@ package org.kobjects.expressionparser.demo.thinscript.statement;
 
 import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
-import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 
-public class Block extends Statement {
-  public Statement[] children;
+public class Block extends SimpleStatement {
 
   public Block(Statement[] children) {
-    this.children = children;
+    super(null, children);
   }
 
   @Override
@@ -23,20 +21,6 @@ public class Block extends Statement {
       }
     }
     return NO_RESULT;
-  }
-
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-    for (Statement child: children) {
-      child.resolveSignatures(context);
-    }
-  }
-
-  @Override
-  public void resolve(ParsingContext context) {
-    for (Statement child: children) {
-      child.resolve(context);
-    }
   }
 
   @Override

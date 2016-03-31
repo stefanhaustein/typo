@@ -16,13 +16,13 @@ class Operator extends Node {
 
   public Object eval(EvaluationContext ctx) {
     switch(op) {
-      case F64Abs: return Math.abs(evalF64(ctx, 0));
-      case F64Add: return evalF64(ctx, 0) + evalF64(ctx, 1);
-      case F64Div: return evalF64(ctx, 0) / evalF64(ctx, 1);
-      case F64Max: return Math.max(evalF64(ctx, 0), evalF64(ctx, 1));
-      case F64Min: return Math.min(evalF64(ctx, 0), evalF64(ctx, 1));
-      case F64Mul: return evalF64(ctx, 0) * evalF64(ctx, 1);
-      case F64Sub: return evalF64(ctx, 0) - evalF64(ctx, 1);
+      case F64Abs: return Math.abs(evalNumber(ctx, 0));
+      case F64Add: return evalNumber(ctx, 0) + evalNumber(ctx, 1);
+      case F64Div: return evalNumber(ctx, 0) / evalNumber(ctx, 1);
+      case F64Max: return Math.max(evalNumber(ctx, 0), evalNumber(ctx, 1));
+      case F64Min: return Math.min(evalNumber(ctx, 0), evalNumber(ctx, 1));
+      case F64Mul: return evalNumber(ctx, 0) * evalNumber(ctx, 1);
+      case F64Sub: return evalNumber(ctx, 0) - evalNumber(ctx, 1);
       default: throw new UnsupportedOperationException(op.name());
     }
   }

@@ -3,7 +3,7 @@ package org.kobjects.expressionparser.demo.thinscript;
 
 import org.kobjects.expressionparser.demo.thinscript.parser.*;
 import org.kobjects.expressionparser.demo.thinscript.statement.ExpressionStatement;
-import org.kobjects.expressionparser.demo.thinscript.statement.Return;
+import org.kobjects.expressionparser.demo.thinscript.statement.ReturnStatement;
 import org.kobjects.expressionparser.demo.thinscript.type.FunctionType;
 import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
 import org.kobjects.expressionparser.demo.thinscript.statement.Statement;
@@ -96,7 +96,7 @@ public class Shell {
         System.out.println("Processed:   " + statement);
 
         if (statement instanceof ExpressionStatement) {
-          statement = new Return(((ExpressionStatement) statement).expression);
+          statement = new ReturnStatement(((ExpressionStatement) statement).expression);
         }
 
         evaluationContext.adjustLocals(parsingContext);

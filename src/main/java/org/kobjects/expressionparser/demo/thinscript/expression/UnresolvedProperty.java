@@ -33,7 +33,8 @@ public class UnresolvedProperty implements Expression {
 
   @Override
   public void print(CodePrinter cp) {
-    cp.append(base).append('.').append(name);
+    base.print(cp);
+    cp.append('.').append(name);
   }
 
   @Override

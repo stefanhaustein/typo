@@ -6,8 +6,12 @@ public class Types {
   public static final Type NUMBER = new SimpleType("number");
   public static final Type STRING = new SimpleType("string");
   public static final Type VOID = new SimpleType("void");
+  public static final Type NULL = new SimpleType("(null)");
 
   public static Type typeOf(Object value) {
+    if (value == null) {
+      return NULL;
+    }
     if (value instanceof Typed) {
       return ((Typed) value).type();
     }

@@ -20,8 +20,12 @@ public abstract class Node implements Expression {
     throw new UnsupportedOperationException();
   }
 
-  double evalF64(EvaluationContext context, int index) {
-    return (Double) children[index].eval(context);
+  int evalInt(EvaluationContext context, int index) {
+    return (Integer) children[index].eval(context);
+  }
+
+  double evalNumber(EvaluationContext context, int index) {
+    return ((Number) children[index].eval(context)).doubleValue();
   }
 
   @Override

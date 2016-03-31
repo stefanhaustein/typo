@@ -5,22 +5,21 @@ import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 import org.kobjects.expressionparser.demo.thinscript.expression.Expression;
 
-public class ExpressionStatement extends SimpleStatement {
+public class ReturnStatement extends SimpleStatement {
 
-  public ExpressionStatement(Expression expression) {
+  public ReturnStatement(Expression expression) {
     super(expression);
   }
 
   @Override
   public Object eval(EvaluationContext context) {
-    expression.eval(context);
-    return NO_RESULT;
+    return expression.eval(context);
   }
 
   @Override
   public void print(CodePrinter cp) {
+    cp.append("return ");
     expression.print(cp);
     cp.append("; ");
   }
-
 }
