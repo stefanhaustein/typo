@@ -19,6 +19,7 @@ import org.kobjects.expressionparser.demo.thinscript.statement.LetStatement;
 import org.kobjects.expressionparser.demo.thinscript.statement.ReturnStatement;
 import org.kobjects.expressionparser.demo.thinscript.statement.Statement;
 import org.kobjects.expressionparser.demo.thinscript.statement.WhileStatement;
+import org.kobjects.expressionparser.demo.thinscript.type.ArrayType;
 import org.kobjects.expressionparser.demo.thinscript.type.FunctionType;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
 import org.kobjects.expressionparser.demo.thinscript.type.Types;
@@ -44,6 +45,7 @@ class Parser {
     expressionParser.addPrimary("new");
     expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 18, ".");
     expressionParser.addApplyBrackets(17, "(", ",", ")");
+    expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 15, "-", "!", "~");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 14, "*", "/");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 13, "+", "-");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 11, "<", ">", "<=", ">=");
@@ -53,7 +55,7 @@ class Parser {
   }
 
   public ExpressionParser.Tokenizer createTokenizer(Reader reader) {
-    return new ExpressionParser.Tokenizer(new Scanner(reader), expressionParser.getSymbols(), "{", "}", ";", ":", "=>");
+    return new ExpressionParser.Tokenizer(new Scanner(reader), expressionParser.getSymbols(), "{", "}", "[", "]", ";", ":", "=>");
   }
 
   public Statement parseBlock(ExpressionParser.Tokenizer tokenizer, Map<String, Object> statics) {
@@ -272,6 +274,7 @@ class Parser {
   }
 
   Type parseType(ExpressionParser.Tokenizer tokenizer) {
+    Type result;
     if (tokenizer.tryConsume("(")) {
       ArrayList<FunctionType.Parameter> args = new ArrayList<>();
       while(!tokenizer.tryConsume(")")) {
@@ -282,21 +285,28 @@ class Parser {
       }
       tokenizer.consume("=>");
       Type returnType = parseType(tokenizer);
-      return new FunctionType(returnType, args.toArray(new FunctionType.Parameter[args.size()]));
+      result = new FunctionType(returnType, args.toArray(new FunctionType.Parameter[args.size()]));
+    } else {
+      String name = tokenizer.consumeIdentifier();
+      if (name.equals("boolean")) {
+        result = Types.BOOLEAN;
+      } else if (name.equals("int")) {
+        result = Types.INT;
+      } else if (name.equals("number")) {
+        result = Types.NUMBER;
+      } else if (name.equals("string")) {
+        result = Types.STRING;
+      } else if (name.equals("void")) {
+        result = Types.VOID;
+      } else {
+        result = new UnresolvedType(name);
+      }
     }
-    String name = tokenizer.consumeIdentifier();
-    if (name.equals("boolean")) {
-      return Types.BOOLEAN;
-    } else if (name.equals("int")) {
-      return Types.INT;
-    } else if (name.equals("number")) {
-      return Types.NUMBER;
-    } else if (name.equals("string")) {
-      return Types.STRING;
-    } else if (name.equals("void")) {
-      return Types.VOID;
+    while (tokenizer.tryConsume("[")) {
+      tokenizer.consume("]");
+      result = new ArrayType(result);
     }
-    return new UnresolvedType(name);
+    return result;
   }
 
   class ExpressionProcessor extends ExpressionParser.Processor<Expression> {
@@ -332,6 +342,11 @@ class Parser {
         return new Literal(Double.POSITIVE_INFINITY, "Infinity");
       }
       return new UnresolvedIdentifier(name);
+    }
+
+    @Override
+    public Expression prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, Expression param) {
+      return new UnresolvedOperator(name, param);
     }
 
     @Override

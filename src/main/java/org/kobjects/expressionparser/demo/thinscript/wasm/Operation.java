@@ -7,7 +7,8 @@ public enum Operation {
   F64Div(0x8c, Type.F64, Type.F64, Type.F64),
   F64Min(0x8d, Type.F64, Type.F64, Type.F64),
   F64Max(0x8e, Type.F64, Type.F64, Type.F64),
-  F64Abs(0x8f, Type.F64, Type.F64);
+  F64Abs(0x8f, Type.F64, Type.F64),
+  F64Neg(0x90, Type.F64, Type.F64);
 
   int code;
   Type type;

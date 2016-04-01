@@ -23,6 +23,7 @@ class Operator extends Node {
       case F64Min: return Math.min(evalNumber(ctx, 0), evalNumber(ctx, 1));
       case F64Mul: return evalNumber(ctx, 0) * evalNumber(ctx, 1);
       case F64Sub: return evalNumber(ctx, 0) - evalNumber(ctx, 1);
+      case F64Neg: return -evalNumber(ctx, 0);
       default: throw new UnsupportedOperationException(op.name());
     }
   }

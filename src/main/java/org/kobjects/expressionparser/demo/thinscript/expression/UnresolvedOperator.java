@@ -17,9 +17,14 @@ public class UnresolvedOperator extends Node {
   @Override
   public void print(CodePrinter cp) {
     cp.append("(");
-    children[0].print(cp);
-    cp.append(' ').append(name).append(' ');
-    children[1].print(cp);
+    if (children.length == 1) {
+      cp.append(name);
+      children[0].print(cp);
+    } else {
+      children[0].print(cp);
+      cp.append(' ').append(name).append(' ');
+      children[1].print(cp);
+    }
     cp.append(')');
   }
 
@@ -33,6 +38,9 @@ public class UnresolvedOperator extends Node {
       }
     }
 
+    if (name.equals("!")) {
+      return new Not(children[0]);
+    }
     if (name.startsWith("==")) {
       return new Equals(children[0], children[1]);
     }
@@ -62,13 +70,15 @@ public class UnresolvedOperator extends Node {
     Operation op;
     switch(name.charAt(0)) {
       case '+': op = Operation.F64Add; break;
-      case '-': op = Operation.F64Sub; break;
+      case '-':
+        op = children.length == 1 ? Operation.F64Neg : Operation.F64Sub;
+        break;
       case '*': op = Operation.F64Mul; break;
       case '/': op = Operation.F64Div; break;
       default:
         throw new RuntimeException("Unrecognized operator: " + name);
     }
-    return new Operator(op, children[0], children[1]);
+    return new Operator(op, children);
   }
 
   @Override
