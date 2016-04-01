@@ -13,6 +13,7 @@ import org.kobjects.expressionparser.demo.thinscript.type.Types;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Classifier extends Statement implements Type {
 
@@ -54,8 +55,9 @@ public class Classifier extends Statement implements Type {
     }
   }
 
-  public Member addField(String name, Type type) {
+  public Member addField(Set<Modifier> modifiers, String name, Type type) {
     Member member = new Member();
+    member.modifiers = modifiers;
     member.name = name;
     member.type = type;
     member.fieldIndex = fieldCount++;
@@ -63,8 +65,9 @@ public class Classifier extends Statement implements Type {
     return member;
   }
 
-  public void addMethod(String name, Applicable applicable) {
+  public void addMethod(Set<Modifier> modifiers, String name, Applicable applicable) {
     Member member = new Member();
+    member.modifiers = modifiers;
     member.name = name;
     member.implementation = applicable;
     member.fieldIndex = -1;
@@ -131,7 +134,7 @@ public class Classifier extends Statement implements Type {
   }
 
   public static class Member implements Field {
-    EnumSet<Modifier> modifiers;
+    Set<Modifier> modifiers;
     String name;
     Type type;
     public int fieldIndex;

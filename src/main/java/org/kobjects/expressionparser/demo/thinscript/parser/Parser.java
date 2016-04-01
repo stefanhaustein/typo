@@ -21,6 +21,7 @@ import org.kobjects.expressionparser.demo.thinscript.type.Type;
 import org.kobjects.expressionparser.demo.thinscript.type.UnresolvedType;
 
 import java.io.Reader;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -67,17 +68,19 @@ class Parser {
     Classifier classifier = new Classifier(Classifier.Kind.CLASS, name);
     tokenizer.consume("{");
     while (!tokenizer.tryConsume("}")) {
+      Set<Classifier.Modifier> modifiers = parseModifiers(
+          tokenizer, EnumSet.allOf(Classifier.Modifier.class));
       String memberName = tokenizer.consumeIdentifier();
       if (tokenizer.tryConsume(":")) {
         Type type = parseType(tokenizer);
-        classifier.addField(memberName, type);
+        classifier.addField(modifiers, memberName, type);
         tokenizer.consume(";");
       } else if (tokenizer.currentValue.equals("(")) {
         Function fn = parseFunction(classifier, memberName, tokenizer);
         if (memberName.equals("constructor")) {
           classifier.constructor = fn;
         } else {
-          classifier.addMethod(memberName, fn);
+          classifier.addMethod(modifiers, memberName, fn);
         }
       }
     }
@@ -101,7 +104,7 @@ class Parser {
         tokenizer.consume(":");
         Type parameterType = parseType(tokenizer);
         if (!modifiers.isEmpty()) {
-          owner.addField(parameterName, parameterType);
+          owner.addField(modifiers, parameterName, parameterType);
           init.add(new ExpressionStatement(new UnresolvedOperator("=",
               new UnresolvedProperty(new UnresolvedIdentifier("this"), parameterName),
               new UnresolvedIdentifier(parameterName))));

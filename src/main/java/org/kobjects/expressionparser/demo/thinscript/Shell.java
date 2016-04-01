@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.EnumSet;
 
 public class Shell {
 
@@ -57,7 +58,7 @@ public class Shell {
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
     Classifier consoleClass = new Classifier(Classifier.Kind.CLASS, "Console");
-    consoleClass.addMethod("log", new Applicable() {
+    consoleClass.addMethod(EnumSet.noneOf(Classifier.Modifier.class), "log", new Applicable() {
       @Override
       public FunctionType type() {
         return new FunctionType(Types.VOID, Types.STRING);
