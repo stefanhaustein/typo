@@ -42,7 +42,7 @@ public class Shell {
       reader.close();
       is.close();
 
-      System.out.println("Parsed: " + parsed);
+      System.out.println("Parsed: " + CodePrinter.toString(parsed));
 
       EvaluationContext loadEvaluationContext = new EvaluationContext(null, null);
       loadEvaluationContext.adjustLocals(loadParsingContext);
@@ -67,6 +67,17 @@ public class Shell {
       @Override
       public Object apply(EvaluationContext context) {
         return Math.sqrt(((Number) context.getLocal(0)).doubleValue());
+      }
+    });
+    mathClass.addMethod(EnumSet.of(Classifier.Modifier.STATIC), "floor", new Applicable() {
+      @Override
+      public FunctionType type() {
+        return new FunctionType(Types.NUMBER, Types.NUMBER);
+      }
+
+      @Override
+      public Object apply(EvaluationContext context) {
+        return Math.floor(((Number) context.getLocal(0)).doubleValue());
       }
     });
     parsingContext.declareStatic("Math", mathClass);

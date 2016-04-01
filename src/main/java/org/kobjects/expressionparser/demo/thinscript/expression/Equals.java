@@ -5,11 +5,9 @@ import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 import org.kobjects.expressionparser.demo.thinscript.type.Types;
 
-public class Comparison extends Node {
-  boolean eq;
-  Comparison(boolean eq, Expression left, Expression right) {
+public class Equals extends Node {
+  Equals(Expression left, Expression right) {
     super(Types.BOOLEAN, left, right);
-    this.eq = eq;
   }
 
   @Override
@@ -22,15 +20,15 @@ public class Comparison extends Node {
     Object left = children[0].eval(context);
     Object right = children[1].eval(context);
     if (left == null || right == null) {
-      return eq ? left == right : left != right;
+      return left == right;
     }
     if (left instanceof Double || right instanceof Double) {
       if (!(left instanceof Number) || !(right instanceof Number)) {
         return false;
       }
-      return ((Number) left).doubleValue() == ((Number) right).doubleValue() ? eq : !eq;
+      return ((Number) left).doubleValue() == ((Number) right).doubleValue();
     }
-    return left.equals(right) ? eq : !eq;
+    return left.equals(right);
   }
 
   @Override

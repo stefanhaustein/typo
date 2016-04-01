@@ -5,17 +5,24 @@ import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.Field;
 import org.kobjects.expressionparser.demo.thinscript.Printable;
+import org.kobjects.expressionparser.demo.thinscript.expression.Expression;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 import org.kobjects.expressionparser.demo.thinscript.expression.Function;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
 import org.kobjects.expressionparser.demo.thinscript.type.Types;
 
-import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class Classifier extends Statement implements Type {
+
+  private static void printModifiers(CodePrinter cp, Set<Modifier> modifiers) {
+    for (Modifier m: modifiers) {
+      cp.append(m.name().toLowerCase());
+      cp.append(' ');
+    }
+  }
 
   public enum Kind {CLASS, INTERFACE};
   public enum Modifier {PUBLIC, PRIVATE, PROTECTED, STATIC}
@@ -32,7 +39,6 @@ public class Classifier extends Statement implements Type {
     this.name = name;
   }
 
-
   @Override
   public String name() {
     return name;
@@ -44,6 +50,9 @@ public class Classifier extends Statement implements Type {
       constructor.resolveSignatures(context);
     }
     for (Member member: members.values()) {
+      if (member.initializer != null) {
+        member.initializer.resolveSignatures(context);
+      }
       if (member.implementation != null) {
         if (member.implementation instanceof Function) {
           ((Function) member.implementation).resolveSignatures(context);
@@ -55,12 +64,17 @@ public class Classifier extends Statement implements Type {
     }
   }
 
-  public Member addField(Set<Modifier> modifiers, String name, Type type) {
+  public Member addField(Set<Modifier> modifiers, String name, Type type, Expression initialValue) {
     Member member = new Member();
     member.modifiers = modifiers;
     member.name = name;
     member.type = type;
-    member.fieldIndex = fieldCount++;
+    if (member.isStatic()) {
+      member.fieldIndex = -1;
+    } else {
+      member.fieldIndex = fieldCount++;
+    }
+    member.initializer = initialValue;
     members.put(name, member);
     return member;
   }
@@ -85,6 +99,12 @@ public class Classifier extends Statement implements Type {
       constructor = constructor.resolve(context);
     }
     for (Member member: members.values()) {
+      if (member.initializer != null) {
+        member.initializer = member.initializer.resolve(context);
+        if (member.isStatic()) {
+          member.staticValue = member.initializer.eval(new EvaluationContext(null, null));
+        }
+      }
       if (member.implementation instanceof Function) {
         member.implementation = ((Function) member.implementation).resolve(context);
       }
@@ -110,6 +130,7 @@ public class Classifier extends Statement implements Type {
       for (Member member : members.values()) {
         if (member.implementation == null) {
           cp.newLine();
+          printModifiers(cp, member.modifiers);
           cp.append(member.name);
           cp.append(": ");
           cp.append(member.type.name());
@@ -124,6 +145,7 @@ public class Classifier extends Statement implements Type {
       for (Member member : members.values()) {
         if (member.implementation != null) {
           cp.newLine();
+          printModifiers(cp, member.modifiers);
           ((Printable) member.implementation).print(cp);
         }
       }
@@ -133,12 +155,15 @@ public class Classifier extends Statement implements Type {
     cp.append("}");
   }
 
+
   public static class Member implements Field {
     Set<Modifier> modifiers;
     String name;
     Type type;
     public int fieldIndex;
     public Applicable implementation;
+    public Expression initializer;
+    public Object staticValue;
 
     @Override
     public String name() {

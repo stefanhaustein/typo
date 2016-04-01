@@ -26,30 +26,37 @@ public class UnresolvedOperator extends Node {
   @Override
   public Expression resolve(ParsingContext context) {
     boolean allNumber = true;
-    Expression[] resolved = new Expression[children.length];
+    resolveChildren(context);
     for (int i = 0; i < children.length; i++) {
-      resolved[i] = children[i].resolve(context);
-      if (!Types.NUMBER.assignableFrom(resolved[i].type())) {
+      if (!Types.NUMBER.assignableFrom(children[i].type())) {
         allNumber = false;
       }
     }
 
-    if (name.startsWith("==") || name.startsWith("!=")) {
-      return new Comparison(name.startsWith("=="), resolved[0], resolved[1]);
+    if (name.startsWith("==")) {
+      return new Equals(children[0], children[1]);
+    }
+    if (name.startsWith("!=")) {
+      return new Not(new Equals(children[0], children[1]));
+    }
+    if (name.startsWith("<") || name.startsWith(">")) {
+      return new Compare(name.startsWith("<")
+          ? (name.endsWith("=") ? Compare.Op.LE : Compare.Op.LE)
+          : (name.endsWith("=") ? Compare.Op.GE : Compare.Op.GT), children[0], children[1]);
     }
 
     if (name.equals("=")) {
-      if (!resolved[0].isAssignable()) {
-        throw new RuntimeException("Cannot assign to " + resolved[0]);
+      if (!children[0].isAssignable()) {
+        throw new RuntimeException("Cannot assign to " + children[0]);
       }
-      return new Assignment(resolved[0], resolved[1]);
+      return new Assignment(children[0], children[1]);
     }
 
     if (!allNumber) {
       if (!name.equals("+")) {
         throw new IllegalArgumentException("number arguments expected for " + name);
       }
-      return new Concat(resolved[0], resolved[1]);
+      return new Concat(children[0], children[1]);
     }
 
     Operation op;

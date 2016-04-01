@@ -19,3 +19,26 @@ class Vector {
                           v1.x * v2.y - v1.y * v2.x);
     }
 }
+
+class Color {
+    constructor(public r: number,
+                public g: number,
+                public b: number) {
+    }
+    static scale(k: number, v: Color): Color { return new Color(k * v.r, k * v.g, k * v.b); }
+    static plus(v1: Color, v2: Color): Color { return new Color(v1.r + v2.r, v1.g + v2.g, v1.b + v2.b); }
+    static times(v1: Color, v2: Color): Color { return new Color(v1.r * v2.r, v1.g * v2.g, v1.b * v2.b); }
+    static white: Color = new Color(1.0, 1.0, 1.0);
+    static grey: Color = new Color(0.5, 0.5, 0.5);
+    static black: Color = new Color(0.0, 0.0, 0.0);
+    static background: Color = Color.black;
+    static defaultColor: Color = Color.black;
+    static toDrawingColor(c: Color): Color {
+        var legalize = function(d:number):number {return d > 1 ? 1 : d;}
+        return new Color(
+            Math.floor(legalize(c.r) * 255),
+            Math.floor(legalize(c.g) * 255),
+            Math.floor(legalize(c.b) * 255))
+        }
+    }
+}

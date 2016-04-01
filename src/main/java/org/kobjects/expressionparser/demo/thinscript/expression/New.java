@@ -52,7 +52,17 @@ public class New extends Node {
 
   @Override
   public Object eval(EvaluationContext context) {
-    EvaluationContext newContext = new EvaluationContext(new Instance(classifier), classifier.constructor);
+    Instance instance = new Instance(classifier);
+    EvaluationContext newContext = new EvaluationContext(instance, classifier.constructor);
+    for (Classifier.Member member: classifier.members.values()) {
+      if (member.fieldIndex != -1) {
+        if (member.initializer != null) {
+          newContext.setLocal(member.fieldIndex, member.initializer.eval(newContext));
+        } else {
+          // Set neutral value.
+        }
+      }
+    }
     for (int i = 0; i < children.length; i++) {
       newContext.setLocal(i, children[i].eval(context));
     }

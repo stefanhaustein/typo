@@ -63,6 +63,7 @@ public class Function implements Expression, Applicable {
     if (parameters.length > 0) {
       cp.append(parameters[0]);
       for (int i = 1; i < parameters.length; i++) {
+        cp.append(", ");
         cp.append(parameters[i]);
       }
     }

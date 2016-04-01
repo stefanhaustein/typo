@@ -62,7 +62,7 @@ public class UnresolvedProperty implements Expression {
       if (member.implementation != null) {
         return new Literal(member.implementation, classifier.name() + "." + name);
       }
-      throw new RuntimeException("Static field access NYI");
+      return new Literal(member.staticValue, classifier.name() + "." + name);
     }
     throw new RuntimeException("Classifier expected; got: " + resolvedBase.type());
   }

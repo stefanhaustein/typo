@@ -42,6 +42,7 @@ class Parser {
     expressionParser.addApplyBrackets(17, "(", ",", ")");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 14, "*", "/");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 13, "+", "-");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 11, "<", ">", "<=", ">=");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 10, "===", "==", "!=", "!==");
     expressionParser.addTernaryOperator(4, "?", ":");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 3, "=");
@@ -76,8 +77,12 @@ class Parser {
           tokenizer, EnumSet.allOf(Classifier.Modifier.class));
       String memberName = tokenizer.consumeIdentifier();
       if (tokenizer.tryConsume(":")) {
+        Expression initialValue = null;
         Type type = parseType(tokenizer);
-        classifier.addField(modifiers, memberName, type);
+        if (tokenizer.tryConsume("=")) {
+          initialValue = expressionParser.parse(tokenizer);
+        }
+        classifier.addField(modifiers, memberName, type, initialValue);
         tokenizer.consume(";");
       } else if (tokenizer.currentValue.equals("(")) {
         Function fn = parseFunction(classifier, memberName, tokenizer);
@@ -108,7 +113,7 @@ class Parser {
         tokenizer.consume(":");
         Type parameterType = parseType(tokenizer);
         if (!modifiers.isEmpty()) {
-          owner.addField(modifiers, parameterName, parameterType);
+          owner.addField(modifiers, parameterName, parameterType, null);
           init.add(new ExpressionStatement(new UnresolvedOperator("=",
               new UnresolvedProperty(new UnresolvedIdentifier("this"), parameterName),
               new UnresolvedIdentifier(parameterName))));
