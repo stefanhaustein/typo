@@ -23,14 +23,44 @@ public class ExpressionParser<T> {
    */
   public static class Processor<T> {
 
-    /** Called when an infix operator with the given name is parsed. */
-    public T infixOperator(Tokenizer tokenizer, String name, T left, T right) {
-      throw new UnsupportedOperationException("infixOperator(" + name + ", " + left + ", " + right + ')');
+    /** Called when an argument list with the given base, opening bracket and elements is parsed. */
+    public T apply(Tokenizer tokenizer, T base, String bracket, List<T> arguments) {
+      throw new UnsupportedOperationException(
+          "apply(" + base+ ", " + bracket + ", " + arguments + ")");
+    }
+
+    /**
+     * Called when a bracket registered for calls following an identifier is parsed.
+     * Useful to avoid apply() in simple cases, see calculator example.
+     */
+    public T call(Tokenizer tokenizer, String identifier, String bracket, List<T> arguments) {
+      throw new UnsupportedOperationException(
+          "call(" + identifier + ", " + bracket + ", " + arguments + ")");
+    }
+
+    /** Called when a group with the given opening bracket and elements is parsed. */
+    public T group(Tokenizer tokenizer, String paren, List<T> elements) {
+      throw new UnsupportedOperationException("group(" + paren + ", " + elements + ')');
+    }
+
+    /** Called when the given identifier is parsed. */
+    public T identifier(Tokenizer tokenizer, String name) {
+      throw new UnsupportedOperationException("identifier(" + name + ')');
     }
 
     /** Called when an implicit operator is parsed. */
     public T implicitOperator(Tokenizer tokenizer, boolean strong, T left, T right) {
       throw new UnsupportedOperationException("implicitOperator(" + left + ", " + right + ')');
+    }
+
+    /** Called when an infix operator with the given name is parsed. */
+    public T infixOperator(Tokenizer tokenizer, String name, T left, T right) {
+      throw new UnsupportedOperationException("infixOperator(" + name + ", " + left + ", " + right + ')');
+    }
+
+    /** Called when the given number literal is parsed. */
+    public T numberLiteral(Tokenizer tokenizer, String value) {
+      throw new UnsupportedOperationException("numberLiteral(" + value + ")");
     }
 
     /** Called when a prefix operator with the given name is parsed. */
@@ -39,8 +69,7 @@ public class ExpressionParser<T> {
     }
 
     /**
-     * Called when a symbol that is neither an operator nor an identifier is parsed
-     * (e.g. the empty set symbol).
+     * Called when a primary symbol is parsed (e.g. the empty set symbol in the set demo).
      */
     public T primary(Tokenizer tokenizer, String name) {
       throw new UnsupportedOperationException("primary(" + name + ", " + tokenizer + ")");
@@ -49,11 +78,6 @@ public class ExpressionParser<T> {
     /** Called when a suffix operator with the given name is parsed. */
     public T suffixOperator(Tokenizer tokenizer, String name, T argument) {
       throw new UnsupportedOperationException("suffixOperator(" + name + ", " + argument + ')');
-    }
-
-    /** Called when the given number literal is parsed. */
-    public T numberLiteral(Tokenizer tokenizer, String value) {
-      throw new UnsupportedOperationException("numberLiteral(" + value + ")");
     }
 
     /** 
@@ -65,30 +89,11 @@ public class ExpressionParser<T> {
       throw new UnsupportedOperationException("stringLiteral(" + value + ')');
     }
 
-    /** Called when the given identifier is parsed. */
-    public T identifier(Tokenizer tokenizer, String name) {
-      throw new UnsupportedOperationException("identifier(" + name + ')');
-    }
-
-    /** Called when a group with the given opening bracket and elements is parsed. */
-    public T group(Tokenizer tokenizer, String paren, List<T> elements) {
-      throw new UnsupportedOperationException("group(" + paren + ", " + elements + ')');
-    }
-
     /**
-     * Called when a bracked registered for calls following an identifier is parsed.
-     * Useful to avoid apply(indentifier(identifier), bracket, arguments) in simple cases,
-     * see calculator example.
+     * Called for ternaryOperator operators.
      */
-    public T call(Tokenizer tokenizer, String identifier, String bracket, List<T> arguments) {
-      throw new UnsupportedOperationException(
-          "call(" + identifier + ", " + bracket + ", " + arguments + ")");
-    }
-
-    /** Called when an argument list with the given base, opening bracket and elements is parsed. */
-    public T apply(Tokenizer tokenizer, T base, String bracket, List<T> arguments) {
-      throw new UnsupportedOperationException(
-          "apply(" + base+ ", " + bracket + ", " + arguments + ")");
+    public T ternaryOperator(Tokenizer tokenizer, String operator, T left, T middle, T right) {
+      throw new UnsupportedOperationException("ternaryOperator(" + operator + ')');
     }
   }
 
@@ -167,6 +172,11 @@ public class ExpressionParser<T> {
     }
   }
 
+  public void addTernaryOperator(int precedence, String primaryOperator, String secondaryOperator) {
+    operators(precedence).ternary.put(addSymbol(primaryOperator, false),
+                                      addSymbol(secondaryOperator, false));
+  }
+
   /**
    * Add prefixOperator, infixOperator or postfix operators with the given precedence.
    */
@@ -179,7 +189,7 @@ public class ExpressionParser<T> {
 
   /**
    * Used to keep track of all registered operators / symbols and whether they may occur in
-   * a non-prefixOperator position.
+   * a non-prefix position.
    */
   private String addSymbol(String symbol, boolean prefix) {
     if (symbol != null && (!allSymbols.containsKey(symbol) || !prefix)) {
@@ -293,6 +303,15 @@ public class ExpressionParser<T> {
       candidate = tokenizer.currentValue;
     }
 
+    if (operators.ternary.containsKey(candidate)) {
+      tokenizer.nextToken();
+      String t2 = operators.ternary.get(candidate);
+      T middle = parse(tokenizer);
+      tokenizer.consume(t2);
+      T right = parseOperator(tokenizer, precedence);
+      return processor.ternaryOperator(tokenizer, candidate, result, middle, right);
+    }
+
     // Suffix
 
     while (operators.apply.containsKey(candidate)
@@ -387,6 +406,7 @@ public class ExpressionParser<T> {
   private static class Operators {
     EnumMap<OperatorType, HashSet<String>> operators = new EnumMap<>(OperatorType.class);
     HashMap<String, String[]> apply = new HashMap<>();
+    HashMap<String, String> ternary = new HashMap<>();
 
     private HashSet<String> get(OperatorType type) {
       HashSet<String> result = operators.get(type);

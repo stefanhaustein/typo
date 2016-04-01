@@ -123,7 +123,7 @@ public class Function implements Expression, Applicable {
     }
 
     public String toString() {
-      return name + ": " + type;
+      return name + ": " + type.name();
     }
   }
 }

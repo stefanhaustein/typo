@@ -6,6 +6,7 @@ import org.kobjects.expressionparser.demo.thinscript.expression.Expression;
 import org.kobjects.expressionparser.demo.thinscript.expression.Function;
 import org.kobjects.expressionparser.demo.thinscript.expression.Literal;
 import org.kobjects.expressionparser.demo.thinscript.expression.New;
+import org.kobjects.expressionparser.demo.thinscript.expression.Ternary;
 import org.kobjects.expressionparser.demo.thinscript.expression.UnresolvedIdentifier;
 import org.kobjects.expressionparser.demo.thinscript.expression.UnresolvedOperator;
 import org.kobjects.expressionparser.demo.thinscript.expression.UnresolvedProperty;
@@ -32,15 +33,18 @@ class Parser {
   ExpressionProcessor expressionProcessor = new ExpressionProcessor();
   ExpressionParser<Expression> expressionParser = new ExpressionParser<>(expressionProcessor);
   {
+    // Source:
+    // https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
     expressionParser.addGroupBrackets("(", null, ")");
     expressionParser.addPrimary("function");
     expressionParser.addPrimary("new");
-    expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 5, ".");
-    expressionParser.addApplyBrackets(4, "(", ",", ")");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 3, "*", "/");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 2, "+", "-");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "===", "==", "!=", "!==");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "=");
+    expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 18, ".");
+    expressionParser.addApplyBrackets(17, "(", ",", ")");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 14, "*", "/");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 13, "+", "-");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 10, "===", "==", "!=", "!==");
+    expressionParser.addTernaryOperator(4, "?", ":");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 3, "=");
   }
 
   public ExpressionParser.Tokenizer createTokenizer(Reader reader) {
@@ -300,6 +304,12 @@ class Parser {
     @Override
     public Expression stringLiteral(ExpressionParser.Tokenizer tokenizer, String rawValue) {
       return new Literal(ExpressionParser.unquote(rawValue), null);
+    }
+
+    @Override
+    public Expression ternaryOperator(ExpressionParser.Tokenizer tokenizer, String name,
+                                      Expression left, Expression middle, Expression right) {
+      return new Ternary(left, middle, right);
     }
 
     @Override

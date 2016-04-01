@@ -1,5 +1,7 @@
 package org.kobjects.expressionparser.demo.thinscript.type;
 
+import org.kobjects.expressionparser.demo.thinscript.expression.Expression;
+
 public class Types {
   public static final Type BOOLEAN = new SimpleType("boolean");
   public static final Type INT = new SimpleType("int");
@@ -32,5 +34,15 @@ public class Types {
     }
     throw new IllegalArgumentException("Unrecognized of: "
         + (value == null ? null : value.getClass()) + " of " + value);
+  }
+
+  public static Type commonType(Type t1, Type t2) {
+    if (t1.assignableFrom(t2)) {
+      return t1;
+    }
+    if (t2.assignableFrom(t1)) {
+      return t2;
+    }
+    return null;
   }
 }
