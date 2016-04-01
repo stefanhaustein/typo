@@ -23,7 +23,9 @@ public class Compare extends Node {
   public Object eval(EvaluationContext context) {
     Object left = children[0].eval(context);
     Object right = children[1].eval(context);
-    int result = ((Comparable) left).compareTo(right);
+    int result = (left instanceof Number)
+        ? Double.compare(((Number) left).doubleValue(), ((Number) right).doubleValue())
+        : ((Comparable) left).compareTo(right);
     switch (op) {
       case LT: return result < 0;
       case LE: return result <= 0;

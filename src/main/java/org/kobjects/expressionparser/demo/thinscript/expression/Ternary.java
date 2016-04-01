@@ -26,7 +26,7 @@ public class Ternary extends Node {
 
   @Override
   public Object eval(EvaluationContext context) {
-    return (Boolean) children[0].eval(context) ? children[1].eval(context) : children[1].eval(context);
+    return (Boolean) children[0].eval(context) ? children[1].eval(context) : children[2].eval(context);
   }
 
   @Override

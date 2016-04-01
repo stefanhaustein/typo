@@ -68,7 +68,7 @@ public class UnresolvedOperator extends Node {
       default:
         throw new RuntimeException("Unrecognized operator: " + name);
     }
-    return new Operator(op, resolved[0], resolved[1]);
+    return new Operator(op, children[0], children[1]);
   }
 
   @Override
