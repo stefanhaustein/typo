@@ -34,8 +34,8 @@ public class UnresolvedOperator extends Node {
       }
     }
 
-    if (name.equals("==") || name.equals("!=")) {
-      return new Comparison(name.equals("=="), resolved[0], resolved[1]);
+    if (name.startsWith("==") || name.startsWith("!=")) {
+      return new Comparison(name.startsWith("=="), resolved[0], resolved[1]);
     }
 
     if (name.equals("=")) {

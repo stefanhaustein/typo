@@ -19,7 +19,7 @@ public class Calculator {
    */
   static class DoubleProcessor extends ExpressionParser.Processor<Double> {
     @Override
-    public Double infixOperator(String name, Double left, Double right) {
+    public Double infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Double left, Double right) {
       switch (name.charAt(0)) {
         case '+': return left + right;
         case '-': return left - right;
@@ -32,22 +32,22 @@ public class Calculator {
     }
 
     @Override
-    public Double implicitOperator(boolean strong, Double left, Double right) {
+    public Double implicitOperator(ExpressionParser.Tokenizer tokenizer, boolean strong, Double left, Double right) {
       return left * right;
     }
 
     @Override
-    public Double prefixOperator(String name, Double argument) {
+    public Double prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, Double argument) {
       return name.equals("-") ? -argument : argument;
     }
 
     @Override
-    public Double numberLiteral(String value) {
+    public Double numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
       return Double.parseDouble(value);
     }
 
     @Override
-    public Double identifier(String name) {
+    public Double identifier(ExpressionParser.Tokenizer tokenizer, String name) {
       Double value = variables.get(name);
       if (value == null) {
         throw new IllegalArgumentException("Undeclared variable: " + name);
@@ -56,7 +56,7 @@ public class Calculator {
     }
 
     @Override
-    public Double group(String paren, List<Double> elements) {
+    public Double group(ExpressionParser.Tokenizer tokenizer, String paren, List<Double> elements) {
       return elements.get(0);
     }
 
@@ -64,7 +64,7 @@ public class Calculator {
      * Delegates function calls to Math via reflection.
      */
     @Override
-    public Double call(String identifier, String bracket, List<Double> arguments) {
+    public Double call(ExpressionParser.Tokenizer tokenizer, String identifier, String bracket, List<Double> arguments) {
       if (arguments.size() == 1) {
         try {
           return (Double) Math.class.getMethod(
@@ -73,7 +73,7 @@ public class Calculator {
           // Fall through
         }
       }
-      return super.call(identifier, bracket, arguments);
+      return super.call(tokenizer, identifier, bracket, arguments);
     }
 
     /**

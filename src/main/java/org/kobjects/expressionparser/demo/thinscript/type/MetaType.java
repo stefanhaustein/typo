@@ -3,7 +3,7 @@ package org.kobjects.expressionparser.demo.thinscript.type;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 
 public class MetaType implements Type {
-  Type of;
+  public Type of;
 
   public MetaType(Type type) {
     this.of = type;

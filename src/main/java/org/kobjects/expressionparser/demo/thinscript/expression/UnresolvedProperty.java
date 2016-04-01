@@ -5,6 +5,7 @@ import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
+import org.kobjects.expressionparser.demo.thinscript.type.MetaType;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
 
 public class UnresolvedProperty implements Expression {
@@ -40,16 +41,30 @@ public class UnresolvedProperty implements Expression {
   @Override
   public Expression resolve(ParsingContext context) {
     Expression resolvedBase = base.resolve(context);
-    if (!(resolvedBase.type() instanceof Classifier)) {
-      throw new RuntimeException("Classifier expected; got: " + resolvedBase.type());
+    Type baseType = resolvedBase.type();
+    if (baseType instanceof Classifier) {
+      Classifier classifier = (Classifier) resolvedBase.type();
+      Classifier.Member member = classifier.members.get(name);
+      if (member == null) {
+        throw new RuntimeException("Member '" + name + "' not found in " + classifier);
+      }
+      return new Property(resolvedBase, member);
     }
-    Classifier classifier = (Classifier) resolvedBase.type();
-
-    Classifier.Member member = classifier.members.get(name);
-    if (member == null) {
-      throw new RuntimeException("Member '" + name + "' not found in " + classifier);
+    if (baseType instanceof MetaType && ((MetaType) baseType).of instanceof Classifier) {
+      Classifier classifier = (Classifier) ((MetaType) baseType).of;
+      Classifier.Member member = classifier.members.get(name);
+      if (member == null) {
+        throw new RuntimeException("Member '" + name + "' not found in " + classifier);
+      }
+      if (!member.isStatic()) {
+        throw new RuntimeException("Member '" + name + "' must be static for static access.");
+      }
+      if (member.implementation != null) {
+        return new Literal(member.implementation, classifier.name() + "." + name);
+      }
+      throw new RuntimeException("Static field access NYI");
     }
-    return new Property(resolvedBase, member);
+    throw new RuntimeException("Classifier expected; got: " + resolvedBase.type());
   }
 
   @Override

@@ -285,7 +285,7 @@ class Parser {
   class ExpressionBuilder extends ExpressionParser.Processor<Node> {
 
     @Override
-    public Node call(String name, String bracket, List<Node> arguments) {
+    public Node call(ExpressionParser.Tokenizer tokenizer, String name, String bracket, List<Node> arguments) {
       Node[] children = arguments.toArray(new Node[arguments.size()]);
       for (Builtin.Type builtinId: Builtin.Type.values()) {
         if (name.equalsIgnoreCase(builtinId.name())) {
@@ -318,7 +318,7 @@ class Parser {
     }
 
     @Override
-    public Node prefixOperator(String name, Node param) {
+    public Node prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node param) {
       if (param.returnType() != Double.class) {
         throw new IllegalArgumentException("Numeric argument expected for '" + name + "'.");
       }
@@ -331,11 +331,11 @@ class Parser {
       if (name.equals("+")) {
         return param;
       }
-      return super.prefixOperator(name, param);
+      return super.prefixOperator(tokenizer, name, param);
     }
 
     @Override
-    public Node infixOperator(String name, Node left, Node right) {
+    public Node infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node left, Node right) {
       if ("+<=<>=".indexOf(name) == -1 && (left.returnType() != Double.class ||
           right.returnType() != Double.class)) {
         throw new IllegalArgumentException("Numeric arguments expected for '" + name + "'.");
@@ -344,11 +344,11 @@ class Parser {
     }
 
     @Override
-    public Node group(String bracket, List<Node> args) {
+    public Node group(ExpressionParser.Tokenizer tokenizer, String bracket, List<Node> args) {
       return new Builtin(interpreter, null, args.get(0));
     }
 
-    @Override public Node identifier(String name) {
+    @Override public Node identifier(ExpressionParser.Tokenizer tokenizer, String name) {
       if (name.equalsIgnoreCase(Builtin.Type.RND.name())) {
         return new Builtin(interpreter, Builtin.Type.RND);
       }
@@ -359,12 +359,12 @@ class Parser {
       return new Variable(interpreter, name);
     }
 
-    @Override public Node numberLiteral(String value) {
+    @Override public Node numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
       return new Literal(Double.parseDouble(value));
     }
 
     @Override
-    public Node stringLiteral(String value) {
+    public Node stringLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
       return new Literal(value.substring(1, value.length()-1).replace("\"\"", "\""));
     }
   }

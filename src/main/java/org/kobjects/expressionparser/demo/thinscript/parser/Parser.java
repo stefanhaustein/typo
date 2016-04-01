@@ -21,7 +21,6 @@ import org.kobjects.expressionparser.demo.thinscript.type.Type;
 import org.kobjects.expressionparser.demo.thinscript.type.UnresolvedType;
 
 import java.io.Reader;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -33,13 +32,14 @@ class Parser {
   ExpressionProcessor expressionProcessor = new ExpressionProcessor();
   ExpressionParser<Expression> expressionParser = new ExpressionParser<>(expressionProcessor);
   {
+    expressionParser.addGroupBrackets("(", null, ")");
     expressionParser.addPrimary("function");
     expressionParser.addPrimary("new");
     expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 5, ".");
     expressionParser.addApplyBrackets(4, "(", ",", ")");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 3, "*", "/");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 2, "+", "-");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "==", "!=");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "===", "==", "!=", "!==");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "=");
   }
 
@@ -250,7 +250,7 @@ class Parser {
 
   class ExpressionProcessor extends ExpressionParser.Processor<Expression> {
     @Override
-    public Expression primary(String name, ExpressionParser.Tokenizer tokenizer) {
+    public Expression primary(ExpressionParser.Tokenizer tokenizer, String name) {
       if (name.equals("function")) {
         String functionName = null;
         if (!tokenizer.currentValue.equals("(")) {
@@ -265,38 +265,45 @@ class Parser {
     }
 
     @Override
-    public Expression identifier(String name) {
+    public Expression group(ExpressionParser.Tokenizer tokenizer, String open, List<Expression> list) {
+      return list.get(0);
+    }
+
+    @Override
+    public Expression identifier(ExpressionParser.Tokenizer tokenizer, String name) {
       if (name.equals("true")) {
         return new Literal(true, null);
       } else if (name.equals("false")) {
         return new Literal(false, null);
       } else if (name.equals("null")) {
         return new Literal(null, null);
+      } else if (name.equals("Infinity")) {
+        return new Literal(Double.POSITIVE_INFINITY, "Infinity");
       }
       return new UnresolvedIdentifier(name);
     }
 
     @Override
-    public Expression infixOperator(String name,Expression left, Expression right) {
+    public Expression infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Expression left, Expression right) {
       return new UnresolvedOperator(name, left, right);
     }
 
     @Override
-    public Expression suffixOperator(String name, Expression param, ExpressionParser.Tokenizer tokenizer) {
+    public Expression suffixOperator(ExpressionParser.Tokenizer tokenizer, String name, Expression param) {
       if (name.equals(".")) {
         String propertyName = tokenizer.consumeIdentifier();
         return new UnresolvedProperty(param, propertyName);
       }
-      return super.suffixOperator(name, param, tokenizer);
+      return super.suffixOperator(tokenizer, name, param);
     }
 
     @Override
-    public Expression stringLiteral(String rawValue) {
+    public Expression stringLiteral(ExpressionParser.Tokenizer tokenizer, String rawValue) {
       return new Literal(ExpressionParser.unquote(rawValue), null);
     }
 
     @Override
-    public Expression numberLiteral(String value) {
+    public Expression numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
       double d = Double.parseDouble(value);
       if (value.matches("[0-9]+") && d >= Integer.MIN_VALUE && d <= Integer.MAX_VALUE) {
         return new Literal((int) d, null);
@@ -305,7 +312,7 @@ class Parser {
     }
 
     @Override
-    public Expression apply(Expression to, String bracket, List<Expression> parameterList) {
+    public Expression apply(ExpressionParser.Tokenizer tokenizer, Expression to, String bracket, List<Expression> parameterList) {
       return new Apply(to, parameterList.toArray(new Expression[parameterList.size()]));
     }
   }

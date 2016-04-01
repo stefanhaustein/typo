@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 public class TreeBuilder extends ExpressionParser.Processor<Node> {
 
   @Override
-  public Node infixOperator(String name, Node left, Node right) {
+  public Node infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node left, Node right) {
     switch (name.charAt(0)) {
       case '+': return NodeFactory.add(left, right);
       case '-':
@@ -29,12 +29,12 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
     throw new UnsupportedOperationException("Unsupported infix operator: " + name);
   }
 
-  public Node implicitOperator(boolean strong, Node left, Node right) {
-    return infixOperator("⋅", left, right);
+  public Node implicitOperator(ExpressionParser.Tokenizer tokenizer, boolean strong, Node left, Node right) {
+    return infixOperator(tokenizer, "⋅", left, right);
   }
 
   @Override
-  public Node prefixOperator(String name, Node argument) {
+  public Node prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node argument) {
     if (name.equals("-") || name.equals("−")) {
       return NodeFactory.neg(argument);
     }
@@ -45,22 +45,22 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
   }
 
   @Override
-  public Node numberLiteral(String value) {
+  public Node numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
     return NodeFactory.c(Double.parseDouble(value));
   }
 
   @Override
-  public Node identifier(String name) {
+  public Node identifier(ExpressionParser.Tokenizer tokenizer, String name) {
     return NodeFactory.var(name);
   }
 
   @Override
-  public Node group(String paren, List<Node> elements) {
+  public Node group(ExpressionParser.Tokenizer tokenizer, String paren, List<Node> elements) {
     return elements.get(0);
   }
 
   @Override
-  public Node call(String identifier, String bracket, List<Node> arguments) {
+  public Node call(ExpressionParser.Tokenizer tokenizer, String identifier, String bracket, List<Node> arguments) {
     if (identifier.equals("derive")) {
       if (arguments.size() != 2) {
         throw new IllegalArgumentException("Two parameters expected for derive.");
@@ -70,11 +70,11 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
       }
       return NodeFactory.derive(arguments.get(0), arguments.get(1).toString());
     }
-    return super.call(identifier, bracket, arguments);
+    return super.call(tokenizer, identifier, bracket, arguments);
   }
 
   @Override
-  public Node apply(Node base, String bracket, List<Node> arguments) {
+  public Node apply(ExpressionParser.Tokenizer tokenizer, Node base, String bracket, List<Node> arguments) {
     throw new UnsupportedOperationException();
   }
 

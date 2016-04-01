@@ -25,7 +25,7 @@ public class SetDemo {
     }
 
     @Override
-    public Object infixOperator(String name, Object left, Object right) {
+    public Object infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Object left, Object right) {
       if (name.equals("\u2229")) {  // intersection
         assertSet(left).retainAll(assertSet(right));
         return left;
@@ -42,17 +42,17 @@ public class SetDemo {
     }
 
     @Override
-    public Object numberLiteral(String value) {
+    public Object numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
       return Double.parseDouble(value);
     }
 
     @Override
-    public Object stringLiteral(String value) {
+    public Object stringLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
       return value;
     }
 
     @Override
-    public Object primary(String name, ExpressionParser.Tokenizer tokenizer) {
+    public Object primary(ExpressionParser.Tokenizer tokenizer, String name) {
       if (name.equals("\u2205")){
         return new LinkedHashSet<Object>();
       }
@@ -60,12 +60,12 @@ public class SetDemo {
     }
 
     @Override
-    public Object identifier(String name) {
+    public Object identifier(ExpressionParser.Tokenizer tokenizer, String name) {
       return name;
     }
 
     @Override
-    public Object group(String paren, List<Object> elements) {
+    public Object group(ExpressionParser.Tokenizer tokenizer, String paren, List<Object> elements) {
       if (paren.equals("(")) {
         return elements.get(0);
       }
@@ -84,7 +84,7 @@ public class SetDemo {
         }
         throw new RuntimeException("Can't apply || to " + o);
       }
-      return super.group(paren, elements);
+      return super.group(tokenizer, paren, elements);
     }
   }
 

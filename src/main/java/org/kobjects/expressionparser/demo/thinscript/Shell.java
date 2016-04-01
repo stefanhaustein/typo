@@ -57,6 +57,20 @@ public class Shell {
   public static void main(String[] args) throws IOException {
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
+    Classifier mathClass = new Classifier(Classifier.Kind.CLASS, "Math");
+    mathClass.addMethod(EnumSet.of(Classifier.Modifier.STATIC), "sqrt", new Applicable() {
+      @Override
+      public FunctionType type() {
+        return new FunctionType(Types.NUMBER, Types.NUMBER);
+      }
+
+      @Override
+      public Object apply(EvaluationContext context) {
+        return Math.sqrt(((Number) context.getLocal(0)).doubleValue());
+      }
+    });
+    parsingContext.declareStatic("Math", mathClass);
+
     Classifier consoleClass = new Classifier(Classifier.Kind.CLASS, "Console");
     consoleClass.addMethod(EnumSet.noneOf(Classifier.Modifier.class), "log", new Applicable() {
       @Override

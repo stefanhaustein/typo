@@ -159,5 +159,9 @@ public class Classifier extends Statement implements Type {
     public Object get(EvaluationContext context) {
       return context.self.fields[fieldIndex];
     }
+
+    public boolean isStatic() {
+      return modifiers.contains(Modifier.STATIC);
+    }
   }
 }
