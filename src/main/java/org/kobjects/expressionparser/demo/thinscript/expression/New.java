@@ -44,17 +44,7 @@ public class New extends Node {
       }
     } else {
       Function constructor = classifier.constructor;
-      if (constructor.parameters.length != children.length) {
-        throw new RuntimeException("Expected " + constructor.parameters.length
-            + " constructor parameters; got " + children.length);
-      }
-      for (int i = 0; i < children.length; i++) {
-        if (!constructor.parameters[i].type.assignableFrom(children[i].type())) {
-          throw new RuntimeException("Expected type '" + constructor.parameters[i].type.name()
-              + "' for parameter " + constructor.parameters[i].name
-              + ", but got '" + children[i].type());
-        }
-      }
+      constructor.type().assertSignature(childTypes());
     }
 
     return this;

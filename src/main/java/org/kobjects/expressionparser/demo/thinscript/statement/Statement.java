@@ -13,10 +13,4 @@ public abstract class Statement implements Printable {
   public abstract void resolveSignatures(ParsingContext context);
 
   public abstract void resolve(ParsingContext context);
-
-  public String toString() {
-    CodePrinter cp = new CodePrinter();
-    print(cp);
-    return cp.toString();
-  }
 }

@@ -4,6 +4,7 @@ import org.kobjects.expressionparser.demo.thinscript.Applicable;
 import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
+import org.kobjects.expressionparser.demo.thinscript.type.FunctionType;
 
 public class Apply extends Node {
   Expression target;
@@ -42,11 +43,19 @@ public class Apply extends Node {
     resolveChildren(context);
     target = target.resolve(context);
 
+    if (!(target.type() instanceof FunctionType)) {
+      throw new RuntimeException("Target must be function for apply()");
+    }
+
+    FunctionType functionType = (FunctionType) target.type();
+    functionType.assertSignature(childTypes());
+
     if (target instanceof Property) {
       Property property = (Property) target;
       return new ApplyProperty(property.base, property.member, children);
     }
 
+    this.type = functionType.returnType;
     return this;
   }
 

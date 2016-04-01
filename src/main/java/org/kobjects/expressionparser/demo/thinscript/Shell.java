@@ -108,7 +108,7 @@ public class Shell {
       }
       try {
         Statement statement = processor.process(parsingContext, new StringReader(line));
-        System.out.println("Processed:   " + statement);
+        System.out.println("Processed:   " + CodePrinter.toString(statement));
 
         if (statement instanceof ExpressionStatement) {
           statement = new ReturnStatement(((ExpressionStatement) statement).expression);

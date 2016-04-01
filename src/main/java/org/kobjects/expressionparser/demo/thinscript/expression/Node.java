@@ -45,6 +45,14 @@ public abstract class Node implements Expression {
     }
   }
 
+  public Type[] childTypes() {
+    Type[] result = new Type[children.length];
+    for (int i = 0; i < children.length; i++) {
+      result[i] = children[i].type();
+    }
+    return result;
+  }
+
   @Override
   public String toString() {
     CodePrinter cp = new CodePrinter();

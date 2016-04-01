@@ -2,6 +2,7 @@ package org.kobjects.expressionparser.demo.thinscript.parser;
 
 
 import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.statement.Statement;
 
 import java.io.Reader;
@@ -21,12 +22,12 @@ public class Processor {
       context.declareStatic(name, newStatics.get(name));
     }
 
-    System.out.println("Raw Parsed:  " + body);
+    System.out.println("Raw Parsed:  " + CodePrinter.toString(body));
     System.out.println("New statics: " + newStatics);
 
     body.resolveSignatures(context);
 
-    System.out.println("S. resolved: " + body);
+    System.out.println("S. resolved: " + CodePrinter.toString(body));
 
     body.resolve(context);
     return body;

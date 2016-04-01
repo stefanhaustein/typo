@@ -27,6 +27,12 @@ public class CodePrinter {
     sb.append(indent);
   }
 
+  public static String toString(Printable p) {
+    CodePrinter cp = new CodePrinter();
+    p.print(cp);
+    return cp.toString();
+  }
+
   public String toString() {
     return sb.toString();
   }

@@ -1,7 +1,6 @@
 package org.kobjects.expressionparser.demo.thinscript.type;
 
 
-import org.kobjects.expressionparser.demo.thinscript.expression.Function;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 
 import java.util.Arrays;
@@ -51,5 +50,18 @@ public class FunctionType implements Type {
       }
     }
     return true;
+  }
+
+  public void assertSignature(Type[] types) {
+    if (types.length != parameterTypes.length) {
+      throw new RuntimeException(parameterTypes.length + " parameters expected, but got "
+          + types.length);
+    }
+    for (int i = 0; i < types.length; i++) {
+      if (!parameterTypes[i].assignableFrom(types[i])) {
+        throw new RuntimeException("'" + parameterTypes[i].name() + "' expected for parameter "
+            + i + " but got " + types[i].name());
+      }
+    }
   }
 }
