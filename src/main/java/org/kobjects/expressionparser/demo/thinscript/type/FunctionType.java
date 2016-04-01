@@ -52,14 +52,14 @@ public class FunctionType implements Type {
     return true;
   }
 
-  public void assertSignature(Type[] types) {
+  public void assertSignature(Type[] types, String message) {
     if (types.length != parameterTypes.length) {
-      throw new RuntimeException(parameterTypes.length + " parameters expected, but got "
+      throw new RuntimeException(message + "  " + parameterTypes.length + " parameters expected, but got "
           + types.length);
     }
     for (int i = 0; i < types.length; i++) {
       if (!parameterTypes[i].assignableFrom(types[i])) {
-        throw new RuntimeException("'" + parameterTypes[i].name() + "' expected for parameter "
+        throw new RuntimeException(message + " '" + parameterTypes[i].name() + "' expected for parameter "
             + i + " but got " + types[i].name());
       }
     }

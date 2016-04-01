@@ -18,19 +18,23 @@ class Property implements Expression {
 
   @Override
   public void assign(EvaluationContext context, Object value) {
-    Instance instance = (Instance) base.eval(context);
-    instance.setField(member.fieldIndex, value);
+    if (member.fieldIndex == -1) {
+      member.set(context, value);
+    } else {
+      Instance instance = (Instance) base.eval(context);
+      instance.setField(member.fieldIndex, value);
+    }
   }
 
   @Override
   public Object eval(EvaluationContext context) {
     Instance instance = (Instance) base.eval(context);
-    return member.fieldIndex == -1 ? member.implementation : instance.fields[member.fieldIndex];
+    return member.fieldIndex == -1 ? member.staticValue : instance.fields[member.fieldIndex];
   }
 
   @Override
   public boolean isAssignable() {
-    return member.fieldIndex != -1;
+    return true; // member.fieldIndex != -1;
   }
 
   @Override

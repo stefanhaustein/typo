@@ -53,11 +53,12 @@ public class Classifier extends Statement implements Type {
       if (member.initializer != null) {
         member.initializer.resolveSignatures(context);
       }
-      if (member.implementation != null) {
-        if (member.implementation instanceof Function) {
-          ((Function) member.implementation).resolveSignatures(context);
+      if (member.staticValue instanceof Function) {
+        ((Function) member.staticValue).resolveSignatures(context);
+        member.type = Types.typeOf(member.staticValue);
+        if (member.type == null) {
+          throw new RuntimeException("WTF?");
         }
-        member.type = member.implementation.type();
       } else {
         member.type = member.type.resolveType(context);
       }
@@ -83,7 +84,8 @@ public class Classifier extends Statement implements Type {
     Member member = new Member();
     member.modifiers = modifiers;
     member.name = name;
-    member.implementation = applicable;
+    member.staticValue = applicable;
+    member.type = applicable.type();  // For builtins.
     member.fieldIndex = -1;
     members.put(name, member);
   }
@@ -105,8 +107,8 @@ public class Classifier extends Statement implements Type {
           member.staticValue = member.initializer.eval(new EvaluationContext(null, null));
         }
       }
-      if (member.implementation instanceof Function) {
-        member.implementation = ((Function) member.implementation).resolve(context);
+      if (member.staticValue instanceof Function) {
+        member.staticValue = ((Function) member.staticValue).resolve(context);
       }
     }
   }
@@ -128,7 +130,7 @@ public class Classifier extends Statement implements Type {
       cp.indent();
 
       for (Member member : members.values()) {
-        if (member.implementation == null) {
+        if (!(member.staticValue instanceof Applicable)) {
           cp.newLine();
           printModifiers(cp, member.modifiers);
           cp.append(member.name);
@@ -143,10 +145,10 @@ public class Classifier extends Statement implements Type {
       }
 
       for (Member member : members.values()) {
-        if (member.implementation != null) {
+        if (member.staticValue instanceof Applicable) {
           cp.newLine();
           printModifiers(cp, member.modifiers);
-          ((Printable) member.implementation).print(cp);
+          ((Printable) member.staticValue).print(cp);
         }
       }
       cp.outdent();
@@ -161,7 +163,6 @@ public class Classifier extends Statement implements Type {
     String name;
     Type type;
     public int fieldIndex;
-    public Applicable implementation;
     public Expression initializer;
     public Object staticValue;
 
@@ -172,7 +173,11 @@ public class Classifier extends Statement implements Type {
 
     @Override
     public void set(EvaluationContext context, Object value) {
-      context.self.setField(fieldIndex, value);
+      if (fieldIndex == -1) {
+        staticValue = value;
+      } else {
+        context.self.setField(fieldIndex, value);
+      }
     }
 
     @Override
@@ -182,7 +187,7 @@ public class Classifier extends Statement implements Type {
 
     @Override
     public Object get(EvaluationContext context) {
-      return context.self.fields[fieldIndex];
+      return fieldIndex == -1 ? staticValue : context.self.fields[fieldIndex];
     }
 
     public boolean isStatic() {

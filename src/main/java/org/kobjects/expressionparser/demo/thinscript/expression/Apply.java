@@ -44,11 +44,15 @@ public class Apply extends Node {
     target = target.resolve(context);
 
     if (!(target.type() instanceof FunctionType)) {
-      throw new RuntimeException("Target must be function for apply()");
+      throw new RuntimeException("Target must be function for apply() instead of " + target.type());
     }
 
     FunctionType functionType = (FunctionType) target.type();
-    functionType.assertSignature(childTypes());
+    try {
+      functionType.assertSignature(childTypes(), CodePrinter.toString(this));
+    } catch (Exception e) {
+      throw new RuntimeException("In " + CodePrinter.toString(this), e);
+    }
 
     if (target instanceof Property) {
       Property property = (Property) target;

@@ -56,11 +56,8 @@ public class UnresolvedProperty implements Expression {
       if (member == null) {
         throw new RuntimeException("Member '" + name + "' not found in " + classifier);
       }
-      if (!member.isStatic()) {
+      if (member.fieldIndex != -1) {
         throw new RuntimeException("Member '" + name + "' must be static for static access.");
-      }
-      if (member.implementation != null) {
-        return new Literal(member.implementation, classifier.name() + "." + name);
       }
       return new Literal(member.staticValue, classifier.name() + "." + name);
     }

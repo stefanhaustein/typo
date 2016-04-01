@@ -44,7 +44,7 @@ public class New extends Node {
       }
     } else {
       Function constructor = classifier.constructor;
-      constructor.type().assertSignature(childTypes());
+      constructor.type().assertSignature(childTypes(), CodePrinter.toString(this));
     }
 
     return this;
