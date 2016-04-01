@@ -40,5 +40,34 @@ class Color {
             Math.floor(legalize(c.g) * 255),
             Math.floor(legalize(c.b) * 255))
         }
-    }
+}
+
+
+interface Ray {
+    start: Vector;
+    dir: Vector;
+}
+
+interface Intersection {
+    thing: Thing;
+    ray: Ray;
+    dist: number;
+}
+
+interface Surface {
+    diffuse: (pos: Vector) => Color;
+    specular: (pos: Vector) => Color;
+    reflect: (pos: Vector) => number;
+    roughness: number;
+}
+
+interface Thing {
+    intersect: (ray: Ray) => Intersection;
+    normal: (pos: Vector) => Vector;
+    surface: Surface;
+}
+
+interface Light {
+    pos: Vector;
+    color: Color;
 }

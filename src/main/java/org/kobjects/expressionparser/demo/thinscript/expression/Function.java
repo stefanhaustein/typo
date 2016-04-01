@@ -5,21 +5,21 @@ import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 import org.kobjects.expressionparser.demo.thinscript.statement.Block;
-import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
+import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.statement.Statement;
 import org.kobjects.expressionparser.demo.thinscript.type.FunctionType;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
 
 public class Function implements Expression, Applicable {
   String name;
-  Classifier owner;
-  public Parameter[] parameters;
+  TsClass owner;
+  public FunctionType.Parameter[] parameters;
   Type returnType;
   FunctionType type;
   public Statement body;
   public int localCount;
 
-  public Function(Classifier owner, String name, Parameter[] parameters, Type returnType, Statement body) {
+  public Function(TsClass owner, String name, FunctionType.Parameter[] parameters, Type returnType, Statement body) {
     this.owner = owner;
     this.name = name;
     this.parameters = parameters;
@@ -89,7 +89,7 @@ public class Function implements Expression, Applicable {
   @Override
   public Function resolve(ParsingContext context) {
     ParsingContext bodyContext = new ParsingContext(context, owner);
-    for (Parameter param : parameters) {
+    for (FunctionType.Parameter param : parameters) {
       bodyContext.declareLocal(param.name, param.type);
     }
     body.resolve(bodyContext);
@@ -100,31 +100,15 @@ public class Function implements Expression, Applicable {
   @Override
   public void resolveSignatures(ParsingContext context) {
     returnType = returnType.resolveType(context);
-    Type[] parameterTypes = new Type[parameters.length];
-    for (int i = 0; i < parameterTypes.length; i++) {
-      parameterTypes[i] = parameters[i].type.resolveType(context);
-      parameters[i].type = parameterTypes[i];
+    for (int i = 0; i < parameters.length; i++) {
+      parameters[i].type = parameters[i].type.resolveType(context);
     }
-    type = new FunctionType(returnType, parameterTypes);
+    type = new FunctionType(returnType, parameters);
     body.resolveSignatures(context);
   }
 
   @Override
   public FunctionType type() {
     return type;
-  }
-
-  public static class Parameter {
-    String name;
-    Type type;
-
-    public Parameter(String name, Type type) {
-      this.name = name;
-      this.type = type;
-    }
-
-    public String toString() {
-      return name + ": " + type.name();
-    }
   }
 }

@@ -5,14 +5,14 @@ import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.Instance;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
-import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
+import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.type.FunctionType;
 
 class ApplyProperty extends Node {
   final Expression base;
-  final Classifier.Member member;
+  final TsClass.Member member;
 
-  ApplyProperty(Expression base, Classifier.Member member, Expression[] children) {
+  ApplyProperty(Expression base, TsClass.Member member, Expression[] children) {
     super(((FunctionType) member.type()).returnType, children);
     this.base = base;
     this.member = member;

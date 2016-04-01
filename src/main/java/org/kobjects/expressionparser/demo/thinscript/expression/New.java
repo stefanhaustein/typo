@@ -5,11 +5,11 @@ import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.Instance;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
-import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
+import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
 
 public class New extends Node {
-  Classifier classifier;  // Filled on resolve only
+  TsClass classifier;  // Filled on resolve only
   public New(Type type, Expression... child) {
     super(type, child);
   }
@@ -33,10 +33,10 @@ public class New extends Node {
   public Expression resolve(ParsingContext context) {
     resolveChildren(context);
     type = type.resolveType(context);
-    if (!(type instanceof Classifier)) {
+    if (!(type instanceof TsClass)) {
       throw new RuntimeException("'" + type + "' must be a class for new.");
     }
-    classifier = (Classifier) type;
+    classifier = (TsClass) type;
 
     if (classifier.constructor == null) {
       if (children.length != 0) {
@@ -54,7 +54,7 @@ public class New extends Node {
   public Object eval(EvaluationContext context) {
     Instance instance = new Instance(classifier);
     EvaluationContext newContext = new EvaluationContext(instance, classifier.constructor);
-    for (Classifier.Member member: classifier.members.values()) {
+    for (TsClass.Member member: classifier.members.values()) {
       if (member.fieldIndex != -1) {
         if (member.initializer != null) {
           newContext.setLocal(member.fieldIndex, member.initializer.eval(newContext));

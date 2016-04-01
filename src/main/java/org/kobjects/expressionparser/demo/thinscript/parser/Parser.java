@@ -11,19 +11,23 @@ import org.kobjects.expressionparser.demo.thinscript.expression.UnresolvedIdenti
 import org.kobjects.expressionparser.demo.thinscript.expression.UnresolvedOperator;
 import org.kobjects.expressionparser.demo.thinscript.expression.UnresolvedProperty;
 import org.kobjects.expressionparser.demo.thinscript.statement.Block;
-import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
+import org.kobjects.expressionparser.demo.thinscript.statement.Interface;
+import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.statement.ExpressionStatement;
 import org.kobjects.expressionparser.demo.thinscript.statement.IfStatement;
 import org.kobjects.expressionparser.demo.thinscript.statement.LetStatement;
 import org.kobjects.expressionparser.demo.thinscript.statement.ReturnStatement;
 import org.kobjects.expressionparser.demo.thinscript.statement.Statement;
 import org.kobjects.expressionparser.demo.thinscript.statement.WhileStatement;
+import org.kobjects.expressionparser.demo.thinscript.type.FunctionType;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
+import org.kobjects.expressionparser.demo.thinscript.type.Types;
 import org.kobjects.expressionparser.demo.thinscript.type.UnresolvedType;
 
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -49,7 +53,7 @@ class Parser {
   }
 
   public ExpressionParser.Tokenizer createTokenizer(Reader reader) {
-    return new ExpressionParser.Tokenizer(new Scanner(reader), expressionParser.getSymbols(), "{", "}", ";", ":");
+    return new ExpressionParser.Tokenizer(new Scanner(reader), expressionParser.getSymbols(), "{", "}", ";", ":", "=>");
   }
 
   public Statement parseBlock(ExpressionParser.Tokenizer tokenizer, Map<String, Object> statics) {
@@ -68,13 +72,13 @@ class Parser {
     return new Block(result.toArray(new Statement[result.size()]));
   }
 
-  Classifier parseClass(ExpressionParser.Tokenizer tokenizer) {
+  TsClass parseClass(ExpressionParser.Tokenizer tokenizer) {
     String name = tokenizer.consumeIdentifier();
-    Classifier classifier = new Classifier(Classifier.Kind.CLASS, name);
+    TsClass classifier = new TsClass(name);
     tokenizer.consume("{");
     while (!tokenizer.tryConsume("}")) {
-      Set<Classifier.Modifier> modifiers = parseModifiers(
-          tokenizer, EnumSet.allOf(Classifier.Modifier.class));
+      Set<TsClass.Modifier> modifiers = parseModifiers(
+          tokenizer, EnumSet.allOf(TsClass.Modifier.class));
       String memberName = tokenizer.consumeIdentifier();
       if (tokenizer.tryConsume(":")) {
         Expression initialValue = null;
@@ -98,17 +102,17 @@ class Parser {
 
   // Precondition: on '('
   // Postcondition: '}' consumed.
-  Function parseFunction(Classifier owner, String name, ExpressionParser.Tokenizer tokenizer) {
+  Function parseFunction(TsClass owner, String name, ExpressionParser.Tokenizer tokenizer) {
     tokenizer.consume("(");
-    ArrayList<Function.Parameter> parameterList = new ArrayList<>();
+    ArrayList<FunctionType.Parameter> parameterList = new ArrayList<>();
     List<Statement> init = new ArrayList<>();
     boolean isConstructor = owner != null && name.equals("constructor");
     if (!tokenizer.tryConsume(")")) {
-      Set<Classifier.Modifier> permittedModifiers = !isConstructor ?
-          EnumSet.noneOf(Classifier.Modifier.class) : EnumSet.of(
-          Classifier.Modifier.PUBLIC, Classifier.Modifier.PRIVATE, Classifier.Modifier.PROTECTED);
+      Set<TsClass.Modifier> permittedModifiers = !isConstructor ?
+          EnumSet.noneOf(TsClass.Modifier.class) : EnumSet.of(
+          TsClass.Modifier.PUBLIC, TsClass.Modifier.PRIVATE, TsClass.Modifier.PROTECTED);
       do {
-        Set<Classifier.Modifier> modifiers = parseModifiers(tokenizer, permittedModifiers);
+        Set<TsClass.Modifier> modifiers = parseModifiers(tokenizer, permittedModifiers);
             String parameterName = tokenizer.consumeIdentifier();
         tokenizer.consume(":");
         Type parameterType = parseType(tokenizer);
@@ -118,7 +122,7 @@ class Parser {
               new UnresolvedProperty(new UnresolvedIdentifier("this"), parameterName),
               new UnresolvedIdentifier(parameterName))));
         }
-        parameterList.add(new Function.Parameter(parameterName, parameterType));
+        parameterList.add(new FunctionType.Parameter(parameterName, parameterType));
       } while(tokenizer.tryConsume(","));
       tokenizer.consume(")");
     }
@@ -148,21 +152,35 @@ class Parser {
     tokenizer.consume("}");
 
     Function fn = new Function(owner, name,
-        parameterList.toArray(new Function.Parameter[parameterList.size()]),
+        parameterList.toArray(new FunctionType.Parameter[parameterList.size()]),
         returnType,
         body);
     return fn;
   }
 
-  private EnumSet<Classifier.Modifier> parseModifiers(
-      ExpressionParser.Tokenizer tokenizer, Set<Classifier.Modifier> permitted) {
-    EnumSet<Classifier.Modifier> result = EnumSet.noneOf(Classifier.Modifier.class);
+  Interface parseInterface(ExpressionParser.Tokenizer tokenizer) {
+    String name = tokenizer.consumeIdentifier();
+    Interface intrfc = new Interface(name);
+    tokenizer.consume("{");
+    while (!tokenizer.tryConsume("}")) {
+      String memberName = tokenizer.consumeIdentifier();
+      tokenizer.consume(":");
+      Type type = parseType(tokenizer);
+      tokenizer.consume(";");
+      intrfc.addMember(memberName, type);
+    }
+    return intrfc;
+  }
+
+  private EnumSet<TsClass.Modifier> parseModifiers(
+      ExpressionParser.Tokenizer tokenizer, Set<TsClass.Modifier> permitted) {
+    EnumSet<TsClass.Modifier> result = EnumSet.noneOf(TsClass.Modifier.class);
     while (true) {
-      Classifier.Modifier modifier;
+      TsClass.Modifier modifier;
       if (tokenizer.tryConsume("static")) {
-        modifier = Classifier.Modifier.STATIC;
+        modifier = TsClass.Modifier.STATIC;
       } else if (tokenizer.tryConsume("public")) {
-        modifier = Classifier.Modifier.PUBLIC;
+        modifier = TsClass.Modifier.PUBLIC;
       } else {
         break;
       }
@@ -174,17 +192,13 @@ class Parser {
     return result;
   }
 
-  Statement parseInterface(ExpressionParser.Tokenizer tokenizer) {
-    throw new RuntimeException("NYI");
-  }
-
   private Statement parseStatement(ExpressionParser.Tokenizer tokenizer, Map<String, Object> statics) {
     Statement result;
     if (tokenizer.tryConsume("{")) {
       result = parseBlock(tokenizer, null);
       tokenizer.consume("}");
     } else if (tokenizer.tryConsume("class")) {
-      Classifier classifier = parseClass(tokenizer);
+      TsClass classifier = parseClass(tokenizer);
       if (statics == null) {
         throw new RuntimeException("Classes only permitted at top level.");
       }
@@ -203,7 +217,12 @@ class Parser {
         result = new IfStatement(condition, thenBranch);
       }
     } else if (tokenizer.tryConsume("interface")) {
-      result = parseInterface(tokenizer);
+      Interface intrfc = parseInterface(tokenizer);
+      if (statics == null) {
+        throw new RuntimeException("Classes only permitted at top level.");
+      }
+      statics.put(intrfc.name(), intrfc);
+      result = intrfc;
     } else if (tokenizer.tryConsume("let") || tokenizer.tryConsume("var")) {
       result = parseLet(tokenizer);
     } else if (tokenizer.tryConsume("return")) {
@@ -253,7 +272,30 @@ class Parser {
   }
 
   Type parseType(ExpressionParser.Tokenizer tokenizer) {
+    if (tokenizer.tryConsume("(")) {
+      ArrayList<FunctionType.Parameter> args = new ArrayList<>();
+      while(!tokenizer.tryConsume(")")) {
+        String name = tokenizer.consumeIdentifier();
+        tokenizer.consume(":");
+        Type type = parseType(tokenizer);
+        args.add(new FunctionType.Parameter(name, type));
+      }
+      tokenizer.consume("=>");
+      Type returnType = parseType(tokenizer);
+      return new FunctionType(returnType, args.toArray(new FunctionType.Parameter[args.size()]));
+    }
     String name = tokenizer.consumeIdentifier();
+    if (name.equals("boolean")) {
+      return Types.BOOLEAN;
+    } else if (name.equals("int")) {
+      return Types.INT;
+    } else if (name.equals("number")) {
+      return Types.NUMBER;
+    } else if (name.equals("string")) {
+      return Types.STRING;
+    } else if (name.equals("void")) {
+      return Types.VOID;
+    }
     return new UnresolvedType(name);
   }
 

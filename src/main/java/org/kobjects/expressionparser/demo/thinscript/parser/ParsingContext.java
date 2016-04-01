@@ -4,16 +4,16 @@ import java.util.LinkedHashMap;
 
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.Field;
-import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
+import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
 import org.kobjects.expressionparser.demo.thinscript.type.Types;
 
 public class ParsingContext {
-  public Classifier self;
+  public TsClass self;
   public LinkedHashMap<String, LocalDeclaration> locals = new LinkedHashMap<>();
   LinkedHashMap<String, Object> statics;
 
-  public ParsingContext(ParsingContext parent, Classifier self) {
+  public ParsingContext(ParsingContext parent, TsClass self) {
     this.self = self;
     if (parent != null) {
       statics = parent.statics;

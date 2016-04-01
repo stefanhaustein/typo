@@ -14,7 +14,7 @@ public class EvaluationContext {
       Function function = (Function) applicable;
       this.locals = new Object[function.localCount];
     } else if (applicable instanceof Applicable){
-      this.locals = new Object[applicable.type().parameterTypes.length];
+      this.locals = new Object[applicable.type().parameters.length];
     } else {
       this.locals = NO_LOCALS;
     }

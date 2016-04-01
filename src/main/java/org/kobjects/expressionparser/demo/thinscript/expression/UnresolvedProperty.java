@@ -2,7 +2,7 @@ package org.kobjects.expressionparser.demo.thinscript.expression;
 
 
 import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
-import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
+import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 import org.kobjects.expressionparser.demo.thinscript.type.MetaType;
@@ -42,17 +42,17 @@ public class UnresolvedProperty implements Expression {
   public Expression resolve(ParsingContext context) {
     Expression resolvedBase = base.resolve(context);
     Type baseType = resolvedBase.type();
-    if (baseType instanceof Classifier) {
-      Classifier classifier = (Classifier) resolvedBase.type();
-      Classifier.Member member = classifier.members.get(name);
+    if (baseType instanceof TsClass) {
+      TsClass classifier = (TsClass) resolvedBase.type();
+      TsClass.Member member = classifier.members.get(name);
       if (member == null) {
         throw new RuntimeException("Member '" + name + "' not found in " + classifier);
       }
       return new Property(resolvedBase, member);
     }
-    if (baseType instanceof MetaType && ((MetaType) baseType).of instanceof Classifier) {
-      Classifier classifier = (Classifier) ((MetaType) baseType).of;
-      Classifier.Member member = classifier.members.get(name);
+    if (baseType instanceof MetaType && ((MetaType) baseType).of instanceof TsClass) {
+      TsClass classifier = (TsClass) ((MetaType) baseType).of;
+      TsClass.Member member = classifier.members.get(name);
       if (member == null) {
         throw new RuntimeException("Member '" + name + "' not found in " + classifier);
       }

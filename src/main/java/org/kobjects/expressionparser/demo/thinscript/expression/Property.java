@@ -4,14 +4,14 @@ import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.Instance;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
-import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
+import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.type.Type;
 
 class Property implements Expression {
-  Classifier.Member member;
+  TsClass.Member member;
   Expression base;
 
-  Property(Expression base, Classifier.Member member) {
+  Property(Expression base, TsClass.Member member) {
     this.base = base;
     this.member = member;
   }

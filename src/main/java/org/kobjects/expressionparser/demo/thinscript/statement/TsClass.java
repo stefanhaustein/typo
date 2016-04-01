@@ -15,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class Classifier extends Statement implements Type {
+public class TsClass extends Statement implements Type {
 
   private static void printModifiers(CodePrinter cp, Set<Modifier> modifiers) {
     for (Modifier m: modifiers) {
@@ -24,18 +24,15 @@ public class Classifier extends Statement implements Type {
     }
   }
 
-  public enum Kind {CLASS, INTERFACE};
   public enum Modifier {PUBLIC, PRIVATE, PROTECTED, STATIC}
 
-  final Kind kind;
   final String name;
   public Function constructor;
 
   public Map<String, Member> members = new LinkedHashMap<>();
   public int fieldCount;
 
-  public Classifier(Kind kind, String name) {
-    this.kind = kind;
+  public TsClass(String name) {
     this.name = name;
   }
 
@@ -157,6 +154,10 @@ public class Classifier extends Statement implements Type {
     cp.append("}");
   }
 
+  @Override
+  public String toString() {
+    return "class " + name;
+  }
 
   public static class Member implements Field {
     Set<Modifier> modifiers;

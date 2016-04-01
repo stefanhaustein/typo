@@ -5,7 +5,7 @@ import org.kobjects.expressionparser.demo.thinscript.parser.*;
 import org.kobjects.expressionparser.demo.thinscript.statement.ExpressionStatement;
 import org.kobjects.expressionparser.demo.thinscript.statement.ReturnStatement;
 import org.kobjects.expressionparser.demo.thinscript.type.FunctionType;
-import org.kobjects.expressionparser.demo.thinscript.statement.Classifier;
+import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.statement.Statement;
 import org.kobjects.expressionparser.demo.thinscript.type.Types;
 
@@ -57,11 +57,11 @@ public class Shell {
   public static void main(String[] args) throws IOException {
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-    Classifier mathClass = new Classifier(Classifier.Kind.CLASS, "Math");
-    mathClass.addMethod(EnumSet.of(Classifier.Modifier.STATIC), "sqrt", new Applicable() {
+    TsClass mathClass = new TsClass("Math");
+    mathClass.addMethod(EnumSet.of(TsClass.Modifier.STATIC), "sqrt", new Applicable() {
       @Override
       public FunctionType type() {
-        return new FunctionType(Types.NUMBER, Types.NUMBER);
+        return new FunctionType(Types.NUMBER, new FunctionType.Parameter("x", Types.NUMBER));
       }
 
       @Override
@@ -69,10 +69,10 @@ public class Shell {
         return Math.sqrt(((Number) context.getLocal(0)).doubleValue());
       }
     });
-    mathClass.addMethod(EnumSet.of(Classifier.Modifier.STATIC), "floor", new Applicable() {
+    mathClass.addMethod(EnumSet.of(TsClass.Modifier.STATIC), "floor", new Applicable() {
       @Override
       public FunctionType type() {
-        return new FunctionType(Types.NUMBER, Types.NUMBER);
+        return new FunctionType(Types.NUMBER, new FunctionType.Parameter("x", Types.NUMBER));
       }
 
       @Override
@@ -82,11 +82,11 @@ public class Shell {
     });
     parsingContext.declareStatic("Math", mathClass);
 
-    Classifier consoleClass = new Classifier(Classifier.Kind.CLASS, "Console");
-    consoleClass.addMethod(EnumSet.noneOf(Classifier.Modifier.class), "log", new Applicable() {
+    TsClass consoleClass = new TsClass("Console");
+    consoleClass.addMethod(EnumSet.noneOf(TsClass.Modifier.class), "log", new Applicable() {
       @Override
       public FunctionType type() {
-        return new FunctionType(Types.VOID, Types.STRING);
+        return new FunctionType(Types.VOID, new FunctionType.Parameter("s", Types.STRING));
       }
 
       @Override
@@ -98,7 +98,7 @@ public class Shell {
     parsingContext.declareStatic("load", new Applicable() {
       @Override
       public FunctionType type() {
-        return new FunctionType(Types.VOID, Types.STRING);
+        return new FunctionType(Types.VOID, new FunctionType.Parameter("s", Types.STRING));
       }
 
       @Override
