@@ -32,6 +32,9 @@ public class FunctionType implements Type {
 
   @Override
   public boolean equals(Object other) {
+    if (other == this) {
+      return true;
+    }
     if (!(other instanceof FunctionType)) {
       return false;
     }

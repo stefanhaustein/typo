@@ -1,10 +1,9 @@
 package org.kobjects.typo.type;
 
 import org.kobjects.typo.Printable;
-import org.kobjects.typo.Applicable;
+import org.kobjects.typo.runtime.Applicable;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
-import org.kobjects.typo.Field;
 import org.kobjects.typo.expression.Expression;
 import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.parser.ParsingContext;
@@ -78,21 +77,29 @@ public class TsClass implements Classifier {
   }
 
   @Override
-  public void resolveMembers(ParsingContext context) {
+  public void resolveMembers(ParsingContext parentContext) {
+    ParsingContext memberContext = new ParsingContext(parentContext, this, null);
+
     if (constructor != null) {
-      constructor = constructor.resolve(context);
+      constructor = constructor.resolve(memberContext);
     }
     for (Member member: members.values()) {
+      ParsingContext context = member.modifiers.contains(Modifier.STATIC) ? parentContext : memberContext;
       if (member.initializer != null) {
         member.initializer = member.initializer.resolve(context);
         if (member.isStatic()) {
-          member.staticValue = member.initializer.eval(new EvaluationContext(null, null));
+          member.staticValue = member.initializer.eval(new EvaluationContext(null, 0));
         }
       }
       if (member.staticValue instanceof Function) {
         member.staticValue = ((Function) member.staticValue).resolve(context);
       }
     }
+  }
+
+  @Override
+  public Type propertyType(String key) {
+    return members.get(key).type();
   }
 
   @Override
@@ -155,7 +162,7 @@ public class TsClass implements Classifier {
     return "class " + name;
   }
 
-  public static class Member implements Field {
+  public static class Member {
     Set<Modifier> modifiers;
     String name;
     Type type;
@@ -163,12 +170,10 @@ public class TsClass implements Classifier {
     public Expression initializer;
     public Object staticValue;
 
-    @Override
     public String name() {
       return name;
     }
 
-    @Override
     public void set(EvaluationContext context, Object value) {
       if (fieldIndex == -1) {
         staticValue = value;
@@ -177,12 +182,10 @@ public class TsClass implements Classifier {
       }
     }
 
-    @Override
     public Type type() {
       return type;
     }
 
-    @Override
     public Object get(EvaluationContext context) {
       return fieldIndex == -1 ? staticValue : context.self.fields[fieldIndex];
     }

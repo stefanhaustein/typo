@@ -1,25 +1,16 @@
 package org.kobjects.typo.runtime;
 
-import org.kobjects.typo.Applicable;
-import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.parser.ParsingContext;
 
 public class EvaluationContext {
   static final Object[] NO_LOCALS = new Object[0];
 
-  public org.kobjects.typo.runtime.Instance self;
+  public Instance self;
   public Object[] locals;
 
-  public EvaluationContext(org.kobjects.typo.runtime.Instance self, Applicable applicable) {
+  public EvaluationContext(Instance self, int size) {
     this.self = self;
-    if (applicable instanceof Function) {
-      Function function = (Function) applicable;
-      this.locals = new Object[function.localCount];
-    } else if (applicable instanceof Applicable){
-      this.locals = new Object[applicable.type().parameters.length];
-    } else {
-      this.locals = NO_LOCALS;
-    }
+    this.locals = size == 0 ? NO_LOCALS : new Object[size];
   }
 
   public void adjustLocals(ParsingContext parsingContext) {

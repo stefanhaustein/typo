@@ -2,8 +2,8 @@ package org.kobjects.typo.parser;
 
 import java.util.LinkedHashMap;
 
+import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.runtime.EvaluationContext;
-import org.kobjects.typo.Field;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
@@ -12,9 +12,13 @@ public class ParsingContext {
   public TsClass self;
   public LinkedHashMap<String, LocalDeclaration> locals = new LinkedHashMap<>();
   LinkedHashMap<String, Object> statics;
+  ParsingContext parent;
+  Function function;
 
-  public ParsingContext(ParsingContext parent, TsClass self) {
+  public ParsingContext(ParsingContext parent, TsClass self, Function function) {
     this.self = self;
+    this.parent = parent;
+    this.function = function;
     if (parent != null) {
       statics = parent.statics;
     } else {
@@ -39,13 +43,20 @@ public class ParsingContext {
     statics.put(name, value);
   }
 
-  public Field resolveField(String name) {
+  public LocalDeclaration resolveField(String name) {
     if (locals.containsKey(name)) {
       return locals.get(name);
     }
-    if (self != null && self.members.containsKey(name)) {
+   /* if (self != null && self.members.containsKey(name)) {
       return self.members.get(name);
+    }*/
+    if (parent != null && parent.locals.containsKey(name) && function != null) {
+      LocalDeclaration parentField = parent.resolveField(name);
+      LocalDeclaration localField = declareLocal(parentField.name(), parentField.type());
+      function.closures.add(new Function.Closure(parentField, localField));
+      return localField;
     }
+
     return null;
   }
 
@@ -53,7 +64,7 @@ public class ParsingContext {
     return statics.get(name);
   }
 
-  public static class LocalDeclaration implements Field {
+  public static class LocalDeclaration {
     public String name;
     public Type type;
     public int localIndex;
@@ -64,22 +75,18 @@ public class ParsingContext {
       this.localIndex = localIndex;
     }
 
-    @Override
     public String name() {
       return name;
     }
 
-    @Override
     public void set(EvaluationContext context, Object value) {
       context.locals[localIndex] = value;
     }
 
-    @Override
     public Type type() {
       return type;
     }
 
-    @Override
     public Object get(EvaluationContext context) {
       return context.locals[localIndex];
     }

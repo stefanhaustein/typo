@@ -66,8 +66,34 @@ public class Interface implements Classifier {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (!(o instanceof Interface)) {
+      return false;
+    }
+    Interface other = (Interface) o;
+    return assignableFrom(other) && other.assignableFrom(this);
+  }
+
+  @Override
   public boolean assignableFrom(Type type) {
-    return false;
+    if (type == this) {
+      return true;
+    }
+    if (!(type instanceof Classifier)) {
+      return false;
+    }
+    Classifier other = (Classifier) type;
+    for (Map.Entry<String, Type> e : properties.entrySet()) {
+      String name = e.getKey();
+      Type expected = e.getValue();
+      if (!expected.assignableFrom(other.propertyType(name))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override

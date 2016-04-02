@@ -2,6 +2,7 @@ package org.kobjects.typo;
 
 
 import org.kobjects.typo.parser.Processor;
+import org.kobjects.typo.runtime.*;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Types;
 import org.kobjects.typo.parser.ParsingContext;
@@ -22,7 +23,7 @@ import java.util.EnumSet;
 public class TypoShell {
 
   static Processor processor = new Processor();
-  static ParsingContext parsingContext = new ParsingContext(null, null);
+  static ParsingContext parsingContext = new ParsingContext(null, null, null);
 
   static void load(String url) {
     try {
@@ -37,7 +38,7 @@ public class TypoShell {
       }
       BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 
-      ParsingContext loadParsingContext = new ParsingContext(parsingContext, null);
+      ParsingContext loadParsingContext = new ParsingContext(parsingContext, null, null);
       Statement parsed = processor.process(loadParsingContext, reader);
 
       reader.close();
@@ -45,7 +46,7 @@ public class TypoShell {
 
       System.out.println("Parsed: " + CodePrinter.toString(parsed));
 
-      org.kobjects.typo.runtime.EvaluationContext loadEvaluationContext = new org.kobjects.typo.runtime.EvaluationContext(null, null);
+      org.kobjects.typo.runtime.EvaluationContext loadEvaluationContext = new org.kobjects.typo.runtime.EvaluationContext(null, 0);
       loadEvaluationContext.adjustLocals(loadParsingContext);
       parsed.eval(loadEvaluationContext);
 
@@ -54,27 +55,20 @@ public class TypoShell {
     }
   }
 
-
   public static void main(String[] args) throws IOException {
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
     TsClass mathClass = new TsClass("Math");
-    mathClass.addMethod(EnumSet.of(TsClass.Modifier.STATIC), "sqrt", new Applicable() {
-      @Override
-      public FunctionType type() {
-        return new FunctionType(Types.NUMBER, new FunctionType.Parameter("x", Types.NUMBER));
-      }
+    mathClass.addMethod(EnumSet.of(TsClass.Modifier.STATIC), "sqrt",
+        new NativeFunction(Types.NUMBER, new FunctionType.Parameter("x", Types.NUMBER)) {
 
       @Override
-      public Object apply(org.kobjects.typo.runtime.EvaluationContext context) {
+      public Object apply(EvaluationContext context) {
         return Math.sqrt(((Number) context.getLocal(0)).doubleValue());
       }
     });
-    mathClass.addMethod(EnumSet.of(TsClass.Modifier.STATIC), "floor", new Applicable() {
-      @Override
-      public FunctionType type() {
-        return new FunctionType(Types.NUMBER, new FunctionType.Parameter("x", Types.NUMBER));
-      }
+    mathClass.addMethod(EnumSet.of(TsClass.Modifier.STATIC), "floor", new NativeFunction(
+        Types.NUMBER, new FunctionType.Parameter("x", Types.NUMBER)) {
 
       @Override
       public Object apply(org.kobjects.typo.runtime.EvaluationContext context) {
@@ -84,33 +78,25 @@ public class TypoShell {
     parsingContext.declareStatic("Math", mathClass);
 
     TsClass consoleClass = new TsClass("Console");
-    consoleClass.addMethod(EnumSet.noneOf(TsClass.Modifier.class), "log", new Applicable() {
-      @Override
-      public FunctionType type() {
-        return new FunctionType(Types.VOID, new FunctionType.Parameter("s", Types.STRING));
-      }
-
+    consoleClass.addMethod(EnumSet.noneOf(TsClass.Modifier.class), "log", new NativeFunction(
+        Types.VOID, new FunctionType.Parameter("s", Types.STRING)) {
       @Override
       public Object apply(org.kobjects.typo.runtime.EvaluationContext context) {
         System.out.println(context.getLocal(0));
         return null;
       }
     });
-    parsingContext.declareStatic("load", new Applicable() {
+    parsingContext.declareStatic("load", new NativeFunction(
+        Types.VOID, new FunctionType.Parameter("s", Types.STRING)) {
       @Override
-      public FunctionType type() {
-        return new FunctionType(Types.VOID, new FunctionType.Parameter("s", Types.STRING));
-      }
-
-      @Override
-      public Object apply(org.kobjects.typo.runtime.EvaluationContext context) {
+      public Object apply(EvaluationContext context) {
         load(String.valueOf(context.locals[0]));
         return null;
       }
     });
 
     parsingContext.declareStatic("console", new org.kobjects.typo.runtime.Instance(consoleClass));
-    org.kobjects.typo.runtime.EvaluationContext evaluationContext = new org.kobjects.typo.runtime.EvaluationContext(null, null);
+    EvaluationContext evaluationContext = new EvaluationContext(null, 0);
 
     while (true) {
       System.out.print("\nExpression?  ");

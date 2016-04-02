@@ -1,15 +1,14 @@
 package org.kobjects.typo.expression;
 
-import org.kobjects.typo.Field;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 
 class Variable extends Expression {
-  final Field field;
+  final ParsingContext.LocalDeclaration field;
 
-  public Variable(Field field) {
+  public Variable(ParsingContext.LocalDeclaration field) {
     this.field = field;
   }
 

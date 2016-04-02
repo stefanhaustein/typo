@@ -6,4 +6,5 @@ import org.kobjects.typo.parser.ParsingContext;
 
 public interface Classifier extends Type, NamedEntity {
   void resolveMembers(ParsingContext context);
+  abstract Type propertyType(String key);
 }

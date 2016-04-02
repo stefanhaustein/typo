@@ -1,6 +1,6 @@
 package org.kobjects.typo.expression;
 
-import org.kobjects.typo.Applicable;
+import org.kobjects.typo.runtime.Applicable;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
@@ -27,7 +27,8 @@ class ApplyMember extends ExpressionN {
   @Override
   public Object eval(EvaluationContext context) {
     Instance instance = (Instance) base.eval(context);
-    EvaluationContext newContext = new EvaluationContext(instance, (Applicable) member.staticValue);
+    Applicable method = (Applicable) member.staticValue;
+    EvaluationContext newContext = method.createContext(instance);
     for (int i = 0; i < children.length; i++) {
       newContext.setLocal(i, children[i].eval(context));
     }

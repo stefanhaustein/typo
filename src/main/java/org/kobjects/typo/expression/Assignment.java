@@ -9,7 +9,7 @@ public class Assignment extends ExpressionN {
 
   Assignment(Expression target, Expression source) {
     super(target, source);
-    if (source.type() != target.type()) {
+    if (!target.type().assignableFrom(source.type())) {
       throw new RuntimeException("Can't assign " + source.type() + " to " + target.type()
           + " in " + CodePrinter.toString(this));
     }

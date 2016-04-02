@@ -1,15 +1,20 @@
 package org.kobjects.typo.expression;
 
-import org.kobjects.typo.Applicable;
+import org.kobjects.typo.runtime.Applicable;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.NamedEntity;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.runtime.Instance;
 import org.kobjects.typo.statement.Block;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.statement.Statement;
 import org.kobjects.typo.type.FunctionType;
 import org.kobjects.typo.type.Type;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 public class Function extends Expression implements Applicable, NamedEntity {
   String name;
@@ -19,6 +24,8 @@ public class Function extends Expression implements Applicable, NamedEntity {
   FunctionType type;
   public Statement body;
   public int localCount;
+  public List<Closure> closures = new ArrayList<>();
+  Object[] capture;
 
   public Function(TsClass owner, String name, FunctionType.Parameter[] parameters, Type returnType, Statement body) {
     this.owner = owner;
@@ -34,7 +41,23 @@ public class Function extends Expression implements Applicable, NamedEntity {
   }
 
   @Override
+  public EvaluationContext createContext(Instance self) {
+    // TODO: Copying shouldn't be necessary -- add some form of special access instead?
+    EvaluationContext context = new EvaluationContext(self, localCount);
+    for (int i = 0; i < closures.size(); i++) {
+      context.setLocal(closures.get(i).target.localIndex, capture[i]);
+    }
+    return context;
+  }
+
+  @Override
   public Object eval(EvaluationContext context) {
+    if (closures.size() > 0) {
+      capture = new Object[closures.size()];
+      for (int i = 0; i < capture.length; i++) {
+        capture[i] = context.getLocal(closures.get(i).source.localIndex);
+      }
+    }
     return this;
   }
 
@@ -80,12 +103,12 @@ public class Function extends Expression implements Applicable, NamedEntity {
   @Override
   public Function resolve(ParsingContext context) {
     resolveSignatures(context);
-    ParsingContext bodyContext = new ParsingContext(context, owner);
+    ParsingContext bodyContext = new ParsingContext(context, owner, this);
     for (FunctionType.Parameter param : parameters) {
       bodyContext.declareLocal(param.name, param.type);
     }
     body.resolve(bodyContext);
-    this.localCount = bodyContext.locals.size();
+    localCount = bodyContext.locals.size();
     return this;
   }
 
@@ -103,5 +126,14 @@ public class Function extends Expression implements Applicable, NamedEntity {
   @Override
   public FunctionType type() {
     return type;
+  }
+
+  public static class Closure {
+    ParsingContext.LocalDeclaration source;
+    ParsingContext.LocalDeclaration target;
+    public Closure(ParsingContext.LocalDeclaration source, ParsingContext.LocalDeclaration target) {
+      this.source = source;
+      this.target = target;
+    }
   }
 }

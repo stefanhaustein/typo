@@ -1,7 +1,6 @@
 package org.kobjects.typo.expression;
 
 
-import org.kobjects.typo.Field;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
@@ -39,7 +38,7 @@ public class UnresolvedIdentifier extends Expression {
     if (name.equals("this") && context.self != null) {
       return new This(context.self);
     }
-    Field field = context.resolveField(name);
+    ParsingContext.LocalDeclaration field = context.resolveField(name);
     if (field != null) {
       return new Variable(field);
     }

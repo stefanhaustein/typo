@@ -41,11 +41,13 @@ public class ObjectLiteral extends ExpressionN {
       cp.indent();
       cp.newLine();
       cp.append(names[0]);
+      cp.append(": ");
       children[0].print(cp);
       for (int i = 1; i < children.length; i++) {
         cp.append(",");
         cp.newLine();
         cp.append(names[i]);
+        cp.append(": ");
         children[i].print(cp);
       }
       cp.outdent();

@@ -55,7 +55,7 @@ public class New extends ExpressionN {
   @Override
   public Object eval(EvaluationContext context) {
     Instance instance = new Instance(tsClass);
-    EvaluationContext newContext = new EvaluationContext(instance, tsClass.constructor);
+    EvaluationContext newContext = tsClass.constructor.createContext(instance);
     for (TsClass.Member member: tsClass.members.values()) {
       if (member.fieldIndex != -1) {
         if (member.initializer != null) {
