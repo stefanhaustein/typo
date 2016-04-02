@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 
 import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.Field;
-import org.kobjects.typo.statement.TsClass;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 

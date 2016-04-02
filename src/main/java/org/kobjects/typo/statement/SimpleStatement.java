@@ -13,16 +13,6 @@ public abstract class SimpleStatement extends Statement {
   }
 
   @Override
-  public void resolveSignatures(ParsingContext context) {
-    if (expression != null) {
-      expression.resolveSignatures(context);
-    }
-    for (Statement child: children) {
-      child.resolveSignatures(context);
-    }
-  }
-
-  @Override
   public void resolve(ParsingContext context) {
     if (expression != null) {
       expression = expression.resolve(context);

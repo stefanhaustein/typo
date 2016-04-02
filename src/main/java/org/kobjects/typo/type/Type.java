@@ -6,7 +6,7 @@ public interface Type {
 
   String name();
 
-  Type resolveType(ParsingContext context);
+  Type resolve(ParsingContext context);
 
   boolean assignableFrom(Type type);
 }

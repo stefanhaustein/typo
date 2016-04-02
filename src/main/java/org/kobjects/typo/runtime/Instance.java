@@ -1,6 +1,6 @@
-package org.kobjects.typo;
+package org.kobjects.typo.runtime;
 
-import org.kobjects.typo.statement.TsClass;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Typed;
 

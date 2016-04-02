@@ -1,6 +1,7 @@
-package org.kobjects.typo.statement;
+package org.kobjects.typo.type;
 
 import org.kobjects.typo.Printable;
+import org.kobjects.typo.type.Classifier;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 import org.kobjects.typo.Applicable;
@@ -16,7 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class TsClass extends Statement implements Type {
+public class TsClass implements Classifier {
 
   private static void printModifiers(CodePrinter cp, Set<Modifier> modifiers) {
     for (Modifier m: modifiers) {
@@ -48,26 +49,6 @@ public class TsClass extends Statement implements Type {
     return name;
   }
 
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-    if (constructor != null) {
-      constructor.resolveSignatures(context);
-    }
-    for (Member member: members.values()) {
-      if (member.initializer != null) {
-        member.initializer.resolveSignatures(context);
-      }
-      if (member.staticValue instanceof Function) {
-        ((Function) member.staticValue).resolveSignatures(context);
-        member.type = Types.typeOf(member.staticValue);
-        if (member.type == null) {
-          throw new RuntimeException("WTF?");
-        }
-      } else {
-        member.type = member.type.resolveType(context);
-      }
-    }
-  }
 
   public Member addField(Set<Modifier> modifiers, String name, Type type, Expression initialValue) {
     Member member = new Member();
@@ -100,7 +81,7 @@ public class TsClass extends Statement implements Type {
   }
 
   @Override
-  public void resolve(ParsingContext context) {
+  public void resolveMembers(ParsingContext context) {
     if (constructor != null) {
       constructor = constructor.resolve(context);
     }
@@ -118,12 +99,23 @@ public class TsClass extends Statement implements Type {
   }
 
   @Override
-  public Object eval(EvaluationContext context) {
-    return NO_RESULT;
+  public void resolveSignatures(ParsingContext context) {
+    if (constructor != null) {
+      constructor.resolveSignatures(context);
+    }
+    for (Member member: members.values()) {
+      if (member.staticValue instanceof Function) {
+        ((Function) member.staticValue).resolveSignatures(context);
+        member.type = Types.typeOf(member.staticValue);
+      } else {
+        member.type = member.type.resolve(context);
+      }
+    }
   }
 
   @Override
-  public Type resolveType(ParsingContext context) {
+  public Type resolve(ParsingContext context) {
+    // Member types are resolved in resolveSignatures already.
     return this;
   }
 

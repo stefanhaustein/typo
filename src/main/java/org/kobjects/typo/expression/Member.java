@@ -2,12 +2,12 @@ package org.kobjects.typo.expression;
 
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
-import org.kobjects.typo.Instance;
+import org.kobjects.typo.runtime.Instance;
 import org.kobjects.typo.parser.ParsingContext;
-import org.kobjects.typo.statement.TsClass;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 
-class Member implements Expression {
+class Member extends Expression {
   TsClass.Member member;
   Expression base;
 
@@ -53,8 +53,4 @@ class Member implements Expression {
     throw new UnsupportedOperationException("Already resolved.");
   }
 
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-    throw new RuntimeException("Already resolved");
-  }
 }

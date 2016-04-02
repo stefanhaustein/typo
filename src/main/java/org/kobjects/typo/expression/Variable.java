@@ -6,7 +6,7 @@ import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 
-class Variable implements Expression {
+class Variable extends Expression {
   final Field field;
 
   public Variable(Field field) {
@@ -38,9 +38,6 @@ class Variable implements Expression {
     throw new UnsupportedOperationException("Already resolved");
   }
 
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-  }
 
   @Override
   public Type type() {

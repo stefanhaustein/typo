@@ -15,8 +15,8 @@ public class ArrayType implements Type {
   }
 
   @Override
-  public Type resolveType(ParsingContext context) {
-    elementType = elementType.resolveType(context);
+  public Type resolve(ParsingContext context) {
+    elementType = elementType.resolve(context);
     return this;
   }
 

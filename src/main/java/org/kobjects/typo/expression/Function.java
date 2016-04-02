@@ -3,14 +3,15 @@ package org.kobjects.typo.expression;
 import org.kobjects.typo.Applicable;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
+import org.kobjects.typo.parser.NamedEntity;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.statement.Block;
-import org.kobjects.typo.statement.TsClass;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.statement.Statement;
 import org.kobjects.typo.type.FunctionType;
 import org.kobjects.typo.type.Type;
 
-public class Function implements Expression, Applicable {
+public class Function extends Expression implements Applicable, NamedEntity {
   String name;
   TsClass owner;
   public FunctionType.Parameter[] parameters;
@@ -33,18 +34,8 @@ public class Function implements Expression, Applicable {
   }
 
   @Override
-  public void assign(EvaluationContext context, Object value) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Object eval(EvaluationContext context) {
     return this;
-  }
-
-  @Override
-  public boolean isAssignable() {
-    return false;
   }
 
   public String name() {
@@ -88,6 +79,7 @@ public class Function implements Expression, Applicable {
 
   @Override
   public Function resolve(ParsingContext context) {
+    resolveSignatures(context);
     ParsingContext bodyContext = new ParsingContext(context, owner);
     for (FunctionType.Parameter param : parameters) {
       bodyContext.declareLocal(param.name, param.type);
@@ -99,12 +91,13 @@ public class Function implements Expression, Applicable {
 
   @Override
   public void resolveSignatures(ParsingContext context) {
-    returnType = returnType.resolveType(context);
-    for (int i = 0; i < parameters.length; i++) {
-      parameters[i].type = parameters[i].type.resolveType(context);
+    if (type == null) {
+      returnType = returnType.resolve(context);
+      for (int i = 0; i < parameters.length; i++) {
+        parameters[i].type = parameters[i].type.resolve(context);
+      }
+      type = new FunctionType(returnType, parameters);
     }
-    type = new FunctionType(returnType, parameters);
-    body.resolveSignatures(context);
   }
 
   @Override

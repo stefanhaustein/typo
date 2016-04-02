@@ -6,7 +6,7 @@ import org.kobjects.typo.type.Types;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 
-public class Literal implements Expression {
+public class Literal extends Expression {
 
   public static String quote(String s) {
     StringBuilder sb = new StringBuilder(s.length() + 2);
@@ -33,11 +33,6 @@ public class Literal implements Expression {
   }
 
   @Override
-  public void assign(EvaluationContext context, Object value) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void print(CodePrinter cp) {
     if (name != null) {
       cp.append(name);
@@ -59,17 +54,8 @@ public class Literal implements Expression {
   }
 
   @Override
-  public boolean isAssignable() {
-    return false;
-  }
-
-
-  @Override
   public Type type() {
     return Types.typeOf(value);
   }
 
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-  }
 }

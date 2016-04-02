@@ -2,7 +2,7 @@ package org.kobjects.typo;
 
 
 import org.kobjects.typo.parser.Processor;
-import org.kobjects.typo.statement.TsClass;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Types;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.statement.ExpressionStatement;
@@ -109,7 +109,7 @@ public class Shell {
       }
     });
 
-    parsingContext.declareStatic("console", new Instance(consoleClass));
+    parsingContext.declareStatic("console", new org.kobjects.typo.runtime.Instance(consoleClass));
     EvaluationContext evaluationContext = new EvaluationContext(null, null);
 
     while (true) {

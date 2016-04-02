@@ -3,13 +3,15 @@ package org.kobjects.typo.expression;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.type.Type;
 
-public class Assignment extends Node {
+public class Assignment extends ExpressionN {
 
   Assignment(Expression target, Expression source) {
-    super(source.type(), target, source);
+    super(target, source);
     if (source.type() != target.type()) {
-      throw new RuntimeException("Can't assign " + source.type() + " to " + target.type());
+      throw new RuntimeException("Can't assign " + source.type() + " to " + target.type()
+          + " in " + CodePrinter.toString(this));
     }
   }
 
@@ -30,5 +32,10 @@ public class Assignment extends Node {
   @Override
   public Expression resolve(ParsingContext context) {
     throw new UnsupportedOperationException("Resolved already.");
+  }
+
+  @Override
+  public Type type() {
+    return children[0].type();
   }
 }

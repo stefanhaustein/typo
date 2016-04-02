@@ -1,15 +1,15 @@
 package org.kobjects.typo.expression;
 
 
-import org.kobjects.typo.statement.Interface;
-import org.kobjects.typo.statement.TsClass;
+import org.kobjects.typo.type.Interface;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.type.MetaType;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 
-public class UnresolvedProperty implements Expression {
+public class UnresolvedProperty extends Expression {
   final Expression base;
   final String name;
 
@@ -53,7 +53,7 @@ public class UnresolvedProperty implements Expression {
     }
     if (baseType instanceof Interface) {
       Interface itf = (Interface) resolvedBase.type();
-      Type propertyType = itf.getType(name);
+      Type propertyType = itf.propertyType(name);
       if (propertyType == null) {
         throw new RuntimeException("Property '" + name + "' not found in " + itf);
       }
@@ -71,11 +71,6 @@ public class UnresolvedProperty implements Expression {
       return new Literal(member.staticValue, classifier.name() + "." + name);
     }
     throw new RuntimeException("Classifier expected; got: " + resolvedBase.type());
-  }
-
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-    base.resolveSignatures(context);
   }
 
   @Override

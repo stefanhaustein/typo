@@ -1,6 +1,6 @@
 package org.kobjects.typo.runtime;
 
-import org.kobjects.typo.statement.Interface;
+import org.kobjects.typo.type.Interface;
 import org.kobjects.typo.type.Typed;
 
 import java.util.LinkedHashMap;

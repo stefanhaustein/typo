@@ -3,11 +3,12 @@ package org.kobjects.typo.expression;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 
-public class Equals extends Node {
+public class Equals extends ExpressionN {
   Equals(Expression left, Expression right) {
-    super(Types.BOOLEAN, left, right);
+    super(left, right);
   }
 
   @Override
@@ -33,6 +34,16 @@ public class Equals extends Node {
 
   @Override
   public void print(CodePrinter cp) {
-
+    cp.append('(');
+    children[0].print(cp);
+    cp.append(" == ");
+    children[1].print(cp);
+    cp.append(')');
   }
+
+  @Override
+  public Type type() {
+    return Types.BOOLEAN;
+  }
+
 }

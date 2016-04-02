@@ -1,14 +1,15 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 
-class Concat extends Node {
+class Concat extends ExpressionN {
 
   public Concat(Expression left, Expression right) {
-    super(Types.STRING, left, right);
+    super(left, right);
   }
 
   @Override
@@ -21,14 +22,12 @@ class Concat extends Node {
   }
 
   @Override
-  public Expression resolve(ParsingContext context) {
-    resolveChildren(context);
-    return this;
-  }
-
-  @Override
   public Object eval(EvaluationContext context) {
     return "" + children[0].eval(context) + children[1].eval(context);
   }
 
+  @Override
+  public Type type() {
+    return Types.STRING;
+  }
 }

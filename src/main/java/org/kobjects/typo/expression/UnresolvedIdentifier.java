@@ -7,7 +7,7 @@ import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 
-public class UnresolvedIdentifier implements Expression {
+public class UnresolvedIdentifier extends Expression {
   String name;
 
   public UnresolvedIdentifier(String name) {
@@ -51,17 +51,13 @@ public class UnresolvedIdentifier implements Expression {
   }
 
   @Override
-  public void resolveSignatures(ParsingContext context) {
-  }
-
-  @Override
   public String toString() {
     return name;
   }
 
   @Override
   public Type type() {
-    return null;
+    throw new RuntimeException("Unresolved");
   }
 
 }

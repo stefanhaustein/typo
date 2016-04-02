@@ -28,7 +28,7 @@ public class MetaType implements Type {
   }
 
   @Override
-  public Type resolveType(ParsingContext context) {
+  public Type resolve(ParsingContext context) {
     return this;
   }
 }

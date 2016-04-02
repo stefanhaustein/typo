@@ -5,12 +5,13 @@ import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.FunctionType;
+import org.kobjects.typo.type.Type;
 
-public class Apply extends Node {
+public class Apply extends ExpressionN {
   Expression target;
 
   public Apply(Expression target, Expression... params) {
-    super(null, params);
+    super(params);
     this.target = target;
   }
 
@@ -40,7 +41,7 @@ public class Apply extends Node {
 
   @Override
   public Expression resolve(ParsingContext context) {
-    resolveChildren(context);
+    super.resolve(context);
     target = target.resolve(context);
 
     if (!(target.type() instanceof FunctionType)) {
@@ -58,15 +59,10 @@ public class Apply extends Node {
       Member property = (Member) target;
       return new ApplyMember(property.base, property.member, children);
     }
-
-    this.type = functionType.returnType;
     return this;
   }
 
-  @Override
-  public void resolveSignatures(ParsingContext context) {
-    target.resolveSignatures(context);
-    super.resolveSignatures(context);
+  public Type type() {
+    return ((FunctionType) target.type()).returnType;
   }
-
 }

@@ -3,14 +3,15 @@ package org.kobjects.typo.expression;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 
-public class Compare extends Node {
+public class Compare extends ExpressionN {
   enum Op {LT, LE, GT, GE};
   Op op;
 
   Compare(Op op, Expression left, Expression right) {
-    super(Types.BOOLEAN, left, right);
+    super(left, right);
     this.op = op;
   }
 
@@ -48,5 +49,10 @@ public class Compare extends Node {
     }
     children[1].print(cp);
     cp.append(")");
+  }
+
+  @Override
+  public Type type() {
+    return Types.BOOLEAN;
   }
 }

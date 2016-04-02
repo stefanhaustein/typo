@@ -1,19 +1,20 @@
 package org.kobjects.typo.expression;
 
 import org.kobjects.typo.Applicable;
-import org.kobjects.typo.statement.TsClass;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
-import org.kobjects.typo.Instance;
+import org.kobjects.typo.runtime.Instance;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.FunctionType;
+import org.kobjects.typo.type.Type;
 
-class ApplyMember extends Node {
+class ApplyMember extends ExpressionN {
   final Expression base;
   final TsClass.Member member;
 
   ApplyMember(Expression base, TsClass.Member member, Expression[] children) {
-    super(((FunctionType) member.type()).returnType, children);
+    super(children);
     this.base = base;
     this.member = member;
   }
@@ -47,5 +48,10 @@ class ApplyMember extends Node {
       }
     }
     cp.append(')');
+  }
+
+  @Override
+  public Type type() {
+    return ((FunctionType) member.type()).returnType;
   }
 }

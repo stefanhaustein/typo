@@ -63,10 +63,10 @@ public class FunctionType implements Type {
   }
 
   @Override
-  public Type resolveType(ParsingContext context) {
-    returnType = returnType.resolveType(context);
+  public Type resolve(ParsingContext context) {
+    returnType = returnType.resolve(context);
     for (int i = 0; i < parameters.length; i++) {
-      parameters[i].type = parameters[i].type.resolveType(context);
+      parameters[i].type = parameters[i].type.resolve(context);
     }
     return this;
   }

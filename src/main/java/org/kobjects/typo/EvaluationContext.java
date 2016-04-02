@@ -6,10 +6,10 @@ import org.kobjects.typo.parser.ParsingContext;
 public class EvaluationContext {
   static final Object[] NO_LOCALS = new Object[0];
 
-  public Instance self;
+  public org.kobjects.typo.runtime.Instance self;
   public Object[] locals;
 
-  public EvaluationContext(Instance self, Applicable applicable) {
+  public EvaluationContext(org.kobjects.typo.runtime.Instance self, Applicable applicable) {
     this.self = self;
     if (applicable instanceof Function) {
       Function function = (Function) applicable;

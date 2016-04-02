@@ -5,16 +5,18 @@ import org.kobjects.typo.Printable;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.parser.ParsingContext;
 
-public interface Expression extends Printable {
-  boolean isAssignable();
+public abstract class Expression implements Printable {
+  boolean isAssignable() {
+    return false;
+  }
 
-  void assign(EvaluationContext context, Object value);
+  void assign(EvaluationContext context, Object value) {
+    throw new UnsupportedOperationException();
+  }
 
-  Expression resolve(ParsingContext context);
+  public abstract Expression resolve(ParsingContext context);
 
-  Object eval(EvaluationContext context);
+  public abstract Object eval(EvaluationContext context);
 
-  Type type();
-
-  void resolveSignatures(ParsingContext context);
+  public abstract Type type();
 }

@@ -9,7 +9,5 @@ public abstract class Statement implements Printable {
 
   public abstract Object eval(EvaluationContext context);
 
-  public abstract void resolveSignatures(ParsingContext context);
-
   public abstract void resolve(ParsingContext context);
 }

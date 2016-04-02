@@ -1,16 +1,17 @@
 package org.kobjects.typo.expression;
 
 import org.kobjects.typo.EvaluationContext;
+import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.wasm.Operation;
 
-public class UnresolvedOperator extends Node {
+public class UnresolvedOperator extends ExpressionN {
   String name;
 
   public UnresolvedOperator(String name, Expression... children) {
-    super(null, children);
+    super(children);
     this.name = name;
   }
 
@@ -30,8 +31,8 @@ public class UnresolvedOperator extends Node {
 
   @Override
   public Expression resolve(ParsingContext context) {
+    super.resolve(context);
     boolean allNumber = true;
-    resolveChildren(context);
     for (int i = 0; i < children.length; i++) {
       if (!Types.NUMBER.assignableFrom(children[i].type())) {
         allNumber = false;
@@ -86,4 +87,8 @@ public class UnresolvedOperator extends Node {
     throw new UnsupportedOperationException("Unresolved");
   }
 
+  @Override
+  public Type type() {
+    throw new UnsupportedOperationException();
+  }
 }

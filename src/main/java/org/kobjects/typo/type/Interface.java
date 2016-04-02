@@ -1,38 +1,28 @@
-package org.kobjects.typo.statement;
+package org.kobjects.typo.type;
 
-import org.kobjects.typo.EvaluationContext;
-import org.kobjects.typo.type.Type;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Interface extends Statement implements Type {
+public class Interface implements Classifier {
   Map<String, Type> properties = new LinkedHashMap<String, Type>();
   String name;
+  boolean resolved;
 
   public Interface(String name) {
     this.name = name;
   }
 
   @Override
-  public Object eval(EvaluationContext context) {
-    return NO_RESULT;
-  }
-
-  @Override
   public void resolveSignatures(ParsingContext context) {
     LinkedHashMap<String, Type> resolved = new LinkedHashMap<>();
     for (Map.Entry<String, Type> e : properties.entrySet()) {
-      resolved.put(e.getKey(), e.getValue().resolveType(context));
+      resolved.put(e.getKey(), e.getValue().resolve(context));
     }
     properties = resolved;
-  }
-
-  @Override
-  public void resolve(ParsingContext context) {
-    // No-op
+    this.resolved = true;
   }
 
   @Override
@@ -42,7 +32,7 @@ public class Interface extends Statement implements Type {
       cp.indent();
       for (Map.Entry<String, Type> e : properties.entrySet()) {
         cp.newLine();
-        cp.append(e.getKey()).append(": ").append(e.getValue().name());
+        cp.append(e.getKey()).append(": ").append(e.getValue().name()).append(";");
       }
       cp.outdent();
       cp.newLine();
@@ -56,11 +46,22 @@ public class Interface extends Statement implements Type {
 
   @Override
   public String name() {
-    return name;
+    if (name != null) {
+      return name;
+    }
+    StringBuilder sb = new StringBuilder("{");
+    for (Map.Entry<String, Type> e : properties.entrySet()) {
+      sb.append(e.getKey()).append(": ").append(e.getValue().name()).append("; ");
+    }
+    sb.append("}");
+    return sb.toString();
   }
 
   @Override
-  public Type resolveType(ParsingContext context) {
+  public Type resolve(ParsingContext context) {
+    if (name == null) {
+      resolveSignatures(context);
+    }
     return this;
   }
 
@@ -74,7 +75,11 @@ public class Interface extends Statement implements Type {
     return "interface " + name;
   }
 
-  public Type getType(String name) {
+  public Type propertyType(String name) {
     return properties.get(name);
+  }
+
+  @Override
+  public void resolveMembers(ParsingContext context) {
   }
 }

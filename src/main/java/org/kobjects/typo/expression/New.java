@@ -1,17 +1,19 @@
 package org.kobjects.typo.expression;
 
 
-import org.kobjects.typo.Instance;
-import org.kobjects.typo.statement.TsClass;
+import org.kobjects.typo.runtime.Instance;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 
-public class New extends Node {
-  TsClass classifier;  // Filled on resolve only
+public class New extends ExpressionN {
+  TsClass tsClass;  // Filled on resolve only
+  Type type;
   public New(Type type, Expression... child) {
-    super(type, child);
+    super(child);
+    this.type = type;
   }
 
   @Override
@@ -31,19 +33,19 @@ public class New extends Node {
 
   @Override
   public Expression resolve(ParsingContext context) {
-    resolveChildren(context);
-    type = type.resolveType(context);
+    super.resolve(context);
+    type = type.resolve(context);
     if (!(type instanceof TsClass)) {
       throw new RuntimeException("'" + type + "' must be a class for new.");
     }
-    classifier = (TsClass) type;
+    tsClass = (TsClass) type;
 
-    if (classifier.constructor == null) {
+    if (tsClass.constructor == null) {
       if (children.length != 0) {
         throw new RuntimeException("No constructor arguments expected.");
       }
     } else {
-      Function constructor = classifier.constructor;
+      Function constructor = tsClass.constructor;
       constructor.type().assertSignature(childTypes(), CodePrinter.toString(this));
     }
 
@@ -52,9 +54,9 @@ public class New extends Node {
 
   @Override
   public Object eval(EvaluationContext context) {
-    Instance instance = new Instance(classifier);
-    EvaluationContext newContext = new EvaluationContext(instance, classifier.constructor);
-    for (TsClass.Member member: classifier.members.values()) {
+    Instance instance = new Instance(tsClass);
+    EvaluationContext newContext = new EvaluationContext(instance, tsClass.constructor);
+    for (TsClass.Member member: tsClass.members.values()) {
       if (member.fieldIndex != -1) {
         if (member.initializer != null) {
           newContext.setLocal(member.fieldIndex, member.initializer.eval(newContext));
@@ -66,9 +68,14 @@ public class New extends Node {
     for (int i = 0; i < children.length; i++) {
       newContext.setLocal(i, children[i].eval(context));
     }
-    if (classifier.constructor != null) {
-      classifier.constructor.apply(newContext);
+    if (tsClass.constructor != null) {
+      tsClass.constructor.apply(newContext);
     }
     return newContext.self;
+  }
+
+  @Override
+  public TsClass type() {
+    return tsClass;
   }
 }

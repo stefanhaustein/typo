@@ -23,11 +23,6 @@ public class LetStatement extends Statement {
   }
 
   @Override
-  public void resolveSignatures(ParsingContext context) {
-    expression.resolveSignatures(context);
-  }
-
-  @Override
   public void resolve(ParsingContext context) {
     expression = expression.resolve(context);
     target = context.declareLocal(variableName, expression.type());

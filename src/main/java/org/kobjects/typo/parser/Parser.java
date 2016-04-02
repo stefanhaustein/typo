@@ -12,13 +12,14 @@ import org.kobjects.typo.expression.UnresolvedIdentifier;
 import org.kobjects.typo.expression.UnresolvedOperator;
 import org.kobjects.typo.expression.UnresolvedProperty;
 import org.kobjects.typo.statement.Block;
+import org.kobjects.typo.statement.ClassifierDeclaration;
 import org.kobjects.typo.statement.ExpressionStatement;
 import org.kobjects.typo.statement.IfStatement;
-import org.kobjects.typo.statement.Interface;
+import org.kobjects.typo.type.Interface;
 import org.kobjects.typo.statement.LetStatement;
 import org.kobjects.typo.statement.ReturnStatement;
 import org.kobjects.typo.statement.Statement;
-import org.kobjects.typo.statement.TsClass;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.statement.WhileStatement;
 import org.kobjects.typo.type.ArrayType;
 import org.kobjects.typo.type.FunctionType;
@@ -28,9 +29,9 @@ import org.kobjects.typo.type.UnresolvedType;
 
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -59,7 +60,7 @@ class Parser {
     return new ExpressionParser.Tokenizer(new Scanner(reader), expressionParser.getSymbols(), "{", "}", "[", "]", ";", ":", "=>");
   }
 
-  public Statement parseBlock(ExpressionParser.Tokenizer tokenizer, Map<String, Object> statics) {
+  public Statement parseBlock(ExpressionParser.Tokenizer tokenizer, Collection<NamedEntity> statics) {
     List<Statement> result = new ArrayList<>();
     while (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF &&
         !tokenizer.currentValue.equals("}")) {
@@ -168,16 +169,16 @@ class Parser {
 
   Interface parseInterface(ExpressionParser.Tokenizer tokenizer) {
     String name = tokenizer.consumeIdentifier();
-    Interface intrfc = new Interface(name);
+    Interface itf = new Interface(name);
     tokenizer.consume("{");
     while (!tokenizer.tryConsume("}")) {
       String memberName = tokenizer.consumeIdentifier();
       tokenizer.consume(":");
       Type type = parseType(tokenizer);
       tokenizer.consume(";");
-      intrfc.addMember(memberName, type);
+      itf.addMember(memberName, type);
     }
-    return intrfc;
+    return itf;
   }
 
   private EnumSet<TsClass.Modifier> parseModifiers(
@@ -219,7 +220,7 @@ class Parser {
         expressions.toArray(new Expression[expressions.size()]));
   }
 
-  private Statement parseStatement(ExpressionParser.Tokenizer tokenizer, Map<String, Object> statics) {
+  private Statement parseStatement(ExpressionParser.Tokenizer tokenizer, Collection<NamedEntity> statics) {
     Statement result;
     if (tokenizer.tryConsume("{")) {
       result = parseBlock(tokenizer, null);
@@ -229,8 +230,8 @@ class Parser {
       if (statics == null) {
         throw new RuntimeException("Classes only permitted at top level.");
       }
-      statics.put(classifier.name(), classifier);
-      result = classifier;
+      statics.add(classifier);
+      result = new ClassifierDeclaration(classifier);
     } else if (tokenizer.tryConsume("if")) {
       tokenizer.consume("(");
       Expression condition = expressionParser.parse(tokenizer);
@@ -246,10 +247,10 @@ class Parser {
     } else if (tokenizer.tryConsume("interface")) {
       Interface itf = parseInterface(tokenizer);
       if (statics == null) {
-        throw new RuntimeException("Classes only permitted at top level.");
+        throw new RuntimeException("Interfaces only permitted at top level.");
       }
-      statics.put(itf.name(), itf);
-      result = itf;
+      statics.add(itf);
+      result = new ClassifierDeclaration(itf);
     } else if (tokenizer.tryConsume("let") || tokenizer.tryConsume("var")) {
       result = parseLet(tokenizer);
     } else if (tokenizer.tryConsume("return")) {
@@ -267,7 +268,7 @@ class Parser {
         if (statics == null) {
           throw new RuntimeException("Named functions only permitted at top level.");
         }
-        statics.put(((Function) expression).name(), expression);
+        statics.add((Function) expression);
       }
       result = new ExpressionStatement(expression);
     }
