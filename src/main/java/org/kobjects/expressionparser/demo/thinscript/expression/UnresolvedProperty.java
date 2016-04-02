@@ -2,6 +2,7 @@ package org.kobjects.expressionparser.demo.thinscript.expression;
 
 
 import org.kobjects.expressionparser.demo.thinscript.CodePrinter;
+import org.kobjects.expressionparser.demo.thinscript.statement.Interface;
 import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.EvaluationContext;
 import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
@@ -48,7 +49,15 @@ public class UnresolvedProperty implements Expression {
       if (member == null) {
         throw new RuntimeException("Member '" + name + "' not found in " + classifier);
       }
-      return new Property(resolvedBase, member);
+      return new Member(resolvedBase, member);
+    }
+    if (baseType instanceof Interface) {
+      Interface itf = (Interface) resolvedBase.type();
+      Type propertyType = itf.getType(name);
+      if (propertyType == null) {
+        throw new RuntimeException("Property '" + name + "' not found in " + itf);
+      }
+      return new Property(resolvedBase, name);
     }
     if (baseType instanceof MetaType && ((MetaType) baseType).of instanceof TsClass) {
       TsClass classifier = (TsClass) ((MetaType) baseType).of;

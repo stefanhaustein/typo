@@ -6,6 +6,7 @@ import org.kobjects.expressionparser.demo.thinscript.expression.Expression;
 import org.kobjects.expressionparser.demo.thinscript.expression.Function;
 import org.kobjects.expressionparser.demo.thinscript.expression.Literal;
 import org.kobjects.expressionparser.demo.thinscript.expression.New;
+import org.kobjects.expressionparser.demo.thinscript.expression.ObjectLiteral;
 import org.kobjects.expressionparser.demo.thinscript.expression.Ternary;
 import org.kobjects.expressionparser.demo.thinscript.expression.UnresolvedIdentifier;
 import org.kobjects.expressionparser.demo.thinscript.expression.UnresolvedOperator;
@@ -43,6 +44,7 @@ class Parser {
     expressionParser.addGroupBrackets("(", null, ")");
     expressionParser.addPrimary("function");
     expressionParser.addPrimary("new");
+    expressionParser.addPrimary("{");
     expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 18, ".");
     expressionParser.addApplyBrackets(17, "(", ",", ")");
     expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 15, "-", "!", "~");
@@ -77,6 +79,11 @@ class Parser {
   TsClass parseClass(ExpressionParser.Tokenizer tokenizer) {
     String name = tokenizer.consumeIdentifier();
     TsClass classifier = new TsClass(name);
+    if (tokenizer.tryConsume("implements")) {
+      do {
+        classifier.addImplements(parseType(tokenizer));
+      } while(tokenizer.tryConsume(","));
+    }
     tokenizer.consume("{");
     while (!tokenizer.tryConsume("}")) {
       Set<TsClass.Modifier> modifiers = parseModifiers(
@@ -194,6 +201,25 @@ class Parser {
     return result;
   }
 
+  private ObjectLiteral parseObjectLiteral(ExpressionParser.Tokenizer tokenizer) {
+    List<String> names = new ArrayList<>();
+    List<Expression> expressions = new ArrayList();
+    if (!tokenizer.tryConsume("}")) {
+      do {
+        String name = tokenizer.consumeIdentifier();
+        names.add(name);
+        if (tokenizer.tryConsume(":")) {
+          expressions.add(expressionParser.parse(tokenizer));
+        } else {
+          expressions.add(new UnresolvedIdentifier(name));
+        }
+      } while (tokenizer.tryConsume(","));
+      tokenizer.consume("}");
+    }
+    return new ObjectLiteral(names.toArray(new String[names.size()]),
+        expressions.toArray(new Expression[expressions.size()]));
+  }
+
   private Statement parseStatement(ExpressionParser.Tokenizer tokenizer, Map<String, Object> statics) {
     Statement result;
     if (tokenizer.tryConsume("{")) {
@@ -219,12 +245,12 @@ class Parser {
         result = new IfStatement(condition, thenBranch);
       }
     } else if (tokenizer.tryConsume("interface")) {
-      Interface intrfc = parseInterface(tokenizer);
+      Interface itf = parseInterface(tokenizer);
       if (statics == null) {
         throw new RuntimeException("Classes only permitted at top level.");
       }
-      statics.put(intrfc.name(), intrfc);
-      result = intrfc;
+      statics.put(itf.name(), itf);
+      result = itf;
     } else if (tokenizer.tryConsume("let") || tokenizer.tryConsume("var")) {
       result = parseLet(tokenizer);
     } else if (tokenizer.tryConsume("return")) {
@@ -290,8 +316,6 @@ class Parser {
       String name = tokenizer.consumeIdentifier();
       if (name.equals("boolean")) {
         result = Types.BOOLEAN;
-      } else if (name.equals("int")) {
-        result = Types.INT;
       } else if (name.equals("number")) {
         result = Types.NUMBER;
       } else if (name.equals("string")) {
@@ -321,6 +345,9 @@ class Parser {
       }
       if (name.equals("new")) {
         return parseNew(tokenizer);
+      }
+      if (name.equals("{")) {
+        return parseObjectLiteral(tokenizer);
       }
       throw new RuntimeException("NYI");
     }
@@ -376,11 +403,7 @@ class Parser {
 
     @Override
     public Expression numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
-      double d = Double.parseDouble(value);
-      if (value.matches("[0-9]+") && d >= Integer.MIN_VALUE && d <= Integer.MAX_VALUE) {
-        return new Literal((int) d, null);
-      }
-      return new Literal(d, null);
+      return new Literal(Double.parseDouble(value), null);
     }
 
     @Override

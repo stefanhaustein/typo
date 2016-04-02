@@ -12,9 +12,6 @@ class SimpleType implements Type {
 
   @Override
   public boolean assignableFrom(Type other) {
-    if (this == Types.NUMBER && other == Types.INT) {
-      return true;
-    }
     return equals(other);
   }
 

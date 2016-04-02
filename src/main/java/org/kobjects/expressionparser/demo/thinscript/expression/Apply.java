@@ -54,9 +54,9 @@ public class Apply extends Node {
       throw new RuntimeException("In " + CodePrinter.toString(this), e);
     }
 
-    if (target instanceof Property) {
-      Property property = (Property) target;
-      return new ApplyProperty(property.base, property.member, children);
+    if (target instanceof Member) {
+      Member property = (Member) target;
+      return new ApplyMember(property.base, property.member, children);
     }
 
     this.type = functionType.returnType;

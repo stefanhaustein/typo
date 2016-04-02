@@ -8,11 +8,11 @@ import org.kobjects.expressionparser.demo.thinscript.parser.ParsingContext;
 import org.kobjects.expressionparser.demo.thinscript.statement.TsClass;
 import org.kobjects.expressionparser.demo.thinscript.type.FunctionType;
 
-class ApplyProperty extends Node {
+class ApplyMember extends Node {
   final Expression base;
   final TsClass.Member member;
 
-  ApplyProperty(Expression base, TsClass.Member member, Expression[] children) {
+  ApplyMember(Expression base, TsClass.Member member, Expression[] children) {
     super(((FunctionType) member.type()).returnType, children);
     this.base = base;
     this.member = member;

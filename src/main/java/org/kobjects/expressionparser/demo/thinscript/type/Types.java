@@ -1,10 +1,7 @@
 package org.kobjects.expressionparser.demo.thinscript.type;
 
-import org.kobjects.expressionparser.demo.thinscript.expression.Expression;
-
 public class Types {
   public static final Type BOOLEAN = new SimpleType("boolean");
-  public static final Type INT = new SimpleType("int");
   public static final Type NUMBER = new SimpleType("number");
   public static final Type STRING = new SimpleType("string");
   public static final Type VOID = new SimpleType("void");
@@ -22,9 +19,6 @@ public class Types {
     }
     if (value instanceof Boolean) {
       return BOOLEAN;
-    }
-    if (value instanceof Integer) {
-      return INT;
     }
     if (value instanceof Double) {
       return NUMBER;

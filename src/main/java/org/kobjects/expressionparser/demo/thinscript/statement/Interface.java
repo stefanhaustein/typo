@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Interface extends Statement implements Type {
-  Map<String, Type> members = new LinkedHashMap<String, Type>();
+  Map<String, Type> properties = new LinkedHashMap<String, Type>();
   String name;
 
   public Interface(String name) {
@@ -24,10 +24,10 @@ public class Interface extends Statement implements Type {
   @Override
   public void resolveSignatures(ParsingContext context) {
     LinkedHashMap<String, Type> resolved = new LinkedHashMap<>();
-    for (Map.Entry<String, Type> e : members.entrySet()) {
+    for (Map.Entry<String, Type> e : properties.entrySet()) {
       resolved.put(e.getKey(), e.getValue().resolveType(context));
     }
-    members = resolved;
+    properties = resolved;
   }
 
   @Override
@@ -38,9 +38,9 @@ public class Interface extends Statement implements Type {
   @Override
   public void print(CodePrinter cp) {
     cp.append("interface ").append(name).append(" {");
-    if (members.size() > 0) {
+    if (properties.size() > 0) {
       cp.indent();
-      for (Map.Entry<String, Type> e : members.entrySet()) {
+      for (Map.Entry<String, Type> e : properties.entrySet()) {
         cp.newLine();
         cp.append(e.getKey()).append(": ").append(e.getValue().name());
       }
@@ -51,7 +51,7 @@ public class Interface extends Statement implements Type {
   }
 
   public void addMember(String name, Type type) {
-    members.put(name, type);
+    properties.put(name, type);
   }
 
   @Override
@@ -72,5 +72,9 @@ public class Interface extends Statement implements Type {
   @Override
   public String toString() {
     return "interface " + name;
+  }
+
+  public Type getType(String name) {
+    return properties.get(name);
   }
 }

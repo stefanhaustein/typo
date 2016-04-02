@@ -12,6 +12,7 @@ import org.kobjects.expressionparser.demo.thinscript.type.Type;
 import org.kobjects.expressionparser.demo.thinscript.type.Types;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,8 +33,14 @@ public class TsClass extends Statement implements Type {
   public Map<String, Member> members = new LinkedHashMap<>();
   public int fieldCount;
 
+  public Set<Type> interfaces = new LinkedHashSet<Type>();
+
   public TsClass(String name) {
     this.name = name;
+  }
+
+  public void addImplements(Type type) {
+    interfaces.add(type);
   }
 
   @Override
