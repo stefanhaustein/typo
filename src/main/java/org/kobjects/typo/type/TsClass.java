@@ -1,12 +1,9 @@
 package org.kobjects.typo.type;
 
 import org.kobjects.typo.Printable;
-import org.kobjects.typo.type.Classifier;
-import org.kobjects.typo.type.Type;
-import org.kobjects.typo.type.Types;
 import org.kobjects.typo.Applicable;
 import org.kobjects.typo.CodePrinter;
-import org.kobjects.typo.EvaluationContext;
+import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.Field;
 import org.kobjects.typo.expression.Expression;
 import org.kobjects.typo.expression.Function;

@@ -19,7 +19,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.EnumSet;
 
-public class Shell {
+public class TypoShell {
 
   static Processor processor = new Processor();
   static ParsingContext parsingContext = new ParsingContext(null, null);
@@ -33,7 +33,7 @@ public class Shell {
         is = connection.getInputStream();
       } else {
         System.out.println("resource: '" + url + "'");
-        is = Shell.class.getResourceAsStream(url);
+        is = TypoShell.class.getResourceAsStream(url);
       }
       BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 
@@ -45,7 +45,7 @@ public class Shell {
 
       System.out.println("Parsed: " + CodePrinter.toString(parsed));
 
-      EvaluationContext loadEvaluationContext = new EvaluationContext(null, null);
+      org.kobjects.typo.runtime.EvaluationContext loadEvaluationContext = new org.kobjects.typo.runtime.EvaluationContext(null, null);
       loadEvaluationContext.adjustLocals(loadParsingContext);
       parsed.eval(loadEvaluationContext);
 
@@ -66,7 +66,7 @@ public class Shell {
       }
 
       @Override
-      public Object apply(EvaluationContext context) {
+      public Object apply(org.kobjects.typo.runtime.EvaluationContext context) {
         return Math.sqrt(((Number) context.getLocal(0)).doubleValue());
       }
     });
@@ -77,7 +77,7 @@ public class Shell {
       }
 
       @Override
-      public Object apply(EvaluationContext context) {
+      public Object apply(org.kobjects.typo.runtime.EvaluationContext context) {
         return Math.floor(((Number) context.getLocal(0)).doubleValue());
       }
     });
@@ -91,7 +91,7 @@ public class Shell {
       }
 
       @Override
-      public Object apply(EvaluationContext context) {
+      public Object apply(org.kobjects.typo.runtime.EvaluationContext context) {
         System.out.println(context.getLocal(0));
         return null;
       }
@@ -103,14 +103,14 @@ public class Shell {
       }
 
       @Override
-      public Object apply(EvaluationContext context) {
+      public Object apply(org.kobjects.typo.runtime.EvaluationContext context) {
         load(String.valueOf(context.locals[0]));
         return null;
       }
     });
 
     parsingContext.declareStatic("console", new org.kobjects.typo.runtime.Instance(consoleClass));
-    EvaluationContext evaluationContext = new EvaluationContext(null, null);
+    org.kobjects.typo.runtime.EvaluationContext evaluationContext = new org.kobjects.typo.runtime.EvaluationContext(null, null);
 
     while (true) {
       System.out.print("\nExpression?  ");

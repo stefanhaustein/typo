@@ -5,7 +5,7 @@ import org.kobjects.typo.type.Type;
 
 public interface Field {
   String name();
-  void set(EvaluationContext context, Object value);
+  void set(org.kobjects.typo.runtime.EvaluationContext context, Object value);
   Type type();
-  Object get(EvaluationContext context);
+  Object get(org.kobjects.typo.runtime.EvaluationContext context);
 }

@@ -1,5 +1,6 @@
-package org.kobjects.typo;
+package org.kobjects.typo.runtime;
 
+import org.kobjects.typo.Applicable;
 import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.parser.ParsingContext;
 
@@ -21,7 +22,7 @@ public class EvaluationContext {
     }
   }
 
-  void adjustLocals(ParsingContext parsingContext) {
+  public void adjustLocals(ParsingContext parsingContext) {
     if (parsingContext.locals.size() > locals.length) {
       Object[] newLocals = new Object[parsingContext.locals.size()];
       System.arraycopy(locals, 0, newLocals, 0, locals.length);

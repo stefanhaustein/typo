@@ -184,20 +184,19 @@ class Parser {
   private EnumSet<TsClass.Modifier> parseModifiers(
       ExpressionParser.Tokenizer tokenizer, Set<TsClass.Modifier> permitted) {
     EnumSet<TsClass.Modifier> result = EnumSet.noneOf(TsClass.Modifier.class);
-    while (true) {
-      TsClass.Modifier modifier;
-      if (tokenizer.tryConsume("static")) {
-        modifier = TsClass.Modifier.STATIC;
-      } else if (tokenizer.tryConsume("public")) {
-        modifier = TsClass.Modifier.PUBLIC;
-      } else {
-        break;
+    boolean added;
+    do {
+      added = false;
+      for (TsClass.Modifier modifier : TsClass.Modifier.values()) {
+        if (tokenizer.tryConsume(modifier.name().toLowerCase())) {
+          if (!permitted.contains(modifier)) {
+            throw new RuntimeException("Modifier '" + modifier.name().toLowerCase() + "' not permitted here.");
+          }
+          result.add(modifier);
+          added = true;
+        }
       }
-      if (!permitted.contains(modifier)) {
-        throw new RuntimeException("Modifier '" + modifier.name().toLowerCase() + "' not permitted here.");
-      }
-      result.add(modifier);
-    }
+    } while (added);
     return result;
   }
 

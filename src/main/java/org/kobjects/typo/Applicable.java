@@ -8,5 +8,5 @@ public interface Applicable extends Typed {
   @Override
   FunctionType type();
 
-  Object apply(EvaluationContext context);
+  Object apply(org.kobjects.typo.runtime.EvaluationContext context);
 }

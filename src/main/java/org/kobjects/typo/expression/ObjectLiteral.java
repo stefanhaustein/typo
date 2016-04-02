@@ -1,6 +1,6 @@
 package org.kobjects.typo.expression;
 
-import org.kobjects.typo.EvaluationContext;
+import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.Interface;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;

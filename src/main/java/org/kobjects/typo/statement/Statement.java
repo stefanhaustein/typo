@@ -1,7 +1,7 @@
 package org.kobjects.typo.statement;
 
 import org.kobjects.typo.Printable;
-import org.kobjects.typo.EvaluationContext;
+import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 
 public abstract class Statement implements Printable {
