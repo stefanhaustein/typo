@@ -23,8 +23,8 @@ public class This extends Expression {
   }
 
   @Override
-  public ExpressionN resolve(ParsingContext context) {
-    return this
+  public Expression resolve(ParsingContext context) {
+    return this;
   }
 
   @Override
