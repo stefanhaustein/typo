@@ -48,7 +48,7 @@ class Parser {
     expressionParser.addPrimary("{");
     expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 18, ".");
     expressionParser.addApplyBrackets(17, "(", ",", ")");
-    expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 15, "-", "!", "~");
+    expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 15, "+", "-", "!", "~");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 14, "*", "/", "%");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 13, "+", "-");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 11, "<", ">", "<=", ">=");
@@ -95,9 +95,12 @@ class Parser {
       Set<TsClass.Modifier> modifiers = parseModifiers(
           tokenizer, EnumSet.allOf(TsClass.Modifier.class));
       String memberName = tokenizer.consumeIdentifier();
-      if (tokenizer.tryConsume(":")) {
+      if (tokenizer.currentValue.equals(":") || tokenizer.currentValue.equals("=")) {
         Expression initialValue = null;
-        Type type = parseType(tokenizer);
+        Type type = null;
+        if (tokenizer.tryConsume(":")) {
+          parseType(tokenizer);
+        }
         if (tokenizer.tryConsume("=")) {
           initialValue = expressionParser.parse(tokenizer);
         }
@@ -211,6 +214,7 @@ class Parser {
     tokenizer.consume("{");
     Collection<NamedEntity> moduleEntities = new ArrayList<NamedEntity>();
     List<Statement> statements = parseStatements(tokenizer, moduleEntities);
+    tokenizer.consume("}");
     return new Module(name, statements.toArray(new Statement[statements.size()]), moduleEntities);
   }
 

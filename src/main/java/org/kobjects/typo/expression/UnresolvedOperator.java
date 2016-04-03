@@ -39,6 +39,12 @@ public class UnresolvedOperator extends ExpressionN {
       }
     }
 
+    if (name.equals("+") && children.length == 1) {
+      if (!allNumber) {
+        throw new RuntimeException("Number expected for unary +");
+      }
+      return children[0];
+    }
     if (name.equals("!")) {
       return new Not(children[0]);
     }
