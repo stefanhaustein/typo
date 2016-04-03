@@ -5,7 +5,7 @@ Create something that relates to (a strict subset of) TypeScript like Rhino rela
 
 #### Working
 
-- Some trivial demos (greeters and one converted from thinscript)
+- Some trivial demos ([greeters](https://github.com/stefanhaustein/typo/blob/master/src/main/resources/greeter2.ts) and a [linked list example](https://github.com/stefanhaustein/typo/blob/master/src/main/resources/thindemo.thin) converted from [thinscript](https://github.com/evanw/thinscript))
 
 #### Plan
 
