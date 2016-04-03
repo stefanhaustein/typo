@@ -107,10 +107,16 @@ class Parser {
         Expression initialValue = null;
         Type type = null;
         if (tokenizer.tryConsume(":")) {
-          parseType(tokenizer);
+          type = parseType(tokenizer);
         }
         if (tokenizer.tryConsume("=")) {
           initialValue = expressionParser.parse(tokenizer);
+        }
+        if (type == null) {
+          if (initialValue.type() == null) {
+            throw new RuntimeException("Explicit type required for member '" + memberName + "'");
+          }
+          type = initialValue.type();
         }
         classifier.addField(modifiers, memberName, type, initialValue);
         tokenizer.consume(";");

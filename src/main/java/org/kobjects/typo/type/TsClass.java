@@ -134,7 +134,7 @@ public class TsClass extends Classifier {
           printModifiers(cp, member.modifiers);
           cp.append(member.name);
           cp.append(": ");
-          cp.append(member.type == null ? null : member.type().name());
+          cp.append(member.type.name());
         }
       }
 
