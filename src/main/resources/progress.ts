@@ -131,3 +131,32 @@ class Plane implements Thing {
         }
     }
 }
+
+
+module Surfaces {
+    export var shiny: Surface = {
+        diffuse: function(pos: Vector): Color { return Color.white; },
+        specular: function(pos: Vector): Color { return Color.grey; },
+        reflect: function(pos: Vector): number { return 0.7; },
+        roughness: 250
+    }
+    export var checkerboard: Surface = {
+        diffuse: function(pos: Vector): Color {
+            if ((Math.floor(pos.z) + Math.floor(pos.x)) % 2 !== 0) {
+                return Color.white;
+            } else {
+                return Color.black;
+            }
+        },
+        specular: function(pos: Vector): Color { return Color.white; },
+        reflect: function(pos: Vector): number {
+            if ((Math.floor(pos.z) + Math.floor(pos.x)) % 2 !== 0) {
+                return 0.1;
+            } else {
+                return 0.7;
+            }
+        },
+        roughness: 150
+    }
+}
+

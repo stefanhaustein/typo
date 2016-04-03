@@ -15,6 +15,7 @@ import org.kobjects.typo.statement.Block;
 import org.kobjects.typo.statement.ClassifierDeclaration;
 import org.kobjects.typo.statement.ExpressionStatement;
 import org.kobjects.typo.statement.IfStatement;
+import org.kobjects.typo.statement.Module;
 import org.kobjects.typo.type.Interface;
 import org.kobjects.typo.statement.LetStatement;
 import org.kobjects.typo.statement.ReturnStatement;
@@ -48,7 +49,7 @@ class Parser {
     expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 18, ".");
     expressionParser.addApplyBrackets(17, "(", ",", ")");
     expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 15, "-", "!", "~");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 14, "*", "/");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 14, "*", "/", "%");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 13, "+", "-");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 11, "<", ">", "<=", ">=");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 10, "===", "==", "!=", "!==");
@@ -60,7 +61,7 @@ class Parser {
     return new ExpressionParser.Tokenizer(new Scanner(reader), expressionParser.getSymbols(), "{", "}", "[", "]", ";", ":", "=>");
   }
 
-  public Statement parseBlock(ExpressionParser.Tokenizer tokenizer, Collection<NamedEntity> statics) {
+  public List<Statement> parseStatements(ExpressionParser.Tokenizer tokenizer, Collection<NamedEntity> statics) {
     List<Statement> result = new ArrayList<>();
     while (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF &&
         !tokenizer.currentValue.equals("}")) {
@@ -70,10 +71,15 @@ class Parser {
       Statement statement = parseStatement(tokenizer, statics);
       result.add(statement);
     }
-    if (result.size() == 1) {
-      return result.get(0);
+    return result;
+  }
+
+  public Statement parseBlock(ExpressionParser.Tokenizer tokenizer, Collection<NamedEntity> statics) {
+    List<Statement> statements = parseStatements(tokenizer, statics);
+    if (statements.size() == 1) {
+      return statements.get(0);
     }
-    return new Block(result.toArray(new Statement[result.size()]));
+    return new Block(statements.toArray(new Statement[statements.size()]));
   }
 
   TsClass parseClass(ExpressionParser.Tokenizer tokenizer) {
@@ -200,6 +206,14 @@ class Parser {
     return result;
   }
 
+  private Module parseModule(ExpressionParser.Tokenizer tokenizer) {
+    String name = tokenizer.consumeIdentifier();
+    tokenizer.consume("{");
+    Collection<NamedEntity> moduleEntities = new ArrayList<NamedEntity>();
+    List<Statement> statements = parseStatements(tokenizer, moduleEntities);
+    return new Module(name, statements.toArray(new Statement[statements.size()]), moduleEntities);
+  }
+
   private ObjectLiteral parseObjectLiteral(ExpressionParser.Tokenizer tokenizer) {
     List<String> names = new ArrayList<>();
     List<Expression> expressions = new ArrayList();
@@ -225,10 +239,10 @@ class Parser {
       result = parseBlock(tokenizer, null);
       tokenizer.consume("}");
     } else if (tokenizer.tryConsume("class")) {
-      TsClass classifier = parseClass(tokenizer);
       if (statics == null) {
         throw new RuntimeException("Classes only permitted at top level.");
       }
+      TsClass classifier = parseClass(tokenizer);
       statics.add(classifier);
       result = new ClassifierDeclaration(classifier);
     } else if (tokenizer.tryConsume("if")) {
@@ -243,15 +257,28 @@ class Parser {
       } else {
         result = new IfStatement(condition, thenBranch);
       }
+    } else if (tokenizer.tryConsume("export")) {
+      if (tokenizer.tryConsume("let") || tokenizer.tryConsume("var")) {
+        result = parseLet(tokenizer);
+      } else {
+        throw new RuntimeException("Unrecognized export");
+      }
     } else if (tokenizer.tryConsume("interface")) {
-      Interface itf = parseInterface(tokenizer);
       if (statics == null) {
         throw new RuntimeException("Interfaces only permitted at top level.");
       }
+      Interface itf = parseInterface(tokenizer);
       statics.add(itf);
       result = new ClassifierDeclaration(itf);
     } else if (tokenizer.tryConsume("let") || tokenizer.tryConsume("var")) {
       result = parseLet(tokenizer);
+    } else if (tokenizer.tryConsume("module")) {
+      if (statics == null) {
+        throw new RuntimeException("Interfaces only permitted at top level.");
+      }
+      Module module = parseModule(tokenizer);
+      statics.add(module);
+      result = module;
     } else if (tokenizer.tryConsume("return")) {
       result = new ReturnStatement(expressionParser.parse(tokenizer));
     } else if (tokenizer.tryConsume("while")) {
@@ -280,9 +307,15 @@ class Parser {
 
   private Statement parseLet(ExpressionParser.Tokenizer tokenizer) {
     String target = tokenizer.consumeIdentifier();
-    tokenizer.consume("=");
-    Expression expr = expressionParser.parse(tokenizer);
-    return new LetStatement(target, expr);
+    Type type = null;
+    Expression expr = null;
+    if (tokenizer.tryConsume(":")) {
+      type = parseType(tokenizer);
+    }
+    if (tokenizer.tryConsume("=")) {
+      expr = expressionParser.parse(tokenizer);
+    }
+    return new LetStatement(target, type, expr);
   }
 
   Expression parseNew(ExpressionParser.Tokenizer tokenizer) {

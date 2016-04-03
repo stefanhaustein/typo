@@ -4,6 +4,7 @@ import org.kobjects.typo.runtime.StaticMap;
 import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.statement.Module;
 import org.kobjects.typo.type.Interface;
 import org.kobjects.typo.type.MetaType;
 import org.kobjects.typo.type.TsClass;
@@ -21,6 +22,11 @@ public class Property extends Expression1 {
   @Override
   public Expression resolve(ParsingContext context) {
     super.resolve(context);
+    if (child instanceof Literal && ((Literal) child).value instanceof Module) {
+      Module module = (Module) ((Literal) child).value;
+      ParsingContext.LocalDeclaration local = module.parsingContext.resolveField(name);
+      return new ModuleProperty(module, local);
+    }
     Type baseType = child.type();
     if (baseType instanceof TsClass) {
       TsClass classifier = (TsClass) child.type();

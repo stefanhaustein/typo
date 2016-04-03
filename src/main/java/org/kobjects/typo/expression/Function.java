@@ -58,6 +58,12 @@ public class Function extends Expression implements Applicable, NamedEntity {
   }
 
   @Override
+  public void declareStatics(ParsingContext context) {
+    context.declareStatic(name(), this);
+  }
+
+
+  @Override
   public Object eval(EvaluationContext context) {
     if (closures.size() > 0) {
       capture = new Object[closures.size()];

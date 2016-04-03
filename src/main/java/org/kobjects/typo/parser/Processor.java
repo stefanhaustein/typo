@@ -24,7 +24,7 @@ public class Processor {
     System.out.println("New statics: " + newStatics);
 
     for (NamedEntity entity : newStatics) {
-      context.declareStatic(entity.name(), entity);
+      entity.declareStatics(context);
     }
     for (NamedEntity entity : newStatics) {
       entity.resolveSignatures(context);

@@ -6,7 +6,7 @@ import org.kobjects.typo.parser.ParsingContext;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Interface implements Classifier {
+public class Interface extends Classifier {
   Map<String, Type> properties = new LinkedHashMap<String, Type>();
   String name;
   boolean resolved;

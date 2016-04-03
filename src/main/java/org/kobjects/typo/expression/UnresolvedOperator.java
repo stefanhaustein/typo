@@ -76,6 +76,7 @@ public class UnresolvedOperator extends ExpressionN {
         break;
       case '*': op = Operation.F64Mul; break;
       case '/': op = Operation.F64Div; break;
+      case '%': op = Operation.F64Mod; break;
       default:
         throw new RuntimeException("Unrecognized operator: " + name);
     }

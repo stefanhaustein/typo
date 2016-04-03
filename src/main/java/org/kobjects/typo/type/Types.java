@@ -26,7 +26,7 @@ public class Types {
     if (value instanceof String) {
       return STRING;
     }
-    throw new IllegalArgumentException("Unrecognized of: "
+    throw new IllegalArgumentException("Unrecognized type: "
         + (value == null ? null : value.getClass()) + " of " + value);
   }
 

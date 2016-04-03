@@ -25,6 +25,7 @@ class Operator extends ExpressionN {
       case F64Mul: return evalNumber(ctx, 0) * evalNumber(ctx, 1);
       case F64Sub: return evalNumber(ctx, 0) - evalNumber(ctx, 1);
       case F64Neg: return -evalNumber(ctx, 0);
+      case F64Mod: return evalNumber(ctx, 0) % evalNumber(ctx, 1);
       default: throw new UnsupportedOperationException(op.name());
     }
   }

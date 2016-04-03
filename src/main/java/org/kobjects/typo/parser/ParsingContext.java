@@ -4,15 +4,25 @@ import java.util.LinkedHashMap;
 
 import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.runtime.EvaluationContext;
-import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 
 public class ParsingContext {
   public LinkedHashMap<String, LocalDeclaration> locals = new LinkedHashMap<>();
-  LinkedHashMap<String, Object> statics;
+  private LinkedHashMap<String, Object> statics;
   ParsingContext parent;
   Function function;
+  //LinkedHashMap<String, ParsingContext> subContexts = new LinkedHashMap<>();
+
+  public ParsingContext(ParsingContext parent, String name) {
+    this.parent = parent;
+    this.statics = new LinkedHashMap<>();
+    //parent.subContexts.put(name, this);
+  }
+
+  public ParsingContext(ParsingContext parent) {
+    this(parent, (Function) null);
+  }
 
   public ParsingContext(ParsingContext parent, Function function) {
     this.parent = parent;
@@ -59,8 +69,13 @@ public class ParsingContext {
   }
 
   public Object resolveStatic(String name) {
-    return statics.get(name);
+    Object result = statics.get(name);
+    return result != null ? result : parent != null ? parent.resolveStatic(name) : null;
   }
+
+  /*public ParsingContext getSubContext(String name) {
+    return subContexts.get(name);
+  }*/
 
   public static class LocalDeclaration {
     public String name;
