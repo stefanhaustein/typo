@@ -14,6 +14,7 @@ import org.kobjects.typo.expression.UnresolvedOperator;
 import org.kobjects.typo.statement.Block;
 import org.kobjects.typo.statement.ClassifierDeclaration;
 import org.kobjects.typo.statement.ExpressionStatement;
+import org.kobjects.typo.statement.ForInStatement;
 import org.kobjects.typo.statement.IfStatement;
 import org.kobjects.typo.statement.Module;
 import org.kobjects.typo.type.Interface;
@@ -117,6 +118,25 @@ class Parser {
     }
     return classifier;
   }
+
+  Statement parseFor(ExpressionParser.Tokenizer tokenizer) {
+    tokenizer.consume("(");
+    boolean declare = tokenizer.tryConsume("let") || tokenizer.tryConsume("var");
+    if (declare) {
+      String varName = tokenizer.consumeIdentifier();
+      if (tokenizer.tryConsume("in")) {
+        Expression expression = expressionParser.parse(tokenizer);
+        tokenizer.consume(")");
+        Statement body = parseStatement(tokenizer, null);
+        return new ForInStatement(true, varName, expression, body);
+      } else {
+        throw new RuntimeException("NYI");
+      }
+    } else {
+      throw new RuntimeException("NYI");
+    }
+  }
+
 
   // Precondition: on '('
   // Postcondition: '}' consumed.
@@ -267,6 +287,8 @@ class Parser {
       } else {
         throw new RuntimeException("Unrecognized export");
       }
+    } else if (tokenizer.tryConsume("for")) {
+      result = parseFor(tokenizer);
     } else if (tokenizer.tryConsume("interface")) {
       if (statics == null) {
         throw new RuntimeException("Interfaces only permitted at top level.");

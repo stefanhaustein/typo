@@ -4,7 +4,7 @@ import org.kobjects.typo.parser.ParsingContext;
 
 public class ArrayType implements Type {
 
-  Type elementType;
+  public Type elementType;
   public ArrayType(Type elementType) {
     this.elementType = elementType;
   }
