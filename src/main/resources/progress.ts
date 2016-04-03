@@ -119,7 +119,6 @@ class Plane implements Thing {
     public normal: (pos: Vector) =>Vector;
     public intersect: (ray: Ray) =>Intersection;
     constructor(norm: Vector, offset: number, public surface: Surface) {
-        let self = this;
         this.normal = function(pos: Vector): Vector { return norm; }
         this.intersect = function(ray: Ray): Intersection {
             var denom = Vector.dot(norm, ray.dir);
@@ -127,7 +126,7 @@ class Plane implements Thing {
                 return null;
             } else {
                 var dist = (Vector.dot(norm, ray.start) + offset) / (-denom);
-                return { thing: self, ray: ray, dist: dist };
+                return { thing: this, ray: ray, dist: dist };
             }
         }
     }

@@ -7,10 +7,10 @@ import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.expression.Literal;
 import org.kobjects.typo.expression.New;
 import org.kobjects.typo.expression.ObjectLiteral;
+import org.kobjects.typo.expression.Property;
 import org.kobjects.typo.expression.Ternary;
 import org.kobjects.typo.expression.UnresolvedIdentifier;
 import org.kobjects.typo.expression.UnresolvedOperator;
-import org.kobjects.typo.expression.UnresolvedProperty;
 import org.kobjects.typo.statement.Block;
 import org.kobjects.typo.statement.ClassifierDeclaration;
 import org.kobjects.typo.statement.ExpressionStatement;
@@ -128,7 +128,7 @@ class Parser {
         if (!modifiers.isEmpty()) {
           owner.addField(modifiers, parameterName, parameterType, null);
           init.add(new ExpressionStatement(new UnresolvedOperator("=",
-              new UnresolvedProperty(new UnresolvedIdentifier("this"), parameterName),
+              new Property(new UnresolvedIdentifier("this"), parameterName),
               new UnresolvedIdentifier(parameterName))));
         }
         parameterList.add(new FunctionType.Parameter(parameterName, parameterType));
@@ -384,7 +384,7 @@ class Parser {
     public Expression suffixOperator(ExpressionParser.Tokenizer tokenizer, String name, Expression param) {
       if (name.equals(".")) {
         String propertyName = tokenizer.consumeIdentifier();
-        return new UnresolvedProperty(param, propertyName);
+        return new Property(param, propertyName);
       }
       return super.suffixOperator(tokenizer, name, param);
     }

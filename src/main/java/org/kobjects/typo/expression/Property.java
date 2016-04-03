@@ -5,20 +5,52 @@ import org.kobjects.typo.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.Interface;
+import org.kobjects.typo.type.MetaType;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 
 public class Property extends Expression1 {
 
-  String name;
+  final String name;
 
-  Property(Expression base, String name) {
+  public Property(Expression base, String name) {
     super(base);
     this.name = name;
   }
 
   @Override
   public Expression resolve(ParsingContext context) {
-    throw new RuntimeException("Already resolved");
+    super.resolve(context);
+    Type baseType = child.type();
+    if (baseType instanceof TsClass) {
+      TsClass classifier = (TsClass) child.type();
+      TsClass.Member member = classifier.members.get(name);
+      if (member == null) {
+        throw new RuntimeException("Member '" + name + "' not found in " + classifier);
+      }
+      return new Member(child, member);
+    }
+    if (baseType instanceof MetaType && ((MetaType) baseType).of instanceof TsClass) {
+      TsClass classifier = (TsClass) ((MetaType) baseType).of;
+      TsClass.Member member = classifier.members.get(name);
+      if (member == null) {
+        throw new RuntimeException("Member '" + name + "' not found in " + classifier);
+      }
+      if (member.fieldIndex != -1) {
+        throw new RuntimeException("Member '" + name + "' must be static for static access.");
+      }
+      return new Literal(member.staticValue, classifier.name() + "." + name);
+    }
+    if (!(baseType instanceof Interface)) {
+      throw new RuntimeException("Classifier expected; got: " + child.type());
+    }
+
+    Interface itf = (Interface) child.type();
+    Type propertyType = itf.propertyType(name);
+    if (propertyType == null) {
+      throw new RuntimeException("Property '" + name + "' not found in " + itf);
+    }
+    return this;
   }
 
   @Override

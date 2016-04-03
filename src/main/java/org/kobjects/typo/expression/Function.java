@@ -24,6 +24,7 @@ public class Function extends Expression implements Applicable, NamedEntity {
   FunctionType type;
   public Statement body;
   public int localCount;
+  public int thisIndex = -1;
   public List<Closure> closures = new ArrayList<>();
   Object[] capture;
 
@@ -42,8 +43,14 @@ public class Function extends Expression implements Applicable, NamedEntity {
 
   @Override
   public EvaluationContext createContext(Instance self) {
-    // TODO: Copying shouldn't be necessary -- add some form of special access instead?
     EvaluationContext context = new EvaluationContext(self, localCount);
+    if (thisIndex != -1) {
+      if (self == null) {
+        throw new RuntimeException("this must not be null for " + toString());
+      }
+      context.setLocal(thisIndex, self);
+    }
+    // TODO: Copying shouldn't be necessary -- add some form of special access instead?
     for (int i = 0; i < closures.size(); i++) {
       context.setLocal(closures.get(i).target.localIndex, capture[i]);
     }
@@ -103,9 +110,12 @@ public class Function extends Expression implements Applicable, NamedEntity {
   @Override
   public Function resolve(ParsingContext context) {
     resolveSignatures(context);
-    ParsingContext bodyContext = new ParsingContext(context, owner, this);
+    ParsingContext bodyContext = new ParsingContext(context, this);
     for (FunctionType.Parameter param : parameters) {
       bodyContext.declareLocal(param.name, param.type);
+    }
+    if (owner != null) {
+      thisIndex = bodyContext.declareLocal("this", owner).localIndex;
     }
     body.resolve(bodyContext);
     localCount = bodyContext.locals.size();

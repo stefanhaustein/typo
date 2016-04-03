@@ -23,7 +23,7 @@ import java.util.EnumSet;
 public class TypoShell {
 
   static Processor processor = new Processor();
-  static ParsingContext parsingContext = new ParsingContext(null, null, null);
+  static ParsingContext parsingContext = new ParsingContext(null,null);
 
   static void load(String url) {
     try {
@@ -38,7 +38,7 @@ public class TypoShell {
       }
       BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 
-      ParsingContext loadParsingContext = new ParsingContext(parsingContext, null, null);
+      ParsingContext loadParsingContext = new ParsingContext(parsingContext, null);
       Statement parsed = processor.process(loadParsingContext, reader);
 
       reader.close();

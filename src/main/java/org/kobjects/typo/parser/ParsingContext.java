@@ -9,14 +9,12 @@ import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 
 public class ParsingContext {
-  public TsClass self;
   public LinkedHashMap<String, LocalDeclaration> locals = new LinkedHashMap<>();
   LinkedHashMap<String, Object> statics;
   ParsingContext parent;
   Function function;
 
-  public ParsingContext(ParsingContext parent, TsClass self, Function function) {
-    this.self = self;
+  public ParsingContext(ParsingContext parent, Function function) {
     this.parent = parent;
     this.function = function;
     if (parent != null) {

@@ -35,9 +35,6 @@ public class UnresolvedIdentifier extends Expression {
 
   @Override
   public Expression resolve(ParsingContext context) {
-    if (name.equals("this") && context.self != null) {
-      return new This(context.self);
-    }
     ParsingContext.LocalDeclaration field = context.resolveField(name);
     if (field != null) {
       return new Variable(field);

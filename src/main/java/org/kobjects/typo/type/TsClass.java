@@ -77,15 +77,14 @@ public class TsClass implements Classifier {
   }
 
   @Override
-  public void resolveMembers(ParsingContext parentContext) {
-    ParsingContext memberContext = new ParsingContext(parentContext, this, null);
-
+  public void resolveMembers(ParsingContext context) {
     if (constructor != null) {
-      constructor = constructor.resolve(memberContext);
+      constructor = constructor.resolve(context);
     }
     for (Member member: members.values()) {
-      ParsingContext context = member.modifiers.contains(Modifier.STATIC) ? parentContext : memberContext;
       if (member.initializer != null) {
+        // TODO: This won't work for non-static initializers; they should be moved to the ctor
+        // instead.
         member.initializer = member.initializer.resolve(context);
         if (member.isStatic()) {
           member.staticValue = member.initializer.eval(new EvaluationContext(null, 0));
