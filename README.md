@@ -1,13 +1,13 @@
 
-# Goal
+*Goal*
 
 Create something that relates to (a strict subset of) TypeScript like Rhino relates to JavaScript
 
-# Working
+*Working*
 
 - Some trivial demos (greeters and one converted from thinscript)
 
-# Plan
+*Plan*
 
 - Get the raytracer example compiling (with added explicit return types)
 - Get the raytracer example running (rendering to VtCanvas)
@@ -15,7 +15,7 @@ Create something that relates to (a strict subset of) TypeScript like Rhino rela
 - WebAssembly output prototype
 - Jsdoc output prototype
 
-# Missing
+*Missing*
 
 - Union types and strict nullability
 - Dictionaries
