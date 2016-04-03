@@ -2,6 +2,7 @@ package org.kobjects.typo.parser;
 
 import org.kobjects.expressionparser.ExpressionParser;
 import org.kobjects.typo.expression.Apply;
+import org.kobjects.typo.expression.ArrayAccess;
 import org.kobjects.typo.expression.Expression;
 import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.expression.Literal;
@@ -48,12 +49,15 @@ class Parser {
     expressionParser.addPrimary("new");
     expressionParser.addPrimary("{");
     expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 18, ".");
+    expressionParser.addApplyBrackets(18, "[", null, "]");
     expressionParser.addApplyBrackets(17, "(", ",", ")");
     expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 15, "+", "-", "!", "~");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 14, "*", "/", "%");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 13, "+", "-");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 11, "<", ">", "<=", ">=");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 10, "===", "==", "!=", "!==");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 6, "&&");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 5, "||");
     expressionParser.addTernaryOperator(4, "?", ":");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 3, "=");
   }
@@ -466,7 +470,11 @@ class Parser {
 
     @Override
     public Expression apply(ExpressionParser.Tokenizer tokenizer, Expression to, String bracket, List<Expression> parameterList) {
-      return new Apply(to, parameterList.toArray(new Expression[parameterList.size()]));
+      if (bracket.equals("[")) {
+        return new ArrayAccess(to, parameterList.get(0));
+      } else {
+        return new Apply(to, parameterList.toArray(new Expression[parameterList.size()]));
+      }
     }
   }
 }

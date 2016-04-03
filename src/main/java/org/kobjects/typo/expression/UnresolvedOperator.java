@@ -33,10 +33,18 @@ public class UnresolvedOperator extends ExpressionN {
   public Expression resolve(ParsingContext context) {
     super.resolve(context);
     boolean allNumber = true;
+    // TODO: compute common type instead.
     for (int i = 0; i < children.length; i++) {
       if (!Types.NUMBER.assignableFrom(children[i].type())) {
         allNumber = false;
       }
+    }
+
+    if (name.equals("&&") || name.equals("||")) {
+      if (children[0].type() != Types.BOOLEAN || children[1].type() != Types.BOOLEAN) {
+        throw new RuntimeException("Boolean arguments expected for logical operation.");
+      }
+      return name.equals("&&") ? new LogicalAnd(children[0], children[1]) : new LogicalOr(children[0], children[1]);
     }
 
     if (name.equals("+") && children.length == 1) {

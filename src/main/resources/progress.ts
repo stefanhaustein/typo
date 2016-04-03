@@ -211,7 +211,7 @@ class RayTracer {
     }
 
     private getNaturalColor(thing: Thing, pos: Vector, norm: Vector, rd: Vector, scene: Scene): Color {
-        var addLight = (col, light) => {
+        var addLight = function(col: Color, light: Light): Color {
             var ldis = Vector.minus(light.pos, pos);
             var livec = Vector.norm(ldis);
             var neatIsect = this.testRay({ start: pos, dir: livec }, scene);
@@ -232,18 +232,25 @@ class RayTracer {
         return scene.lights.reduce(addLight, Color.defaultColor);
     }
 
-    render(scene, ctx, screenWidth, screenHeight): void {
-        var getPoint = (x, y, camera) => {
-            var recenterX = x =>(x - (screenWidth / 2.0)) / 2.0 / screenWidth;
-            var recenterY = y => - (y - (screenHeight / 2.0)) / 2.0 / screenHeight;
+    render(scene: Scene, imageData: ImageData): void {
+        let screenWidth = imageData.width;
+        let screenHeight = imageData.height;
+        var getPoint = function(x: number, y: number, camera: Camera): Vector {
+            var recenterX = function(x: number): number { return (x - (screenWidth / 2.0)) / 2.0 / screenWidth; };
+            var recenterY = function(y: number): number { return - (y - (screenHeight / 2.0)) / 2.0 / screenHeight; };
             return Vector.norm(Vector.plus(camera.forward, Vector.plus(Vector.times(recenterX(x), camera.right), Vector.times(recenterY(y), camera.up))));
         }
+        let pos = 0;
+        let data = imageData.data;
         for (var y = 0; y < screenHeight; y++) {
             for (var x = 0; x < screenWidth; x++) {
                 var color = this.traceRay({ start: scene.camera.pos, dir: getPoint(x, y, scene.camera) }, scene, 0);
                 var c = Color.toDrawingColor(color);
-                ctx.fillStyle = "rgb(" + String(c.r) + ", " + String(c.g) + ", " + String(c.b) + ")";
-                ctx.fillRect(x, y, x + 1, y + 1);
+                data[pos + 0] = c.r;
+                data[pos + 1] = c.g;
+                data[pos + 2] = c.b;
+                data[pos + 3] = 255;
+                pos = pos + 4;
             }
         }
     }
