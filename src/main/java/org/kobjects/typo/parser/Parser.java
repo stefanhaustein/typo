@@ -8,6 +8,7 @@ import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.expression.Literal;
 import org.kobjects.typo.expression.New;
 import org.kobjects.typo.expression.ObjectLiteral;
+import org.kobjects.typo.expression.PostIncDec;
 import org.kobjects.typo.expression.Property;
 import org.kobjects.typo.expression.Ternary;
 import org.kobjects.typo.expression.UnresolvedIdentifier;
@@ -16,6 +17,7 @@ import org.kobjects.typo.statement.Block;
 import org.kobjects.typo.statement.ClassifierDeclaration;
 import org.kobjects.typo.statement.ExpressionStatement;
 import org.kobjects.typo.statement.ForInStatement;
+import org.kobjects.typo.statement.ForStatement;
 import org.kobjects.typo.statement.IfStatement;
 import org.kobjects.typo.statement.Module;
 import org.kobjects.typo.type.Interface;
@@ -51,6 +53,7 @@ class Parser {
     expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 18, ".");
     expressionParser.addApplyBrackets(18, "[", null, "]");
     expressionParser.addApplyBrackets(17, "(", ",", ")");
+    expressionParser.addOperators(ExpressionParser.OperatorType.SUFFIX, 15, "++", "--");
     expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 15, "+", "-", "!", "~");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 14, "*", "/", "%");
     expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 13, "+", "-");
@@ -133,8 +136,17 @@ class Parser {
         tokenizer.consume(")");
         Statement body = parseStatement(tokenizer, null);
         return new ForInStatement(true, varName, expression, body);
+      } else if (tokenizer.tryConsume("=")) {
+        Expression initialValue = expressionParser.parse(tokenizer);
+        tokenizer.consume(";");
+        Expression condition = expressionParser.parse(tokenizer);
+        tokenizer.consume(";");
+        Expression increment = expressionParser.parse(tokenizer);
+        tokenizer.consume(")");
+        Statement body = parseStatement(tokenizer, null);
+        return new ForStatement(true, varName, initialValue, condition, increment, body);
       } else {
-        throw new RuntimeException("NYI");
+        throw new RuntimeException("in or assignment expected.");
       }
     } else {
       throw new RuntimeException("NYI");
@@ -448,6 +460,8 @@ class Parser {
       if (name.equals(".")) {
         String propertyName = tokenizer.consumeIdentifier();
         return new Property(param, propertyName);
+      } else if (name.equals("++") || name.equals("--")) {
+        return new PostIncDec(param, name.equals("++") ? 1 : -1);
       }
       return super.suffixOperator(tokenizer, name, param);
     }

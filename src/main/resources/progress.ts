@@ -246,11 +246,11 @@ class RayTracer {
             for (var x = 0; x < screenWidth; x++) {
                 var color = this.traceRay({ start: scene.camera.pos, dir: getPoint(x, y, scene.camera) }, scene, 0);
                 var c = Color.toDrawingColor(color);
-                data[pos + 0] = c.r;
-                data[pos + 1] = c.g;
+                data[pos + 0] = c.r;
+                data[pos + 1] = c.g;
                 data[pos + 2] = c.b;
                 data[pos + 3] = 255;
-                pos = pos + 4;
+                pos = pos + 4;
             }
         }
     }
