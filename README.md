@@ -7,6 +7,23 @@ Create something that relates to (a strict subset of) TypeScript like Rhino rela
 
 - Some trivial demos ([greeters](https://github.com/stefanhaustein/typo/blob/master/src/main/resources/greeter2.ts) and a [linked list example](https://github.com/stefanhaustein/typo/blob/master/src/main/resources/thindemo.thin) converted from [thinscript](https://github.com/evanw/thinscript))
 
+- Gradient example
+```
+  let d = new ImageData(40, 20);
+  let pos = 0;
+  for (let y = 0; y < d.height; y++) {
+    for (let x = 0; x < d.width; x++) {
+      d.data[pos++] = 255 * x / d.width;
+      d.data[pos++] = 255 * y / d.height;
+      d.data[pos++] = 50;
+      pos++;
+    }
+  }
+  console.log(d);
+```
+![Gradient](http://i.imgur.com/4iC0tS2.png)
+
+
 #### Plan
 
 - Get the raytracer example compiling (with added explicit return types)
