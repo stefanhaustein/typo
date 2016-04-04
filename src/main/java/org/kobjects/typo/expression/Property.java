@@ -48,7 +48,7 @@ public class Property extends Expression1 {
       return new Literal(member.staticValue, classifier.name() + "." + name);
     }
     if (!(baseType instanceof Interface)) {
-      throw new RuntimeException("Classifier expected; got: " + child.type());
+      throw new RuntimeException("Interface or class expected; got: " + child.type() + " for " + CodePrinter.toString(this));
     }
 
     Interface itf = (Interface) child.type();

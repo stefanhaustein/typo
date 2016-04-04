@@ -39,7 +39,7 @@ public class LetStatement extends Statement {
       if (type == null) {
         type = expression.type();
       } else if (!type.assignableFrom(expression.type())) {
-        throw new RuntimeException("Incompatible types for " + CodePrinter.toString(this));
+        throw new RuntimeException("Incompatible types for " + CodePrinter.toString(this) + " expression type: " + expression.type());
       }
     }
     target = context.declareLocal(variableName, expression.type());

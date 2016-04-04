@@ -3,6 +3,7 @@ package org.kobjects.typo.parser;
 import org.kobjects.expressionparser.ExpressionParser;
 import org.kobjects.typo.expression.Apply;
 import org.kobjects.typo.expression.ArrayAccess;
+import org.kobjects.typo.expression.ArrayLiteral;
 import org.kobjects.typo.expression.Expression;
 import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.expression.Literal;
@@ -46,6 +47,7 @@ class Parser {
   {
     // Source:
     // https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
+    expressionParser.addGroupBrackets("[", ",", "]");
     expressionParser.addGroupBrackets("(", null, ")");
     expressionParser.addPrimary("function");
     expressionParser.addPrimary("new");
@@ -436,6 +438,9 @@ class Parser {
 
     @Override
     public Expression group(ExpressionParser.Tokenizer tokenizer, String open, List<Expression> list) {
+      if (open.equals("[")) {
+        return new ArrayLiteral(list.toArray(new Expression[list.size()]));
+      }
       return list.get(0);
     }
 
@@ -449,6 +454,8 @@ class Parser {
         return new Literal(null, null);
       } else if (name.equals("Infinity")) {
         return new Literal(Double.POSITIVE_INFINITY, "Infinity");
+      } else if (name.equals("undefined")) {
+        return new Literal(null, null);  // TODO: HACK
       }
       return new UnresolvedIdentifier(name);
     }

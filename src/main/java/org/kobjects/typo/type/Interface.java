@@ -79,7 +79,7 @@ public class Interface extends Classifier {
 
   @Override
   public boolean assignableFrom(Type type) {
-    if (type == this) {
+    if (type == this || type == Types.NULL) {
       return true;
     }
     if (!(type instanceof Classifier)) {

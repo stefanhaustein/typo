@@ -5,7 +5,7 @@ class Vector {
     }
     static times(k: number, v: Vector): Vector { return new Vector(k * v.x, k * v.y, k * v.z); }
     static minus(v1: Vector, v2: Vector): Vector { return new Vector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z); }
-    static plus(v1: Vector, v2: Vector): Vector { return new Vector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
+    static plus(v1: Vector, v2: Vector): Vector { return new Vector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
     static dot(v1: Vector, v2: Vector): number { return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; }
     static mag(v: Vector): number { return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
     static norm(v: Vector): Vector {
@@ -28,19 +28,18 @@ class Color {
     static scale(k: number, v: Color): Color { return new Color(k * v.r, k * v.g, k * v.b); }
     static plus(v1: Color, v2: Color): Color { return new Color(v1.r + v2.r, v1.g + v2.g, v1.b + v2.b); }
     static times(v1: Color, v2: Color): Color { return new Color(v1.r * v2.r, v1.g * v2.g, v1.b * v2.b); }
-    static white = new Color(1.0, 1.0, 1.0);
-    static grey = new Color(0.5, 0.5, 0.5);
-    static black = new Color(0.0, 0.0, 0.0);
-    static background = Color.black;
-    static defaultColor = Color.black;
-    static toDrawingColor(c: Color) {
-        var legalize = d => d > 1 ? 1 : d;
-        return {
-            r: Math.floor(legalize(c.r) * 255),
-            g: Math.floor(legalize(c.g) * 255),
-            b: Math.floor(legalize(c.b) * 255)
+    static white: Color = new Color(1.0, 1.0, 1.0);
+    static grey: Color = new Color(0.5, 0.5, 0.5);
+    static black: Color = new Color(0.0, 0.0, 0.0);
+    static background: Color = Color.black;
+    static defaultColor: Color = Color.black;
+    static toDrawingColor(c: Color): Color {
+        var legalize = function(d:number):number {return d > 1 ? 1 : d;}
+        return new Color(
+            Math.floor(legalize(c.r) * 255),
+            Math.floor(legalize(c.g) * 255),
+            Math.floor(legalize(c.b) * 255))
         }
-    }
 }
 
 class Camera {
@@ -133,23 +132,24 @@ class Plane implements Thing {
     }
 }
 
+
 module Surfaces {
     export var shiny: Surface = {
-        diffuse: function(pos) { return Color.white; },
-        specular: function(pos) { return Color.grey; },
-        reflect: function(pos) { return 0.7; },
+        diffuse: function(pos: Vector): Color { return Color.white; },
+        specular: function(pos: Vector): Color { return Color.grey; },
+        reflect: function(pos: Vector): number { return 0.7; },
         roughness: 250
     }
     export var checkerboard: Surface = {
-        diffuse: function(pos) {
+        diffuse: function(pos: Vector): Color {
             if ((Math.floor(pos.z) + Math.floor(pos.x)) % 2 !== 0) {
                 return Color.white;
             } else {
                 return Color.black;
             }
         },
-        specular: function(pos) { return Color.white; },
-        reflect: function(pos) {
+        specular: function(pos: Vector): Color { return Color.white; },
+        reflect: function(pos: Vector): number {
             if ((Math.floor(pos.z) + Math.floor(pos.x)) % 2 !== 0) {
                 return 0.1;
             } else {
@@ -164,7 +164,7 @@ module Surfaces {
 class RayTracer {
     private maxDepth = 5;
 
-    private intersections(ray: Ray, scene: Scene) {
+    private intersections(ray: Ray, scene: Scene): Intersection {
         var closest = +Infinity;
         var closestInter: Intersection = undefined;
         for (var i in scene.things) {
@@ -177,7 +177,7 @@ class RayTracer {
         return closestInter;
     }
 
-    private testRay(ray: Ray, scene: Scene) {
+    private testRay(ray: Ray, scene: Scene): number {
         var isect = this.intersections(ray, scene);
         if (isect != null) {
             return isect.dist;
@@ -195,7 +195,7 @@ class RayTracer {
         }
     }
 
-    private shade(isect: Intersection, scene: Scene, depth: number) {
+    private shade(isect: Intersection, scene: Scene, depth: number): Color {
         var d = isect.ray.dir;
         var pos = Vector.plus(Vector.times(isect.dist, d), isect.ray.start);
         var normal = isect.thing.normal(pos);
@@ -206,12 +206,12 @@ class RayTracer {
         return Color.plus(naturalColor, reflectedColor);
     }
 
-    private getReflectionColor(thing: Thing, pos: Vector, normal: Vector, rd: Vector, scene: Scene, depth: number) {
+    private getReflectionColor(thing: Thing, pos: Vector, normal: Vector, rd: Vector, scene: Scene, depth: number): Color {
         return Color.scale(thing.surface.reflect(pos), this.traceRay({ start: pos, dir: rd }, scene, depth + 1));
     }
 
-    private getNaturalColor(thing: Thing, pos: Vector, norm: Vector, rd: Vector, scene: Scene) {
-        var addLight = (col, light) => {
+    private getNaturalColor(thing: Thing, pos: Vector, norm: Vector, rd: Vector, scene: Scene): Color {
+        var addLight = function(col: Color, light: Light): Color {
             var ldis = Vector.minus(light.pos, pos);
             var livec = Vector.norm(ldis);
             var neatIsect = this.testRay({ start: pos, dir: livec }, scene);
@@ -232,23 +232,29 @@ class RayTracer {
         return scene.lights.reduce(addLight, Color.defaultColor);
     }
 
-    render(scene, ctx, screenWidth, screenHeight) {
-        var getPoint = (x, y, camera) => {
-            var recenterX = x =>(x - (screenWidth / 2.0)) / 2.0 / screenWidth;
-            var recenterY = y => - (y - (screenHeight / 2.0)) / 2.0 / screenHeight;
+    render(scene: Scene, imageData: ImageData): void {
+        let screenWidth = imageData.width;
+        let screenHeight = imageData.height;
+        var getPoint = function(x: number, y: number, camera: Camera): Vector {
+            var recenterX = function(x: number): number { return (x - (screenWidth / 2.0)) / 2.0 / screenWidth; };
+            var recenterY = function(y: number): number { return - (y - (screenHeight / 2.0)) / 2.0 / screenHeight; };
             return Vector.norm(Vector.plus(camera.forward, Vector.plus(Vector.times(recenterX(x), camera.right), Vector.times(recenterY(y), camera.up))));
         }
+        let pos = 0;
+        let data = imageData.data;
         for (var y = 0; y < screenHeight; y++) {
             for (var x = 0; x < screenWidth; x++) {
                 var color = this.traceRay({ start: scene.camera.pos, dir: getPoint(x, y, scene.camera) }, scene, 0);
                 var c = Color.toDrawingColor(color);
-                ctx.fillStyle = "rgb(" + String(c.r) + ", " + String(c.g) + ", " + String(c.b) + ")";
-                ctx.fillRect(x, y, x + 1, y + 1);
+                data[pos + 0] = c.r;
+                data[pos + 1] = c.g;
+                data[pos + 2] = c.b;
+                data[pos + 3] = 255;
+                pos = pos + 4;
             }
         }
     }
 }
-
 
 function defaultScene(): Scene {
     return {
@@ -263,14 +269,8 @@ function defaultScene(): Scene {
     };
 }
 
-function exec() {
-    var canv = document.createElement("canvas");
-    canv.width = 256;
-    canv.height = 256;
-    document.body.appendChild(canv);
-    var ctx = canv.getContext("2d");
-    var rayTracer = new RayTracer();
-    return rayTracer.render(defaultScene(), ctx, 256, 256);
-}
+var image = new ImageData(ctx, 40, 40);
+var rayTracer = new RayTracer();
+rayTracer.render(defaultScene(), image);
 
-exec();
+console.log(image);

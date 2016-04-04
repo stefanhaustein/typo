@@ -103,6 +103,16 @@ public class TypoShell {
         return Math.floor(((Number) context.getLocal(0)).doubleValue());
       }
     });
+    mathClass.addMethod(EnumSet.of(TsClass.Modifier.STATIC), "pow", new NativeFunction(
+        null, Types.NUMBER,
+        new FunctionType.Parameter("x", Types.NUMBER),
+        new FunctionType.Parameter("y", Types.NUMBER)) {
+      @Override
+      public Object apply(org.kobjects.typo.runtime.EvaluationContext context) {
+        return Math.pow(((Number) context.getLocal(0)).doubleValue(),
+            ((Number) context.getLocal(1)).doubleValue());
+      }
+    });
     parsingContext.declareStatic("Math", mathClass);
 
     TsClass consoleClass = new TsClass("Console");
