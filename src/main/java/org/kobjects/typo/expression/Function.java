@@ -1,7 +1,6 @@
 package org.kobjects.typo.expression;
 
-import org.kobjects.typo.runtime.Applicable;
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.NamedEntity;
 import org.kobjects.typo.parser.ParsingContext;
@@ -11,17 +10,17 @@ import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.statement.Statement;
 import org.kobjects.typo.type.FunctionType;
 import org.kobjects.typo.type.Type;
+import org.kobjects.typo.type.Typed;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
-public class Function extends Expression implements Applicable, NamedEntity {
+public class Function extends Expression implements Typed, NamedEntity {
   String name;
   TsClass owner;
   public FunctionType.Parameter[] parameters;
   Type returnType;
-  FunctionType type;
+  protected FunctionType type;
   public Statement body;
   public int localCount;
   public int thisIndex = -1;
@@ -36,12 +35,10 @@ public class Function extends Expression implements Applicable, NamedEntity {
     this.body = body;
   }
 
-  @Override
   public Object apply(EvaluationContext context) {
     return body.eval(context);
   }
 
-  @Override
   public EvaluationContext createContext(Instance self) {
     EvaluationContext context = new EvaluationContext(self, localCount);
     if (thisIndex != -1) {

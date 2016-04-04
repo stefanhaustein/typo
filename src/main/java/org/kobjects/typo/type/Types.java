@@ -1,6 +1,7 @@
 package org.kobjects.typo.type;
 
 public class Types {
+  public static final Type ANY = new SimpleType("any");
   public static final Type BOOLEAN = new SimpleType("boolean");
   public static final Type NUMBER = new SimpleType("number");
   public static final Type STRING = new SimpleType("string");

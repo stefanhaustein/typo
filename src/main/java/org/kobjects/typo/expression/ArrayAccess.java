@@ -1,6 +1,6 @@
 package org.kobjects.typo.expression;
 
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.ArrayType;
@@ -17,10 +17,22 @@ public class ArrayAccess extends ExpressionN {
   }
 
   @Override
+  public void assign(EvaluationContext context, Object value) {
+    List list = (List) children[0].eval(context);
+    Number index = (Number) children[1].eval(context);
+    list.set(index.intValue(), value);
+  }
+
+  @Override
   public Object eval(EvaluationContext context) {
     List<?> list = (List<?>) children[0].eval(context);
     Number index = (Number) children[1].eval(context);
     return (list.get(index.intValue()));
+  }
+
+  @Override
+  public boolean isAssignable() {
+    return true;
   }
 
   @Override

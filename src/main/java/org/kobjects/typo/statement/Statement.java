@@ -1,6 +1,6 @@
 package org.kobjects.typo.statement;
 
-import org.kobjects.typo.Printable;
+import org.kobjects.typo.io.Printable;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 

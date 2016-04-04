@@ -1,6 +1,6 @@
 package org.kobjects.typo.type;
 
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 
 import java.util.LinkedHashMap;

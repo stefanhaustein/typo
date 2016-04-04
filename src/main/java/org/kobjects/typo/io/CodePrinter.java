@@ -1,4 +1,4 @@
-package org.kobjects.typo;
+package org.kobjects.typo.io;
 
 public class CodePrinter {
   private String indent = "";

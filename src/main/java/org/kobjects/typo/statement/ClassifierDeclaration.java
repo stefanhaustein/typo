@@ -1,6 +1,6 @@
 package org.kobjects.typo.statement;
 
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.Classifier;

@@ -4,7 +4,7 @@ package org.kobjects.typo.expression;
 import org.kobjects.typo.runtime.Instance;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 

@@ -3,7 +3,7 @@ package org.kobjects.typo.expression;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.wasm.Operation;
 
@@ -64,7 +64,7 @@ public class UnresolvedOperator extends ExpressionN {
     }
     if (name.startsWith("<") || name.startsWith(">")) {
       return new Compare(name.startsWith("<")
-          ? (name.endsWith("=") ? Compare.Op.LE : Compare.Op.LE)
+          ? (name.endsWith("=") ? Compare.Op.LE : Compare.Op.LT)
           : (name.endsWith("=") ? Compare.Op.GE : Compare.Op.GT), children[0], children[1]);
     }
 

@@ -12,7 +12,7 @@ class SimpleType implements Type {
 
   @Override
   public boolean assignableFrom(Type other) {
-    return equals(other);
+    return this == Types.ANY || equals(other);
   }
 
   @Override

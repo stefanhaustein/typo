@@ -394,7 +394,9 @@ class Parser {
       result = new FunctionType(returnType, args.toArray(new FunctionType.Parameter[args.size()]));
     } else {
       String name = tokenizer.consumeIdentifier();
-      if (name.equals("boolean")) {
+      if (name.equals("any")) {
+        result = Types.ANY;
+      } else if (name.equals("boolean")) {
         result = Types.BOOLEAN;
       } else if (name.equals("number")) {
         result = Types.NUMBER;

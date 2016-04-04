@@ -1,8 +1,7 @@
 package org.kobjects.typo.type;
 
-import org.kobjects.typo.Printable;
-import org.kobjects.typo.runtime.Applicable;
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.Printable;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.expression.Expression;
 import org.kobjects.typo.expression.Function;
@@ -61,12 +60,12 @@ public class TsClass extends Classifier {
     return member;
   }
 
-  public void addMethod(Set<Modifier> modifiers, String name, Applicable applicable) {
+  public void addMethod(Set<Modifier> modifiers, String name, Function function) {
     Member member = new Member();
     member.modifiers = modifiers;
     member.name = name;
-    member.staticValue = applicable;
-    member.type = applicable.type();  // For builtins.
+    member.staticValue = function;
+    member.type = function.type();  // For builtins.
     member.fieldIndex = -1;
     members.put(name, member);
   }
@@ -129,7 +128,7 @@ public class TsClass extends Classifier {
       cp.indent();
 
       for (Member member : members.values()) {
-        if (!(member.staticValue instanceof Applicable)) {
+        if (!(member.staticValue instanceof Function)) {
           cp.newLine();
           printModifiers(cp, member.modifiers);
           cp.append(member.name);
@@ -144,7 +143,7 @@ public class TsClass extends Classifier {
       }
 
       for (Member member : members.values()) {
-        if (member.staticValue instanceof Applicable) {
+        if (member.staticValue instanceof Function) {
           cp.newLine();
           printModifiers(cp, member.modifiers);
           ((Printable) member.staticValue).print(cp);

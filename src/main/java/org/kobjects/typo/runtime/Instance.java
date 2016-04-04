@@ -14,7 +14,7 @@ public class Instance implements Typed {
   }
 
   @Override
-  public Type type() {
+  public TsClass type() {
     return classifier;
   }
 

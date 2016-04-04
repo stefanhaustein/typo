@@ -2,14 +2,12 @@ package org.kobjects.typo.parser;
 
 
 import org.kobjects.expressionparser.ExpressionParser;
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.statement.Statement;
 
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Processor {
   Parser parser = new Parser();

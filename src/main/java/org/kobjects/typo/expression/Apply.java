@@ -1,8 +1,7 @@
 package org.kobjects.typo.expression;
 
-import org.kobjects.typo.runtime.Applicable;
 import org.kobjects.typo.runtime.EvaluationContext;
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.FunctionType;
 import org.kobjects.typo.type.Type;
@@ -17,12 +16,12 @@ public class Apply extends ExpressionN {
 
   @Override
   public Object eval(EvaluationContext context) {
-    Applicable applicable = (Applicable) target.eval(context);
-    EvaluationContext newContext = applicable.createContext(null);
+    Function function = (Function) target.eval(context);
+    EvaluationContext newContext = function.createContext(null);
     for (int i = 0; i < children.length; i++) {
       newContext.setLocal(i, children[i].eval(context));
     }
-    return applicable.apply(newContext);
+    return function.apply(newContext);
   }
 
   @Override

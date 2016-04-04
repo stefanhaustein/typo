@@ -1,14 +1,12 @@
 package org.kobjects.typo.statement;
 
-import org.kobjects.typo.CodePrinter;
+import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.expression.Expression;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.ArrayType;
-import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public class ForInStatement extends SimpleStatement {

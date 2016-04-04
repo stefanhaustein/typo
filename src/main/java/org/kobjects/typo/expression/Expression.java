@@ -1,7 +1,7 @@
 package org.kobjects.typo.expression;
 
 import org.kobjects.typo.runtime.EvaluationContext;
-import org.kobjects.typo.Printable;
+import org.kobjects.typo.io.Printable;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.parser.ParsingContext;
 
