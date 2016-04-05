@@ -6,7 +6,6 @@ for (let y = 0; y < d.height; y++) {
     d.data[pos++] = 255 * y / d.height;
     d.data[pos++] = 50;
     pos++;
-    console.log("x: " + x + " y: " + y + " pos: " + pos);
   }
 }
 console.log(d);

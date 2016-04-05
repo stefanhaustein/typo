@@ -56,7 +56,7 @@ public class Apply extends ExpressionN {
 
     if (target instanceof Member) {
       Member property = (Member) target;
-      return new ApplyMember(property.base, property.member, children);
+      return new ApplyMember(property.child, property.member, children);
     }
     return this;
   }

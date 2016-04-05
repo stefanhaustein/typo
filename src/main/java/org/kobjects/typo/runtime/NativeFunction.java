@@ -8,8 +8,8 @@ import org.kobjects.typo.type.Type;
 
 public abstract class NativeFunction extends Function {
 
-  public NativeFunction(TsClass owner, Type returnType, FunctionType.Parameter... params) {
-    super(owner, null, params, returnType, null);
+  public NativeFunction(TsClass owner, String name, Type returnType, FunctionType.Parameter... params) {
+    super(owner, name, params, returnType, null);
     this.type = new FunctionType(returnType, params);
     if (owner == null) {
       localCount = params.length;

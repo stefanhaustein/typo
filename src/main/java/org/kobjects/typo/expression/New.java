@@ -54,24 +54,32 @@ public class New extends ExpressionN {
 
   @Override
   public Object eval(EvaluationContext context) {
-    Instance instance = new Instance(tsClass);
-    EvaluationContext newContext = tsClass.constructor.createContext(instance);
-    for (TsClass.Member member: tsClass.members.values()) {
-      if (member.fieldIndex != -1) {
-        if (member.initializer != null) {
-          newContext.setLocal(member.fieldIndex, member.initializer.eval(newContext));
-        } else {
-          // Set neutral value.
+    Object instance = null;
+    try {
+      instance = tsClass.instanceClass != null ? tsClass.instanceClass.newInstance() : new Instance(tsClass);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    if (instance instanceof Instance) {
+      for (TsClass.Member member : tsClass.members.values()) {
+        if (member.fieldIndex != -1) {
+          if (member.initializer != null) {
+            // TODO(haustein): Move to ctor instead!
+            ((Instance) instance).setField(member.fieldIndex, member.initializer.eval(null));
+          }
         }
       }
     }
-    for (int i = 0; i < children.length; i++) {
-      newContext.setLocal(i, children[i].eval(context));
-    }
+
     if (tsClass.constructor != null) {
+      EvaluationContext newContext = tsClass.constructor.createContext(instance);
+      for (int i = 0; i < children.length; i++) {
+        newContext.setLocal(i, children[i].eval(context));
+      }
       tsClass.constructor.apply(newContext);
     }
-    return newContext.self;
+    return instance;
   }
 
   @Override

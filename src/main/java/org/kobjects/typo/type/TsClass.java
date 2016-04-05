@@ -6,6 +6,7 @@ import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.expression.Expression;
 import org.kobjects.typo.expression.Function;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.runtime.Instance;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -30,9 +31,11 @@ public class TsClass extends Classifier {
   public int fieldCount;
 
   public Set<Type> interfaces = new LinkedHashSet<Type>();
+  public Class<?> instanceClass;
 
-  public TsClass(String name) {
+  public TsClass(String name, Class<?> instanceClass) {
     this.name = name;
+    this.instanceClass = instanceClass;
   }
 
   public void addImplements(Type type) {
@@ -47,6 +50,7 @@ public class TsClass extends Classifier {
 
   public Member addField(Set<Modifier> modifiers, String name, Type type, Expression initialValue) {
     Member member = new Member();
+    member.owner = this;
     member.modifiers = modifiers;
     member.name = name;
     member.type = type;
@@ -60,14 +64,15 @@ public class TsClass extends Classifier {
     return member;
   }
 
-  public void addMethod(Set<Modifier> modifiers, String name, Function function) {
+  public void addMethod(Set<Modifier> modifiers, Function function) {
     Member member = new Member();
+    member.owner = this;
     member.modifiers = modifiers;
-    member.name = name;
+    member.name = function.name();
     member.staticValue = function;
     member.type = function.type();  // For builtins.
     member.fieldIndex = -1;
-    members.put(name, member);
+    members.put(member.name, member);
   }
 
   @Override
@@ -86,7 +91,7 @@ public class TsClass extends Classifier {
         // instead.
         member.initializer = member.initializer.resolve(context);
         if (member.isStatic()) {
-          member.staticValue = member.initializer.eval(new EvaluationContext(null, 0));
+          member.staticValue = member.initializer.eval(new EvaluationContext(0));
         }
       }
       if (member.staticValue instanceof Function) {
@@ -97,7 +102,7 @@ public class TsClass extends Classifier {
 
   @Override
   public Type propertyType(String key) {
-    return members.get(key).type();
+    return members.get(key).type;
   }
 
   @Override
@@ -161,35 +166,32 @@ public class TsClass extends Classifier {
   }
 
   public static class Member {
+    public TsClass owner;
     Set<Modifier> modifiers;
-    String name;
-    Type type;
+    public String name;
+    public Type type;
     public int fieldIndex;
     public Expression initializer;
     public Object staticValue;
 
-    public String name() {
-      return name;
-    }
-
-    public void set(EvaluationContext context, Object value) {
-      if (fieldIndex == -1) {
-        staticValue = value;
-      } else {
-        context.self.setField(fieldIndex, value);
-      }
-    }
-
-    public Type type() {
-      return type;
-    }
-
-    public Object get(EvaluationContext context) {
-      return fieldIndex == -1 ? staticValue : context.self.fields[fieldIndex];
-    }
 
     public boolean isStatic() {
       return modifiers.contains(Modifier.STATIC);
     }
+
+    public Object get(Object instance) {
+      if (fieldIndex == -1) {
+        return staticValue;
+      }
+      return ((Instance) instance).fields[fieldIndex];
+    }
+
+    public void set(Object instance, Object value) {
+      if (fieldIndex == -1) {
+        staticValue = value;
+      }
+      ((Instance) instance).fields[fieldIndex] = value;
+    }
+
   }
 }

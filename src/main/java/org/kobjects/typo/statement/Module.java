@@ -22,7 +22,7 @@ public class Module extends SimpleStatement implements NamedEntity {
 
   @Override
   public Object eval(EvaluationContext context) {
-    evaluationContext = new EvaluationContext(null, parsingContext.locals.size());
+    evaluationContext = new EvaluationContext(parsingContext.locals.size());
     for (int i = 0; i < children.length; i++) {
       children[i].eval(evaluationContext);
     }

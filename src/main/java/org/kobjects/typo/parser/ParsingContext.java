@@ -58,11 +58,13 @@ public class ParsingContext {
    /* if (self != null && self.members.containsKey(name)) {
       return self.members.get(name);
     }*/
-    if (parent != null && parent.locals.containsKey(name) && function != null) {
+    if (parent != null && function != null) {
       LocalDeclaration parentField = parent.resolveField(name);
-      LocalDeclaration localField = declareLocal(parentField.name(), parentField.type());
-      function.closures.add(new Function.Closure(parentField, localField));
-      return localField;
+      if (parentField != null) {
+        LocalDeclaration localField = declareLocal(parentField.name(), parentField.type());
+        function.closures.add(new Function.Closure(parentField, localField));
+        return localField;
+      }
     }
 
     return null;

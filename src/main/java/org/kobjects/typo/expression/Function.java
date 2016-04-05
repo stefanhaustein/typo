@@ -11,6 +11,7 @@ import org.kobjects.typo.statement.Statement;
 import org.kobjects.typo.type.FunctionType;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Typed;
+import org.kobjects.typo.type.UnresolvedType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class Function extends Expression implements Typed, NamedEntity {
   TsClass owner;
   public FunctionType.Parameter[] parameters;
   Type returnType;
-  protected FunctionType type;
+  public FunctionType type;
   public Statement body;
   public int localCount;
   public int thisIndex = -1;
@@ -39,8 +40,8 @@ public class Function extends Expression implements Typed, NamedEntity {
     return body.eval(context);
   }
 
-  public EvaluationContext createContext(Instance self) {
-    EvaluationContext context = new EvaluationContext(self, localCount);
+  public EvaluationContext createContext(Object self) {
+    EvaluationContext context = new EvaluationContext(localCount);
     if (thisIndex != -1) {
       if (self == null) {
         throw new RuntimeException("this must not be null for " + toString());

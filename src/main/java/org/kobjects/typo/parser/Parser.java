@@ -94,7 +94,7 @@ class Parser {
 
   TsClass parseClass(ExpressionParser.Tokenizer tokenizer) {
     String name = tokenizer.consumeIdentifier();
-    TsClass classifier = new TsClass(name);
+    TsClass classifier = new TsClass(name, null);
     if (tokenizer.tryConsume("implements")) {
       do {
         classifier.addImplements(parseType(tokenizer));
@@ -127,7 +127,7 @@ class Parser {
         if (memberName.equals("constructor")) {
           classifier.constructor = fn;
         } else {
-          classifier.addMethod(modifiers, memberName, fn);
+          classifier.addMethod(modifiers, fn);
         }
       }
     }

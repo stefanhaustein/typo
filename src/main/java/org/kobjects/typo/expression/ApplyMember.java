@@ -38,7 +38,7 @@ class ApplyMember extends ExpressionN {
   public void print(CodePrinter cp) {
     base.print(cp);
     cp.append('.');
-    cp.append(member.name());
+    cp.append(member.name);
     cp.append('(');
     if (children.length > 0) {
       children[0].print(cp);
@@ -52,6 +52,6 @@ class ApplyMember extends ExpressionN {
 
   @Override
   public Type type() {
-    return ((FunctionType) member.type()).returnType;
+    return ((FunctionType) member.type).returnType;
   }
 }

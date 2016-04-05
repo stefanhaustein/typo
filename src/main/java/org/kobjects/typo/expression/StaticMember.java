@@ -1,31 +1,27 @@
 package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
+import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.runtime.Instance;
-import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 
-class Member extends Expression1 {
+class StaticMember extends Expression {
   TsClass.Member member;
 
-  Member(Expression base, TsClass.Member member) {
-    super(base);
+  StaticMember(TsClass.Member member) {
     this.member = member;
   }
 
   @Override
   public void assign(EvaluationContext context, Object value) {
-    Object instance = child.eval(context);
-    member.set(instance, value);
+    member.staticValue = value;
   }
 
   @Override
   public Object eval(EvaluationContext context) {
-    Object instance = child.eval(context);
-    // Needs to go this path for native member support.
-    return member.get(instance);
+    return member.staticValue;
   }
 
   @Override
@@ -35,12 +31,17 @@ class Member extends Expression1 {
 
   @Override
   public void print(CodePrinter cp) {
-    child.print(cp);
-    cp.append('.').append(member.name);
+    cp.append(member.owner.name()).append('.').append(member.name);
   }
 
   @Override
   public Type type() {
     return member.type;
   }
+
+  @Override
+  public Expression resolve(ParsingContext context) {
+    throw new UnsupportedOperationException("Already resolved.");
+  }
+
 }

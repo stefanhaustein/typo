@@ -45,7 +45,7 @@ public class Property extends Expression1 {
       if (member.fieldIndex != -1) {
         throw new RuntimeException("Member '" + name + "' must be static for static access.");
       }
-      return new Literal(member.staticValue, classifier.name() + "." + name);
+      return new StaticMember(member);
     }
     if (!(baseType instanceof Interface)) {
       throw new RuntimeException("Interface or class expected; got: " + child.type() + " for " + CodePrinter.toString(this));

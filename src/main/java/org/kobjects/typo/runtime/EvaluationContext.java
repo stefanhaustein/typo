@@ -5,11 +5,9 @@ import org.kobjects.typo.parser.ParsingContext;
 public class EvaluationContext {
   static final Object[] NO_LOCALS = new Object[0];
 
-  public Instance self;
   public Object[] locals;
 
-  public EvaluationContext(Instance self, int size) {
-    this.self = self;
+  public EvaluationContext(int size) {
     this.locals = size == 0 ? NO_LOCALS : new Object[size];
   }
 

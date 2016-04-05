@@ -38,6 +38,6 @@ public class Types {
     if (t2.assignableFrom(t1)) {
       return t2;
     }
-    return null;
+    return Types.ANY;
   }
 }
