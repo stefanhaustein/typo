@@ -4,13 +4,14 @@ import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.runtime.Instance;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.type.Classifier;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 
-class Member extends Expression1 {
-  TsClass.Member member;
+class MemberAccess extends Expression1 {
+  Classifier.Member member;
 
-  Member(Expression base, TsClass.Member member) {
+  MemberAccess(Expression base, Classifier.Member member) {
     super(base);
     this.member = member;
   }
@@ -36,11 +37,11 @@ class Member extends Expression1 {
   @Override
   public void print(CodePrinter cp) {
     child.print(cp);
-    cp.append('.').append(member.name);
+    cp.append('.').append(member.name());
   }
 
   @Override
   public Type type() {
-    return member.type;
+    return member.type();
   }
 }

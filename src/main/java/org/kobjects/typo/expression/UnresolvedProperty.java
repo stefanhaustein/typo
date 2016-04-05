@@ -5,16 +5,17 @@ import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.statement.Module;
+import org.kobjects.typo.type.Classifier;
 import org.kobjects.typo.type.Interface;
 import org.kobjects.typo.type.MetaType;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 
-public class Property extends Expression1 {
+public class UnresolvedProperty extends Expression1 {
 
   final String name;
 
-  public Property(Expression base, String name) {
+  public UnresolvedProperty(Expression base, String name) {
     super(base);
     this.name = name;
   }
@@ -28,9 +29,9 @@ public class Property extends Expression1 {
       return new ModuleProperty(module, local);
     }
     Type baseType = child.type();
-    if (baseType instanceof TsClass) {
-      TsClass classifier = (TsClass) child.type();
-      TsClass.Member member = classifier.members.get(name);
+    if (baseType instanceof Classifier) {
+      Classifier classifier = (Classifier) child.type();
+      Classifier.Member member = classifier.member(name);
       if (member == null) {
         throw new RuntimeException("Member '" + name + "' not found in " + classifier);
       }
@@ -47,16 +48,7 @@ public class Property extends Expression1 {
       }
       return new StaticMember(member);
     }
-    if (!(baseType instanceof Interface)) {
-      throw new RuntimeException("Interface or class expected; got: " + child.type() + " for " + CodePrinter.toString(this));
-    }
-
-    Interface itf = (Interface) child.type();
-    Type propertyType = itf.propertyType(name);
-    if (propertyType == null) {
-      throw new RuntimeException("Property '" + name + "' not found in " + itf);
-    }
-    return this;
+    throw new RuntimeException("Interface or class expected; got: " + child.type() + " for " + CodePrinter.toString(this));
   }
 
   @Override
@@ -72,6 +64,6 @@ public class Property extends Expression1 {
 
   @Override
   public Type type() {
-    return ((Interface) child.type()).propertyType(name);
+    return null;
   }
 }
