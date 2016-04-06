@@ -1,13 +1,14 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 import org.kobjects.typo.io.CodePrinter;
 
 public class Not extends Expression1 {
-  Not(Expression expr) {
-    super(expr);
+  Not(Position pos, Expression expr) {
+    super(pos, expr);
   }
 
 

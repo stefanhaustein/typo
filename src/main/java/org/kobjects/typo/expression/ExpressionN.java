@@ -1,5 +1,6 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
@@ -7,7 +8,8 @@ import org.kobjects.typo.parser.ParsingContext;
 public abstract class ExpressionN extends Expression {
   public final Expression[] children;
 
-  ExpressionN(Expression... children) {
+  ExpressionN(Position pos, Expression... children) {
+    super(pos);
     this.children = children;
   }
 

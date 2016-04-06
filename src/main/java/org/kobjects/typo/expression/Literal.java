@@ -1,5 +1,7 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
@@ -27,7 +29,8 @@ public class Literal extends Expression {
   final Object value;
   final String name;
 
-  public Literal(Object value, String name) {
+  public Literal(Position pos, Object value, String name) {
+    super(pos);
     this.value = value;
     this.name = name;
   }

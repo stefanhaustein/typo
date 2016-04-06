@@ -1,5 +1,6 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 import org.kobjects.typo.io.CodePrinter;
@@ -10,8 +11,8 @@ import org.kobjects.typo.wasm.Operation;
 class Operator extends ExpressionN {
   Operation op;
 
-  public Operator(Operation op, Expression... children) {
-    super(children);
+  public Operator(Position pos, Operation op, Expression... children) {
+    super(pos, children);
     this.op = op;
   }
 

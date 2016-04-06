@@ -1,14 +1,15 @@
 package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 
 public class Equals extends ExpressionN {
-  Equals(Expression left, Expression right) {
-    super(left, right);
+  Equals(Position pos, Expression left, Expression right) {
+    super(pos, left, right);
   }
 
   @Override

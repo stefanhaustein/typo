@@ -2,15 +2,16 @@ package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
-import org.kobjects.typo.runtime.Instance;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 
 class StaticMember extends Expression {
   TsClass.Member member;
 
-  StaticMember(TsClass.Member member) {
+  StaticMember(Position pos, TsClass.Member member) {
+    super(pos);
     this.member = member;
   }
 

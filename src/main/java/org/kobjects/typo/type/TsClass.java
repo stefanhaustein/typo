@@ -101,8 +101,8 @@ public class TsClass extends Classifier {
   }
 
   @Override
-  public Type propertyType(String key) {
-    return members.get(key).type;
+  public TsClass.Member member(String name) {
+    return members.get(name);
   }
 
   @Override
@@ -165,19 +165,14 @@ public class TsClass extends Classifier {
     return "class " + name;
   }
 
-  public static class Member {
+  public static class Member implements Classifier.Member {
     public TsClass owner;
-    Set<Modifier> modifiers;
+    public Set<Modifier> modifiers;
     public String name;
     public Type type;
     public int fieldIndex;
     public Expression initializer;
     public Object staticValue;
-
-
-    public boolean isStatic() {
-      return modifiers.contains(Modifier.STATIC);
-    }
 
     public Object get(Object instance) {
       if (fieldIndex == -1) {
@@ -186,11 +181,25 @@ public class TsClass extends Classifier {
       return ((Instance) instance).fields[fieldIndex];
     }
 
+    public boolean isStatic() {
+      return modifiers.contains(Modifier.STATIC);
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
+
     public void set(Object instance, Object value) {
       if (fieldIndex == -1) {
         staticValue = value;
       }
       ((Instance) instance).fields[fieldIndex] = value;
+    }
+
+    @Override
+    public Type type() {
+      return type;
     }
 
   }

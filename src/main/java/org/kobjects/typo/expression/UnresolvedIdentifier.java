@@ -1,6 +1,6 @@
 package org.kobjects.typo.expression;
 
-
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
@@ -9,7 +9,8 @@ import org.kobjects.typo.parser.ParsingContext;
 public class UnresolvedIdentifier extends Expression {
   String name;
 
-  public UnresolvedIdentifier(String name) {
+  public UnresolvedIdentifier(Position pos, String name) {
+    super(pos);
     this.name = name;
   }
 
@@ -40,11 +41,11 @@ public class UnresolvedIdentifier extends Expression {
     }
     ParsingContext.LocalDeclaration field = context.resolveField(name);
     if (field != null) {
-      return new Variable(field);
+      return new Variable(pos, field);
     }
     Object o = context.resolveStatic(name);
     if (o != null) {
-      return new Literal(o, name);
+      return new Literal(pos, o, name);
     }
     throw new RuntimeException("Cannot resolve identifier '" + name + "'.");
   }

@@ -2,6 +2,7 @@ package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.statement.Module;
 import org.kobjects.typo.type.Type;
@@ -11,7 +12,8 @@ public class ModuleProperty extends Expression {
   Module module;
   ParsingContext.LocalDeclaration local;
 
-  public ModuleProperty(Module module, ParsingContext.LocalDeclaration local) {
+  public ModuleProperty(Position pos, Module module, ParsingContext.LocalDeclaration local) {
+    super(pos);
     this.module = module;
     this.local = local;
   }

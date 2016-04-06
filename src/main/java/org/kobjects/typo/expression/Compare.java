@@ -1,6 +1,7 @@
 package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.Type;
@@ -10,8 +11,8 @@ public class Compare extends ExpressionN {
   enum Op {LT, LE, GT, GE};
   Op op;
 
-  Compare(Op op, Expression left, Expression right) {
-    super(left, right);
+  Compare(Position pos, Op op, Expression left, Expression right) {
+    super(pos, left, right);
     this.op = op;
   }
 

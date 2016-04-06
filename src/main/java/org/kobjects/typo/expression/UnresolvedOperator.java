@@ -1,5 +1,6 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
@@ -10,8 +11,8 @@ import org.kobjects.typo.wasm.Operation;
 public class UnresolvedOperator extends ExpressionN {
   String name;
 
-  public UnresolvedOperator(String name, Expression... children) {
-    super(children);
+  public UnresolvedOperator(Position pos, String name, Expression... children) {
+    super(pos, children);
     this.name = name;
   }
 
@@ -44,7 +45,7 @@ public class UnresolvedOperator extends ExpressionN {
       if (children[0].type() != Types.BOOLEAN || children[1].type() != Types.BOOLEAN) {
         throw new RuntimeException("Boolean arguments expected for logical operation.");
       }
-      return name.equals("&&") ? new LogicalAnd(children[0], children[1]) : new LogicalOr(children[0], children[1]);
+      return name.equals("&&") ? new LogicalAnd(pos, children[0], children[1]) : new LogicalOr(pos, children[0], children[1]);
     }
 
     if (name.equals("+") && children.length == 1) {
@@ -54,16 +55,16 @@ public class UnresolvedOperator extends ExpressionN {
       return children[0];
     }
     if (name.equals("!")) {
-      return new Not(children[0]);
+      return new Not(pos, children[0]);
     }
     if (name.startsWith("==")) {
-      return new Equals(children[0], children[1]);
+      return new Equals(pos, children[0], children[1]);
     }
     if (name.startsWith("!=")) {
-      return new Not(new Equals(children[0], children[1]));
+      return new Not(pos, new Equals(pos, children[0], children[1]));
     }
     if (name.startsWith("<") || name.startsWith(">")) {
-      return new Compare(name.startsWith("<")
+      return new Compare(pos, name.startsWith("<")
           ? (name.endsWith("=") ? Compare.Op.LE : Compare.Op.LT)
           : (name.endsWith("=") ? Compare.Op.GE : Compare.Op.GT), children[0], children[1]);
     }
@@ -72,14 +73,14 @@ public class UnresolvedOperator extends ExpressionN {
       if (!children[0].isAssignable()) {
         throw new RuntimeException("Cannot assign to " + children[0]);
       }
-      return new Assignment(children[0], children[1]);
+      return new Assignment(pos, children[0], children[1]);
     }
 
     if (!allNumber) {
       if (!name.equals("+")) {
         throw new IllegalArgumentException("number arguments expected for " + name);
       }
-      return new Concat(children[0], children[1]);
+      return new Concat(pos, children[0], children[1]);
     }
 
     Operation op;
@@ -94,7 +95,7 @@ public class UnresolvedOperator extends ExpressionN {
       default:
         throw new RuntimeException("Unrecognized operator: " + name);
     }
-    return new Operator(op, children);
+    return new Operator(pos, op, children);
   }
 
   @Override

@@ -1,12 +1,12 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.StaticMap;
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.statement.Module;
 import org.kobjects.typo.type.Classifier;
-import org.kobjects.typo.type.Interface;
 import org.kobjects.typo.type.MetaType;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
@@ -15,8 +15,8 @@ public class UnresolvedProperty extends Expression1 {
 
   final String name;
 
-  public UnresolvedProperty(Expression base, String name) {
-    super(base);
+  public UnresolvedProperty(Position pos, Expression base, String name) {
+    super(pos, base);
     this.name = name;
   }
 
@@ -26,7 +26,7 @@ public class UnresolvedProperty extends Expression1 {
     if (child instanceof Literal && ((Literal) child).value instanceof Module) {
       Module module = (Module) ((Literal) child).value;
       ParsingContext.LocalDeclaration local = module.parsingContext.resolveField(name);
-      return new ModuleProperty(module, local);
+      return new ModuleProperty(pos, module, local);
     }
     Type baseType = child.type();
     if (baseType instanceof Classifier) {
@@ -35,7 +35,7 @@ public class UnresolvedProperty extends Expression1 {
       if (member == null) {
         throw new RuntimeException("Member '" + name + "' not found in " + classifier);
       }
-      return new Member(child, member);
+      return new MemberAccess(pos, child, member);
     }
     if (baseType instanceof MetaType && ((MetaType) baseType).of instanceof TsClass) {
       TsClass classifier = (TsClass) ((MetaType) baseType).of;
@@ -46,7 +46,7 @@ public class UnresolvedProperty extends Expression1 {
       if (member.fieldIndex != -1) {
         throw new RuntimeException("Member '" + name + "' must be static for static access.");
       }
-      return new StaticMember(member);
+      return new StaticMember(pos, member);
     }
     throw new RuntimeException("Interface or class expected; got: " + child.type() + " for " + CodePrinter.toString(this));
   }

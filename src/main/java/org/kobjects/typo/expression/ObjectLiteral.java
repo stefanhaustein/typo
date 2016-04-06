@@ -1,5 +1,6 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.Interface;
 import org.kobjects.typo.io.CodePrinter;
@@ -10,8 +11,8 @@ import java.util.LinkedHashMap;
 public class ObjectLiteral extends ExpressionN {
   Interface type;
   String[] names;
-  public ObjectLiteral(String[] names, Expression[] expressions) {
-    super(expressions);
+  public ObjectLiteral(Position pos, String[] names, Expression[] expressions) {
+    super(pos, expressions);
     this.names = names;
   }
 

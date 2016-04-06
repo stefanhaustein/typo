@@ -1,6 +1,7 @@
 package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.Type;
@@ -8,8 +9,8 @@ import org.kobjects.typo.type.Types;
 
 public class Ternary extends ExpressionN {
   Type type;
-  public Ternary(Expression condition, Expression ifBranch, Expression elseBranch) {
-    super(condition, ifBranch, elseBranch);
+  public Ternary(Position pos, Expression condition, Expression ifBranch, Expression elseBranch) {
+    super(pos, condition, ifBranch, elseBranch);
   }
 
   @Override

@@ -2,14 +2,15 @@ package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 
 public class PostIncDec extends Expression1 {
   int delta;
-  public PostIncDec(Expression child, int delta) {
-    super(child);
+  public PostIncDec(Position pos, Expression child, int delta) {
+    super(pos, child);
     this.delta = delta;
   }
 

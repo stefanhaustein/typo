@@ -1,5 +1,6 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
 import org.kobjects.typo.io.CodePrinter;
@@ -7,8 +8,8 @@ import org.kobjects.typo.runtime.EvaluationContext;
 
 class Concat extends ExpressionN {
 
-  public Concat(Expression left, Expression right) {
-    super(left, right);
+  public Concat(Position pos, Expression left, Expression right) {
+    super(pos, left, right);
   }
 
   @Override

@@ -22,4 +22,8 @@ public class ExpressionStatement extends SimpleStatement {
     cp.append("; ");
   }
 
+  @Override
+  public String toString() {
+    return expression.pos.line + ": " + expression.toString() + ";";
+  }
 }

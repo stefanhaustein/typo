@@ -1,17 +1,16 @@
 package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.parser.NamedEntity;
 import org.kobjects.typo.parser.ParsingContext;
-import org.kobjects.typo.runtime.Instance;
 import org.kobjects.typo.statement.Block;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.statement.Statement;
 import org.kobjects.typo.type.FunctionType;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Typed;
-import org.kobjects.typo.type.UnresolvedType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,8 @@ public class Function extends Expression implements Typed, NamedEntity {
   public List<Closure> closures = new ArrayList<>();
   Object[] capture;
 
-  public Function(TsClass owner, String name, FunctionType.Parameter[] parameters, Type returnType, Statement body) {
+  public Function(Position pos, TsClass owner, String name, FunctionType.Parameter[] parameters, Type returnType, Statement body) {
+    super(pos);
     this.owner = owner;
     this.name = name;
     this.parameters = parameters;
@@ -149,5 +149,12 @@ public class Function extends Expression implements Typed, NamedEntity {
       this.source = source;
       this.target = target;
     }
+  }
+
+  @Override
+  public String toString() {
+    return (owner == null ? "function " : (owner.name() + "."))
+      + (name == null ? "" : name.toString())
+      + (type == null ? "???" : type.name());
   }
 }

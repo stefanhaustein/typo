@@ -1,5 +1,7 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
@@ -8,7 +10,8 @@ import org.kobjects.typo.parser.ParsingContext;
 class Variable extends Expression {
   final ParsingContext.LocalDeclaration field;
 
-  public Variable(ParsingContext.LocalDeclaration field) {
+  public Variable(Position pos, ParsingContext.LocalDeclaration field) {
+    super(pos);
     this.field = field;
   }
 

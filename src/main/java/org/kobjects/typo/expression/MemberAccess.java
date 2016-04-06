@@ -1,18 +1,16 @@
 package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
-import org.kobjects.typo.runtime.Instance;
-import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.Classifier;
-import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 
 class MemberAccess extends Expression1 {
   Classifier.Member member;
 
-  MemberAccess(Expression base, Classifier.Member member) {
-    super(base);
+  MemberAccess(Position pos, Expression base, Classifier.Member member) {
+    super(pos, base);
     this.member = member;
   }
 

@@ -10,7 +10,7 @@ import org.kobjects.typo.expression.Literal;
 import org.kobjects.typo.expression.New;
 import org.kobjects.typo.expression.ObjectLiteral;
 import org.kobjects.typo.expression.PostIncDec;
-import org.kobjects.typo.expression.Property;
+import org.kobjects.typo.expression.UnresolvedProperty;
 import org.kobjects.typo.expression.Ternary;
 import org.kobjects.typo.expression.UnresolvedIdentifier;
 import org.kobjects.typo.expression.UnresolvedOperator;
@@ -180,9 +180,10 @@ class Parser {
         Type parameterType = parseType(tokenizer);
         if (!modifiers.isEmpty()) {
           owner.addField(modifiers, parameterName, parameterType, null);
-          init.add(new ExpressionStatement(new UnresolvedOperator("=",
-              new Property(new UnresolvedIdentifier("this"), parameterName),
-              new UnresolvedIdentifier(parameterName))));
+          Position pos = new Position(tokenizer);
+          init.add(new ExpressionStatement(new UnresolvedOperator(pos, "=",
+              new UnresolvedProperty(pos, new UnresolvedIdentifier(pos, "this"), parameterName),
+              new UnresolvedIdentifier(pos, parameterName))));
         }
         parameterList.add(new FunctionType.Parameter(parameterName, parameterType));
       } while(tokenizer.tryConsume(","));
@@ -213,7 +214,7 @@ class Parser {
 
     tokenizer.consume("}");
 
-    Function fn = new Function(owner, name,
+    Function fn = new Function(new Position(tokenizer), owner, name,
         parameterList.toArray(new FunctionType.Parameter[parameterList.size()]),
         returnType,
         body);
@@ -272,12 +273,12 @@ class Parser {
         if (tokenizer.tryConsume(":")) {
           expressions.add(expressionParser.parse(tokenizer));
         } else {
-          expressions.add(new UnresolvedIdentifier(name));
+          expressions.add(new UnresolvedIdentifier(new Position(tokenizer), name));
         }
       } while (tokenizer.tryConsume(","));
       tokenizer.consume("}");
     }
-    return new ObjectLiteral(names.toArray(new String[names.size()]),
+    return new ObjectLiteral(new Position(tokenizer), names.toArray(new String[names.size()]),
         expressions.toArray(new Expression[expressions.size()]));
   }
 
@@ -378,7 +379,7 @@ class Parser {
       } while (tokenizer.tryConsume(","));
     }
     tokenizer.consume(")");
-    return new New(type, args.toArray(new Expression[args.size()]));
+    return new New(new Position(tokenizer), type, args.toArray(new Expression[args.size()]));
   }
 
   Type parseType(ExpressionParser.Tokenizer tokenizer) {
@@ -439,70 +440,72 @@ class Parser {
     @Override
     public Expression group(ExpressionParser.Tokenizer tokenizer, String open, List<Expression> list) {
       if (open.equals("[")) {
-        return new ArrayLiteral(list.toArray(new Expression[list.size()]));
+        return new ArrayLiteral(new Position(tokenizer), list.toArray(new Expression[list.size()]));
       }
       return list.get(0);
     }
 
     @Override
     public Expression identifier(ExpressionParser.Tokenizer tokenizer, String name) {
+      Position pos = new Position(tokenizer);
       if (name.equals("true")) {
-        return new Literal(true, null);
+        return new Literal(pos, true, null);
       } else if (name.equals("false")) {
-        return new Literal(false, null);
+        return new Literal(pos, false, null);
       } else if (name.equals("null")) {
-        return new Literal(null, null);
+        return new Literal(pos, null, null);
       } else if (name.equals("Infinity")) {
-        return new Literal(Double.POSITIVE_INFINITY, "Infinity");
+        return new Literal(pos, Double.POSITIVE_INFINITY, "Infinity");
       } else if (name.equals("undefined")) {
-        return new Literal(null, null);  // TODO: HACK
+        return new Literal(pos, null, null);  // TODO: HACK
       }
-      return new UnresolvedIdentifier(name);
+      return new UnresolvedIdentifier(pos, name);
     }
 
     @Override
     public Expression prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, Expression param) {
-      return new UnresolvedOperator(name, param);
+      return new UnresolvedOperator(new Position(tokenizer), name, param);
     }
 
     @Override
     public Expression infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Expression left, Expression right) {
-      return new UnresolvedOperator(name, left, right);
+      return new UnresolvedOperator(new Position(tokenizer), name, left, right);
     }
 
     @Override
     public Expression suffixOperator(ExpressionParser.Tokenizer tokenizer, String name, Expression param) {
+      Position pos = new Position(tokenizer);
       if (name.equals(".")) {
         String propertyName = tokenizer.consumeIdentifier();
-        return new Property(param, propertyName);
+        return new UnresolvedProperty(pos, param, propertyName);
       } else if (name.equals("++") || name.equals("--")) {
-        return new PostIncDec(param, name.equals("++") ? 1 : -1);
+        return new PostIncDec(pos, param, name.equals("++") ? 1 : -1);
       }
       return super.suffixOperator(tokenizer, name, param);
     }
 
     @Override
     public Expression stringLiteral(ExpressionParser.Tokenizer tokenizer, String rawValue) {
-      return new Literal(ExpressionParser.unquote(rawValue), null);
+      return new Literal(new Position(tokenizer), ExpressionParser.unquote(rawValue), null);
     }
 
     @Override
     public Expression ternaryOperator(ExpressionParser.Tokenizer tokenizer, String name,
                                       Expression left, Expression middle, Expression right) {
-      return new Ternary(left, middle, right);
+      return new Ternary(new Position(tokenizer), left, middle, right);
     }
 
     @Override
     public Expression numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
-      return new Literal(Double.parseDouble(value), null);
+      return new Literal(new Position(tokenizer), Double.parseDouble(value), null);
     }
 
     @Override
     public Expression apply(ExpressionParser.Tokenizer tokenizer, Expression to, String bracket, List<Expression> parameterList) {
       if (bracket.equals("[")) {
-        return new ArrayAccess(to, parameterList.get(0));
+        return new ArrayAccess(new Position(tokenizer), to, parameterList.get(0));
       } else {
-        return new Apply(to, parameterList.toArray(new Expression[parameterList.size()]));
+        return new Apply(new Position(tokenizer), to, parameterList.toArray(new Expression[parameterList.size()]));
       }
     }
   }

@@ -1,16 +1,18 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.type.FunctionType;
+import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
 
 public class Apply extends ExpressionN {
   Expression target;
 
-  public Apply(Expression target, Expression... params) {
-    super(params);
+  public Apply(Position pos, Expression target, Expression... params) {
+    super(pos, params);
     this.target = target;
   }
 
@@ -54,9 +56,12 @@ public class Apply extends ExpressionN {
       throw new RuntimeException("In " + CodePrinter.toString(this), e);
     }
 
-    if (target instanceof Member) {
-      Member property = (Member) target;
-      return new ApplyMember(property.child, property.member, children);
+    if (target instanceof MemberAccess && ((MemberAccess) target).member instanceof TsClass.Member) {
+      MemberAccess access = (MemberAccess) target;
+      TsClass.Member member = (TsClass.Member) access.member;
+      if (!member.modifiers.contains(TsClass.Modifier.STATIC) && member.staticValue instanceof Function) {
+        return new ApplyMember(pos, access.child, member, children);
+      }
     }
     return this;
   }

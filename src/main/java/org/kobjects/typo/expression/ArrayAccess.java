@@ -2,6 +2,7 @@ package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.ArrayType;
 import org.kobjects.typo.type.Type;
@@ -12,8 +13,8 @@ import java.util.List;
 public class ArrayAccess extends ExpressionN {
   Type type;
 
-  public ArrayAccess(Expression base, Expression index) {
-    super(base, index);
+  public ArrayAccess(Position pos, Expression base, Expression index) {
+    super(pos, base, index);
   }
 
   @Override

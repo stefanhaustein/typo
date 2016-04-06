@@ -2,6 +2,7 @@ package org.kobjects.typo.expression;
 
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
 import org.kobjects.typo.type.ArrayType;
 import org.kobjects.typo.type.Type;
@@ -11,8 +12,8 @@ import java.util.ArrayList;
 
 public class ArrayLiteral extends ExpressionN {
   ArrayType type;
-  public ArrayLiteral(Expression[] elements) {
-    super(elements);
+  public ArrayLiteral(Position pos, Expression[] elements) {
+    super(pos, elements);
   }
 
   @Override

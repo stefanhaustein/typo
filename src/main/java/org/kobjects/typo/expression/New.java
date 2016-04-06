@@ -1,6 +1,6 @@
 package org.kobjects.typo.expression;
 
-
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.Instance;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.type.Type;
@@ -11,8 +11,9 @@ import org.kobjects.typo.parser.ParsingContext;
 public class New extends ExpressionN {
   TsClass tsClass;  // Filled on resolve only
   Type type;
-  public New(Type type, Expression... child) {
-    super(child);
+
+  public New(Position pos, Type type, Expression... child) {
+    super(pos, child);
     this.type = type;
   }
 

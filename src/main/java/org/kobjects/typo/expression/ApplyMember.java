@@ -1,5 +1,6 @@
 package org.kobjects.typo.expression;
 
+import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.type.TsClass;
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.runtime.EvaluationContext;
@@ -12,8 +13,8 @@ class ApplyMember extends ExpressionN {
   final Expression base;
   final TsClass.Member member;
 
-  ApplyMember(Expression base, TsClass.Member member, Expression[] children) {
-    super(children);
+  ApplyMember(Position pos, Expression base, TsClass.Member member, Expression[] children) {
+    super(pos, children);
     this.base = base;
     this.member = member;
   }
