@@ -123,7 +123,8 @@ class Parser {
         classifier.addField(modifiers, memberName, type, initialValue);
         tokenizer.consume(";");
       } else if (tokenizer.currentValue.equals("(")) {
-        Function fn = parseFunction(classifier, memberName, tokenizer);
+        Function fn = parseFunction(
+            modifiers.contains(TsClass.Modifier.STATIC) ? null : classifier, memberName, tokenizer);
         if (memberName.equals("constructor")) {
           classifier.constructor = fn;
         } else {

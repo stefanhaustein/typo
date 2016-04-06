@@ -2,6 +2,7 @@ package org.kobjects.typo.expression;
 
 import org.kobjects.typo.parser.Position;
 import org.kobjects.typo.runtime.EvaluationContext;
+import org.kobjects.typo.runtime.StaticMap;
 import org.kobjects.typo.type.Interface;
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
@@ -28,9 +29,9 @@ public class ObjectLiteral extends ExpressionN {
 
   @Override
   public Object eval(EvaluationContext context) {
-    LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+    StaticMap result = new StaticMap(type);
     for (int i = 0; i < names.length; i++) {
-      result.put(names[i], children[i].eval(context));
+      result.set(names[i], children[i].eval(context));
     }
     return result;
   }
