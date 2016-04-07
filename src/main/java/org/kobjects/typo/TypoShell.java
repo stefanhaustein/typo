@@ -59,6 +59,29 @@ public class TypoShell {
     }
   }
 
+  static byte[] subsample(List<Double> data, int width, int height) {
+    int w2 = width / 2;
+    int h2 = height / 2;
+    byte[] result = new byte[w2 * h2 * 4];
+
+    int dstPos = 0;
+    for (int y = 0; y < h2; y++) {
+      int srcIndex0 = y * 2 * width * 4;
+      int srcIndex1 = (y * 2 + 1) * width * 4;
+      for (int x = 0; x < w2; x++) {
+        for (int i = 0; i < 4; i++) {
+          double acc = (data.get(srcIndex0) + data.get(srcIndex0 + 4) + data.get(srcIndex1) + data.get(srcIndex1 + 4)) / 4;
+          result[dstPos++] = (byte) (Math.max(0, Math.min(255, acc)));
+          srcIndex0++;
+          srcIndex1++;
+        }
+        srcIndex0 += 4;
+        srcIndex1 += 4;
+      }
+    }
+    return result;
+  }
+
   public static void main(String[] args) throws IOException {
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
@@ -125,15 +148,20 @@ public class TypoShell {
           Instance instance = (Instance) o;
           int width = ((Number) instance.fields[0]).intValue();
           int height = ((Number) instance.fields[1]).intValue();
-          List<Double> data = (List<Double>) instance.fields[2];
+          List<Double> ddata = (List<Double>) instance.fields[2];
+
+          byte[] data = subsample(ddata, width, height);
+          width /= 2;
+          height /= 2;
+
           StringBuilder sb = new StringBuilder("\n");
           int p0 = 0;
           int p1 = 4 * width;
           for (int y = 0; y < height; y += 2) {
             for (int x = 0; x < width; x++) {
-              sb.append(Ansi.fgColor(data.get(p0).byteValue(), data.get(p0 + 1).byteValue(), data.get(p0 + 2).byteValue()));
-              if (p1 < data.size()) {
-                sb.append(Ansi.bgColor(data.get(p1).byteValue(), data.get(p1 + 1).byteValue(), data.get(p1 + 2).byteValue()));
+              sb.append(Ansi.fgColor(data[p0], data[p0 + 1], data[p0 + 2]));
+              if (p1 < data.length) {
+                sb.append(Ansi.bgColor(data[p1], data[p1 + 1], data[p1 + 2]));
               }
               sb.append("\u2580"); // Upper half block;
               p0 += 4;

@@ -15,6 +15,17 @@ class MemberAccess extends Expression1 {
   }
 
   @Override
+  public Object apply(EvaluationContext context, Expression[] parameters) {
+    Object instance = child.eval(context);
+    Function function = (Function) member.get(instance);
+    EvaluationContext newContext = function.createContext(instance);
+    for (int i = 0; i < parameters.length; i++) {
+      newContext.setLocal(i, parameters[i].eval(context));
+    }
+    return function.apply(newContext);
+  }
+
+  @Override
   public void assign(EvaluationContext context, Object value) {
     Object instance = child.eval(context);
     member.set(instance, value);

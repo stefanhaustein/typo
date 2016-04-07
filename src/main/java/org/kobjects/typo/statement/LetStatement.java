@@ -42,7 +42,7 @@ public class LetStatement extends Statement {
         throw new RuntimeException("Incompatible types for " + CodePrinter.toString(this) + " expression type: " + expression.type());
       }
     }
-    target = context.declareLocal(variableName, expression.type());
+    target = context.declareLocal(variableName, type);
   }
 
   @Override
@@ -57,5 +57,10 @@ public class LetStatement extends Statement {
       expression.print(cp);
     }
     cp.append("; ");
+  }
+
+  @Override
+  public String toString() {
+    return expression.pos.line + ": let " + variableName + " = " + expression;
   }
 }

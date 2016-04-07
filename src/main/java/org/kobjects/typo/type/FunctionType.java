@@ -61,7 +61,7 @@ public class FunctionType implements Type {
         sb.append(parameters[i]);
       }
     }
-    sb.append(" => ").append(returnType.name());
+    sb.append(") => ").append(returnType.name());
     return sb.toString();
   }
 

@@ -26,4 +26,8 @@ public class StaticMap implements Typed {
   public Interface type() {
     return type;
   }
+
+  public String toString() {
+    return "StaticMap type " + type.name() + " content: " + properties;
+  }
 }

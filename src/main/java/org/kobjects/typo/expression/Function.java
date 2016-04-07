@@ -11,6 +11,7 @@ import org.kobjects.typo.statement.Statement;
 import org.kobjects.typo.type.FunctionType;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Typed;
+import org.kobjects.typo.type.Types;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,14 @@ public class Function extends Expression implements Typed, NamedEntity {
   }
 
   public Object apply(EvaluationContext context) {
+    if (!"traceRay".equals(name) && !"intersections".equals(name)) {
+      for (int i = 0; i < parameters.length; i++) {
+        if (!parameters[i].type.assignableFrom(Types.typeOf(context.getLocal(i)))) {
+          System.out.println(toString() + ": Type mismatch for param " + i + ": " + context.getLocal(i));
+        }
+      }
+    }
+
     return body.eval(context);
   }
 

@@ -36,9 +36,6 @@ public class UnresolvedIdentifier extends Expression {
 
   @Override
   public Expression resolve(ParsingContext context) {
-    if (name.equals("screenWidth")) {
-      System.out.println("HERE!");
-    }
     ParsingContext.LocalDeclaration field = context.resolveField(name);
     if (field != null) {
       return new Variable(pos, field);

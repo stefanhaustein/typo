@@ -1,5 +1,6 @@
 package org.kobjects.typo.type;
 
+import org.kobjects.typo.expression.Expression;
 import org.kobjects.typo.io.CodePrinter;
 import org.kobjects.typo.parser.ParsingContext;
 import org.kobjects.typo.runtime.StaticMap;
@@ -143,8 +144,14 @@ public class Interface extends Classifier {
       if (instance instanceof StaticMap) {
         return ((StaticMap) instance).get(name);
       } else {
-        Classifier.Member member = ((Classifier) Types.typeOf(instance)).member(name);
-        return member.get(instance);
+        try {
+          Classifier.Member member = ((Classifier) Types.typeOf(instance)).member(name);
+          return member.get(instance);
+        } catch (Exception e) {
+          System.out.println("get " + name + " of instance: " + instance);
+          return null;
+        }
+
       }
     }
   }

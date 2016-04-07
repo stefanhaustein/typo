@@ -9,13 +9,16 @@ import org.kobjects.typo.type.Types;
 
 import java.util.List;
 
-public class ForInStatement extends SimpleStatement {
+public class ForInStatement extends Statement {
   boolean declare;
   String variableName;
   ParsingContext.LocalDeclaration target;
+  Expression expression;
+  Statement body;
 
   public ForInStatement(boolean declare, String variableName, Expression expression, Statement body) {
-    super(expression, body);
+    this.expression = expression;
+    this.body = body;
     this.declare = declare;
     this.variableName = variableName;
   }
@@ -25,7 +28,7 @@ public class ForInStatement extends SimpleStatement {
     List<?> array = (List<?>) expression.eval(context);
     for (double i = 0; i < array.size(); i++) {
       context.setLocal(target.localIndex, i);
-      Object result = children[0].eval(context);
+      Object result = body.eval(context);
       if (result != NO_RESULT) {
         return result;
       }
@@ -50,6 +53,7 @@ public class ForInStatement extends SimpleStatement {
         throw new RuntimeException("Incompatible types");
       }
     }
+    body.resolve(context);
   }
 
 
@@ -63,6 +67,6 @@ public class ForInStatement extends SimpleStatement {
     cp.append(" in ");
     expression.print(cp);
     cp.append(") ");
-    children[0].print(cp);
+    body.print(cp);
   }
 }

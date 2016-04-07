@@ -18,12 +18,15 @@ public class Apply extends ExpressionN {
 
   @Override
   public Object eval(EvaluationContext context) {
+    return target.apply(context, children);
+    /*
     Function function = (Function) target.eval(context);
     EvaluationContext newContext = function.createContext(null);
     for (int i = 0; i < children.length; i++) {
       newContext.setLocal(i, children[i].eval(context));
     }
     return function.apply(newContext);
+    */
   }
 
   @Override
@@ -54,14 +57,6 @@ public class Apply extends ExpressionN {
       functionType.assertSignature(childTypes(), CodePrinter.toString(this));
     } catch (Exception e) {
       throw new RuntimeException("In " + CodePrinter.toString(this), e);
-    }
-
-    if (target instanceof MemberAccess && ((MemberAccess) target).member instanceof TsClass.Member) {
-      MemberAccess access = (MemberAccess) target;
-      TsClass.Member member = (TsClass.Member) access.member;
-      if (!member.modifiers.contains(TsClass.Modifier.STATIC) && member.staticValue instanceof Function) {
-        return new ApplyMember(pos, access.child, member, children);
-      }
     }
     return this;
   }

@@ -17,6 +17,15 @@ public abstract class Expression implements Printable {
     return false;
   }
 
+  Object apply(EvaluationContext context, Expression[] parameters) {
+    Function function = (Function) eval(context);
+    EvaluationContext newContext = function.createContext(null);
+    for (int i = 0; i < parameters.length; i++) {
+      newContext.setLocal(i, parameters[i].eval(context));
+    }
+    return function.apply(newContext);
+  }
+
   void assign(EvaluationContext context, Object value) {
     throw new UnsupportedOperationException();
   }

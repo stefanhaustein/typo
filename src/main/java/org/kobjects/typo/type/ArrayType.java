@@ -36,15 +36,20 @@ public class ArrayType extends TsClass {
       @Override
       public Object apply(EvaluationContext context) {
         Function reduce = (Function) context.getLocal(0);
+        int parameterCount = reduce.parameters.length;
         Object value = context.getLocal(1);
         List list = (List) context.getLocal(2);
         for (int i = 0; i < list.size(); i++) {
-          EvaluationContext ctx = reduce.createContext(null);
-          ctx.setLocal(0, value);
-          ctx.setLocal(1, list.get(i));
-          ctx.setLocal(2, (double) i);
-          ctx.setLocal(3, list);
-          value = reduce.apply(context);
+          EvaluationContext reduceContext = reduce.createContext(null);
+          reduceContext.setLocal(0, value);
+          reduceContext.setLocal(1, list.get(i));
+          if (parameterCount > 2) {
+            reduceContext.setLocal(2, (double) i);
+            if (parameterCount > 3) {
+              reduceContext.setLocal(3, list);
+            }
+          }
+          value = reduce.apply(reduceContext);
         }
         return value;
       }

@@ -178,7 +178,12 @@ public class TsClass extends Classifier {
       if (fieldIndex == -1) {
         return staticValue;
       }
-      return ((Instance) instance).fields[fieldIndex];
+      try {
+        return ((Instance) instance).fields[fieldIndex];
+      } catch (NullPointerException e) {
+        System.out.println("NPE");
+        return null;
+      }
     }
 
     public boolean isStatic() {
