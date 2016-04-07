@@ -23,7 +23,7 @@ Create something that relates to (a strict subset of) TypeScript like Rhino rela
 ```
 ![Gradient](http://i.imgur.com/4iC0tS2.png)
 
-- A [strictly typed version of the ts raytracer example](https://github.com/stefanhaustein/typo/blob/master/src/main/resources/raytracer.ts) strict version
+- A [strictly typed version of the ts raytracer example](https://github.com/stefanhaustein/typo/blob/master/src/main/resources/raytracer.ts)
 
 ![Raytrace](http://i.imgur.com/q16umjd.png)
 
