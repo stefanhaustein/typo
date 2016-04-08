@@ -23,12 +23,14 @@ Create something that relates to (a strict subset of) TypeScript like Rhino rela
 ```
 ![Gradient](http://i.imgur.com/4iC0tS2.png)
 
+- A [strictly typed version of the ts raytracer example](https://github.com/stefanhaustein/typo/blob/master/src/main/resources/raytracer.ts)
+
+![Raytrace](http://i.imgur.com/q16umjd.png)
+
 
 #### Plan
 
-- Get the raytracer example compiling (with added explicit return types; got it to parse, but compilation fails because reduce is not yet implemented (and there are probably other issues))
-- Get the raytracer example running (rendering to VtCanvas)
-- Some Cleanup
+- Some Cleanup (better type checks and interface intersection)
 - WebAssembly output prototype
 - Jsdoc output prototype
 
@@ -38,7 +40,6 @@ Create something that relates to (a strict subset of) TypeScript like Rhino rela
 - Dictionaries
 - Class member visibility enforcement
 - Class visibility enforcement
-- Line numbers in later phases
 - Const support and enforcement 
 - Generics
 - Probably a lot more
