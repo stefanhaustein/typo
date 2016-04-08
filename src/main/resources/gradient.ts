@@ -1,4 +1,4 @@
-let d = new ImageData(40, 20);
+let d = new ImageData(320, 200);
 let pos = 0;
 for (let y = 0; y < d.height; y++) {
   for (let x = 0; x < d.width; x++) {

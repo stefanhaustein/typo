@@ -27,6 +27,7 @@ public class Function extends Expression implements Typed, NamedEntity {
   public int thisIndex = -1;
   public List<Closure> closures = new ArrayList<>();
   Object[] capture;
+  boolean noMismatch = true;
 
   public Function(Position pos, TsClass owner, String name, FunctionType.Parameter[] parameters, Type returnType, Statement body) {
     super(pos);
@@ -38,9 +39,10 @@ public class Function extends Expression implements Typed, NamedEntity {
   }
 
   public Object apply(EvaluationContext context) {
-    if (!"traceRay".equals(name) && !"intersections".equals(name)) {
+    if (noMismatch) {
       for (int i = 0; i < parameters.length; i++) {
         if (!parameters[i].type.assignableFrom(Types.typeOf(context.getLocal(i)))) {
+          noMismatch = false;
           System.out.println(toString() + ": Type mismatch for param " + i + ": " + context.getLocal(i));
         }
       }

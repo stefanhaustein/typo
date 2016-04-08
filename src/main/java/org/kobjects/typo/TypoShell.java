@@ -1,6 +1,7 @@
 package org.kobjects.typo;
 
 
+import org.kobjects.typo.io.ImageData;
 import org.kobjects.typo.parser.Processor;
 import org.kobjects.typo.runtime.*;
 import org.kobjects.typo.type.ArrayType;
@@ -149,29 +150,11 @@ public class TypoShell {
           int width = ((Number) instance.fields[0]).intValue();
           int height = ((Number) instance.fields[1]).intValue();
           List<Double> ddata = (List<Double>) instance.fields[2];
-
-          byte[] data = subsample(ddata, width, height);
-          width /= 2;
-          height /= 2;
-
-          StringBuilder sb = new StringBuilder("\n");
-          int p0 = 0;
-          int p1 = 4 * width;
-          for (int y = 0; y < height; y += 2) {
-            for (int x = 0; x < width; x++) {
-              sb.append(Ansi.fgColor(data[p0], data[p0 + 1], data[p0 + 2]));
-              if (p1 < data.length) {
-                sb.append(Ansi.bgColor(data[p1], data[p1 + 1], data[p1 + 2]));
-              }
-              sb.append("\u2580"); // Upper half block;
-              p0 += 4;
-              p1 += 4;
-            }
-            p0 += 4 * width;
-            p1 += 4 * width;
-            sb.append("\u001B[0m\n");
+          ImageData imageData = new ImageData(width, height);
+          for (int i = 0; i < imageData.data.length; i++) {
+            imageData.data[i] = (byte) Math.max(0, Math.min(255, Math.round(ddata.get(i))));
           }
-          o = sb.toString();
+          o = imageData.dump();
         }
         System.out.println(String.valueOf(o));
         return null;

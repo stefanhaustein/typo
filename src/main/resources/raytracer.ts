@@ -269,7 +269,7 @@ function defaultScene(): Scene {
     };
 }
 
-var image = new ImageData(200, 200);
+var image = new ImageData(512, 512);
 var rayTracer = new RayTracer();
 rayTracer.render(defaultScene(), image);
 
