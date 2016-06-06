@@ -403,10 +403,14 @@ class Parser {
         result = Types.ANY;
       } else if (name.equals("boolean")) {
         result = Types.BOOLEAN;
+      } else if (name.equals("null")) {
+        result = Types.NULL;
       } else if (name.equals("number")) {
         result = Types.NUMBER;
       } else if (name.equals("string")) {
         result = Types.STRING;
+      } else if (name.equals("undefined")) {
+        result = Types.UNDEFINED;
       } else if (name.equals("void")) {
         result = Types.VOID;
       } else {

@@ -25,7 +25,16 @@ Create something that relates to (a strict subset of) TypeScript like Rhino rela
 
 - A [strictly typed version of the ts raytracer example](https://github.com/stefanhaustein/typo/blob/master/src/main/resources/raytracer.ts)
 
+  Run it via `load("/raytracer.ts")` from the TS command shell; it will be loaded from the
+  Java resources if the project resource folder is set up correctly.
+
+  The output should look decent on the Ubuntu default shell. Unfortunately, the IntelliJ shell
+  seems to support 16 colors only.
+
+
 ![Raytrace](http://i.imgur.com/q16umjd.png)
+
+
 
 
 #### Plan

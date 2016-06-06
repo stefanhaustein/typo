@@ -1,0 +1,12 @@
+apply plugin: 'java'
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+}
+
+
+sourceSets {
+    main {
+        output.resourcesDir = output.classesDir
+    }
+}

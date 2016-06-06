@@ -1,16 +1,23 @@
 package org.kobjects.typo.type;
 
 public class Types {
+
+  public static final Object UNDEFINED_VALUE = new Object();
+
   public static final Type ANY = new SimpleType("any");
   public static final Type BOOLEAN = new SimpleType("boolean");
+  public static final Type NULL = new SimpleType("null");
   public static final Type NUMBER = new SimpleType("number");
   public static final Type STRING = new SimpleType("string");
+  public static final Type UNDEFINED = new SimpleType("undefined");
   public static final Type VOID = new SimpleType("void");
-  public static final Type NULL = new SimpleType("(null)");
 
   public static Type typeOf(Object value) {
     if (value == null) {
       return NULL;
+    }
+    if (value == UNDEFINED_VALUE) {
+      return UNDEFINED;
     }
     if (value instanceof Typed) {
       return ((Typed) value).type();
