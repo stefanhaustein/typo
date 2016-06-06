@@ -45,7 +45,7 @@ Create something that relates to (a strict subset of) TypeScript like Rhino rela
 
 #### Missing
 
-- Union types and strict nullability
+- Strict nullability
 - Dictionaries
 - Class member visibility enforcement
 - Class visibility enforcement
