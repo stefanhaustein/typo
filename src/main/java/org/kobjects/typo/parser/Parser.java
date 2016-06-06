@@ -31,6 +31,7 @@ import org.kobjects.typo.type.ArrayType;
 import org.kobjects.typo.type.FunctionType;
 import org.kobjects.typo.type.Type;
 import org.kobjects.typo.type.Types;
+import org.kobjects.typo.type.UnionType;
 import org.kobjects.typo.type.UnresolvedType;
 
 import java.io.Reader;
@@ -416,7 +417,7 @@ class Parser {
       tokenizer.consume("]");
       result = new ArrayType(result);
     }
-    return result;
+    return tokenizer.tryConsume("|") ? new UnionType(result, parseType(tokenizer)) : result;
   }
 
   class ExpressionProcessor extends ExpressionParser.Processor<Expression> {
